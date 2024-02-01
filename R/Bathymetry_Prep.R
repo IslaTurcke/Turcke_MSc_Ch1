@@ -41,13 +41,11 @@ new_crs <- crs("+init=epsg:6346")
 drive_download(as_id("1kPwO_2p6OCY1Vgk9YuwrGAgOgQ_HweHO"), overwrite = TRUE, 
                path = "lidar_full_1m_m.tif")
 lidar_1x1 <- rast("lidar_full_1m_m.tif")
-#file.remove(here("GitHub_Repositories","MSc_Ch1_DataPrep","lidar_full_1m_m.tif"))
 
 # NOAA's 1/9th arc-sec CUDEM resampled to 5x5m
 drive_download(as_id("1y1AudWdX_KymFpBYpwcRsAng8Z6F4OPL"), overwrite = TRUE, 
                path = "cudem_clip_5m_m.tif")
 cudem_5x5 <- rast("cudem_clip_5m_m.tif")
-#file.remove(here("GitHub_Repositories","MSc_Ch1_DataPrep","cudem_clip_5m_m.tif"))
 
 
 
@@ -92,9 +90,12 @@ depth_5x5 <- terra::app(dems_5x5, fun = "mean", na.rm = TRUE)
 
 # Save the combined raster to a new file
 writeRaster(depth_5x5, "depth_5x5m_terra_mean.tif", overwrite = TRUE, filetype = "GTiff")
-writeRaster(mean_merge, "depth_5x5m_terra_merge.tif", overwrite = TRUE, filetype = "GTiff")
 
 # Print summary information
 print(cudem_5x5)
 print(lidar_5x5)
 print(depth_5x5)
+
+# clean up 
+file.remove(here("GitHub_Repositories","MSc_Ch1_DataPrep","cudem_clip_5m_m.tif"))
+file.remove(here("GitHub_Repositories","MSc_Ch1_DataPrep","lidar_full_1m_m.tif"))
