@@ -38,18 +38,48 @@ new_crs <- crs("+init=epsg:6346")
 # cudem_clip_5m_m.tif = "paste your file ID here"
 
 # NOAA's 1x1m Lidar DEM post Hurricane Irma
-drive_download(as_id("1kPwO_2p6OCY1Vgk9YuwrGAgOgQ_HweHO"), overwrite = TRUE, 
-               path = "lidar_full_1m_m.tif")
-lidar_1x1 <- rast("lidar_full_1m_m.tif")
+#drive_download(as_id("1kPwO_2p6OCY1Vgk9YuwrGAgOgQ_HweHO"), overwrite = TRUE, 
+#               path = "lidar_full_1m_m.tif")
+#lidar_1x1 <- rast("lidar_full_1m_m.tif")
 
 # NOAA's 1/9th arc-sec CUDEM resampled to 5x5m
-drive_download(as_id("1y1AudWdX_KymFpBYpwcRsAng8Z6F4OPL"), overwrite = TRUE, 
-               path = "cudem_clip_5m_m.tif")
-cudem_5x5 <- rast("cudem_clip_5m_m.tif")
+#drive_download(as_id("1y1AudWdX_KymFpBYpwcRsAng8Z6F4OPL"), overwrite = TRUE, 
+#               path = "cudem_clip_5m_m.tif")
+#cudem_5x5 <- rast("cudem_clip_5m_m.tif")
 
 
 
-# Resampling LIDAR raster to 5x5m -----------------------------------------
+# Build NOAA Lidar Post-Irma DEM from Tiles ----------------------------------
+
+# test on Block 1 (i = 1)
+i = 1
+
+# list all the .tif files in the directory
+block_files <- list.files(here("Source_Data","NOAA_IrmaDEM",paste0("Block",i)), 
+                          pattern = "\\.tif$")
+
+# create an empty list to store tiles as SpatRaster objects
+block_tiles <- list()
+
+# loop through each .tif file --> read, name, add to list
+for (j in seq_along(block_files)) {
+  tile <- rast(here("Source_Data","NOAA_IrmaDEM",paste0("Block",i),block_files[j]))
+  tile_name <- paste0("Block", i, "_tile", j)
+  names(tile) <- tile_name
+  block_tiles[[i]] <- tile
+}
+
+# turn the list of SpatRasters into a SpatRasterCollection (sprc)
+block_sprc <- sprc(block_tiles)
+
+# mosaic the tiles into one Block and name the Block
+block <- merge(block_sprc)
+names(block) <- paste0("Block_",i)
+rm(block_files, block_tiles, block_sprc)
+
+
+
+# Resample NOAA's Lidar Post-Irma raster to 5x5m -----------------------------
 
 
 # Set the desired cell size for the output raster
@@ -66,7 +96,41 @@ writeRaster(lidar_5x5, here("Intermediate_Data","lidar_5x5_terra.tif"), overwrit
 rm(lidar_1x1)
 
 
-# Combine with the 5x5m CUDEM ---------------------------------------------
+
+# Build NOAA's CUDEM from Tiles  -----------------------------------------------
+
+# list all the .tif files in the directory
+cudem_files <- list.files(here("Source_Data","NOAA_cudem"), pattern = "\\.tif$")
+
+# create an empty list to store cudem tiles as SpatRaster objects
+cudem_tiles <- list()
+
+# loop through each .tif file --> read, name, add to list
+for (i in seq_along(cudem_files)) {
+  tile <- rast(here("Source_Data","NOAA_cudem",cudem_files[i]))
+  cudem_tiles[[i]] <- tile
+}
+rm(tile)
+
+# turn the list of SpatRasters into a SpatRasterCollection (sprc)
+cudem_sprc <- sprc(cudem_tiles)
+
+# mosaic the five tiles into one raster
+cudem_full <- merge(cudem_sprc)
+
+# clean up storage
+#rm(cudem_files, cudem_tiles, cudem_sprc)
+
+# project to the same coord system as the NOAA post-Irma DEM
+cudem_projected <- project(cudem_full, ###INSERT NAME OF FULL LIDAR DEM HERE###)
+
+# Save the combined raster to a new file
+writeRaster(cudem_projected, here("Intermediate_Data","cudem_full_projected.tif"), 
+            overwrite = TRUE, format = "GTiff")
+
+
+
+# Combine NOAA's CUDEM with the Resampled Post-Irma DEM ----------------------
 
 
 # Find the union of the extents
