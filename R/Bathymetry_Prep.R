@@ -49,7 +49,7 @@ new_crs <- crs("+init=epsg:6346")
 
 
 
-# Build NOAA Lidar Post-Irma DEM from Tiles ----------------------------------
+# Build NOAA Lidar Post-Irma DEM from Tiles ------------------------------------
 
 # list of block folders in directory
 block_folders_list <- list.files(here("Source_Data","NOAA_IrmaDEM"))
@@ -133,7 +133,7 @@ for (i in seq_along(cudem_files)) {
   tile <- rast(here("Source_Data","NOAA_cudem",cudem_files[i]))
   cudem_tiles[[i]] <- tile
 }
-rm(tile)
+rm(tile, i)
 
 # turn the list of SpatRasters into a SpatRasterCollection (sprc)
 cudem_sprc <- sprc(cudem_tiles)
@@ -145,9 +145,7 @@ cudem_full <- merge(cudem_sprc)
 rm(cudem_files, cudem_tiles, cudem_sprc)
 
 # project to the same coord system as the NOAA post-Irma DEM
-cudem_project <- project(cudem_full, lidar_5x5, align = TRUE)
-
-cudem_resample <- resample(cudem_full, lidar_5x5, threads = TRUE)
+cudem_5x5 <- project(cudem_full, lidar_5x5, align = TRUE)
 
 # Save the combined raster to a new file
 writeRaster(cudem_5x5, here("Intermediate_Data","cudem_full_5x5.tif"), 
