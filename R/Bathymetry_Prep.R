@@ -178,6 +178,15 @@ dems_5x5 <- c(lidar_5x5_resampled, cudem_5x5_resampled)
 # replace NA values with the corresponding value from the other layer
 depth_5x5 <- terra::app(dems_5x5, fun = "mean", na.rm = TRUE)
 
+# try using the mosaic function 
+depth_5x5_mosaic <- mosaic(cudem_5x5, lidar_5x5)
+
+# diff between mosaic depth raster and mean depth raster
+depth_diff <- depth_5x5_mosaic - depth_5x5
+plot(depth_diff)
+print(depth_diff)
+print(depth_5x5)
+
 # Save the combined raster to a new file
 writeRaster(depth_5x5, here("Intermediate_Data","depth_5x5.tif"), 
                             overwrite = TRUE, filetype = "GTiff")
