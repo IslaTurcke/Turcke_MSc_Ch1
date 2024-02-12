@@ -32,24 +32,10 @@ here::i_am("GitHub_Repositories/MSc_Ch1_DataPrep/R/Bathymetry_Prep.R")
 # project CRS - EPSG:6346 NAD 1983 (2011) UTM Zone 17N
 new_crs <- crs("+init=epsg:6346")
 
-# ACCESS INPUT DEMs FROM GOOGLE DRIVE
-# use file ID (ID is in the share link URL)
-# lidar_full_1m_m.tif = "paste your file ID here"
-# cudem_clip_5m_m.tif = "paste your file ID here"
-
-# NOAA's 1x1m Lidar DEM post Hurricane Irma
-#drive_download(as_id("1kPwO_2p6OCY1Vgk9YuwrGAgOgQ_HweHO"), overwrite = TRUE, 
-#               path = "lidar_full_1m_m.tif")
-#lidar_1x1 <- rast("lidar_full_1m_m.tif")
-
-# NOAA's 1/9th arc-sec CUDEM resampled to 5x5m
-#drive_download(as_id("1y1AudWdX_KymFpBYpwcRsAng8Z6F4OPL"), overwrite = TRUE, 
-#               path = "cudem_clip_5m_m.tif")
-#cudem_5x5 <- rast("cudem_clip_5m_m.tif")
-
 
 
 # Build NOAA Lidar Post-Irma DEM from Tiles ------------------------------------
+
 
 # list of block folders in directory
 block_folders_list <- list.files(here("Source_Data","NOAA_IrmaDEM"))
@@ -122,6 +108,7 @@ rm(lidar_1x1)
 
 # Build NOAA's CUDEM from Tiles  -----------------------------------------------
 
+
 # list all the .tif files in the directory
 cudem_files <- list.files(here("Source_Data","NOAA_cudem"), pattern = "\\.tif$")
 
@@ -156,46 +143,16 @@ rm(cudem_full)
 
 
 
-# Combine NOAA's CUDEM with the Resampled Post-Irma DEM ----------------------
+# Combine NOAA's CUDEM with the Resampled post-Irma DEM -----------------------
 
 
-# Find the union of the extents
-union_extent <- union(ext(lidar_5x5), ext(cudem_5x5))
-
-# Create an empty raster with the union extent and desired resolution
-depth_template <- rast(union_extent, resolution = cell_size_5x5)
-
-# Project and resample the first raster to the output raster
-lidar_5x5_resampled <- resample(lidar_5x5, depth_template, method = "bilinear")
-
-# Project and resample the second raster to the output raster
-cudem_5x5_resampled <- resample(cudem_5x5, depth_template, method = "bilinear")
-
-# Combine dems into one SpatRast with two layers
-dems_5x5 <- c(lidar_5x5_resampled, cudem_5x5_resampled)
-
-# take the average of the two layers
-# replace NA values with the corresponding value from the other layer
-depth_5x5 <- terra::app(dems_5x5, fun = "mean", na.rm = TRUE)
-
-# try using the mosaic function 
-depth_5x5_mosaic <- mosaic(cudem_5x5, lidar_5x5)
-
-# diff between mosaic depth raster and mean depth raster
-depth_diff <- depth_5x5_mosaic - depth_5x5
-plot(depth_diff)
-print(depth_diff)
+# combine the partly overlapping SpatRasters to form a single new SpatRaster
+# values in overlapping cells are averaged
+depth_5x5 <- mosaic(cudem_5x5, lidar_5x5)
 print(depth_5x5)
 
 # Save the combined raster to a new file
 writeRaster(depth_5x5, here("Intermediate_Data","depth_5x5.tif"), 
                             overwrite = TRUE, filetype = "GTiff")
 
-# Print summary information
-print(cudem_5x5)
-print(lidar_5x5)
-print(depth_5x5)
 
-# clean up google drive files
-#file.remove(here("GitHub_Repositories","MSc_Ch1_DataPrep","cudem_clip_5m_m.tif"))
-#file.remove(here("GitHub_Repositories","MSc_Ch1_DataPrep","lidar_full_1m_m.tif"))
