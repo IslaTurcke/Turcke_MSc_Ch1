@@ -9,8 +9,9 @@
 
 ### TO USE THIS FILE ###
 # Before running this R script:
-# - run the ArcPy model which prepares the two separate DEMs to be merged
-# - save the resulting DEMs in your google drive
+# - open the Florida Unified Reef Map geodatabase in ArcGIS (https://myfwc.com/research/gis/regional-projects/unified-reef-map/)
+#   and export the "UnifiedReefMap" layer as a shapefile.
+#   Save this file as "FLKeys_UnifiedReefMap.shp" in the Intermediate_Data folder.
 
 ### CONTACT ###
 # Isla Turcke (turcke@ualberta.ca)
@@ -22,7 +23,7 @@
 
 # LOAD PACKAGES
 library(easypackages)
-libraries("here", "terra", "googledrive")
+libraries("here", "terra", "sf", "PNWColors", "googledrive")
 
 # SET UP RELATIVE PATHS TO DIRECTORIES USING 'HERE'
 # set the Isla_MSc_Ch1 folder as the root directory 
@@ -173,17 +174,17 @@ print(depth_5x5)
 # (https://sanctuaries.noaa.gov/library/imast_gis.html)
 
 fknms_vect <- terra::vect(here("Source_Data","Parks","fknms_py.shp"))
-compareCRS(crs(fknms_vect), new_crs, verbatim = T, verbose = T) # check projection
+crs(fknms_vect) == new_crs # check projection
 fknms_vect <- terra::project(fknms_vect, new_crs)
-compareCRS(crs(fknms_vect), new_crs, verbatim = T, verbose = T) # check projection again
+crs(fknms_vect) == new_crs # check projection again
 
 # National Park Service shapefile (for Biscayne National Park (BNP))
 # (https://public-nps.opendata.arcgis.com/datasets/nps-boundary-1/data)
 nps_vect <- terra::vect(here("Source_Data","Parks","NPS_-_Land_Resources_Division_Boundary_and_Tract_Data_Service.shp"))
 bnp_vect <- nps_vect[nps_vect$UNIT_NAME == "Biscayne National Park",] # extract BNP
-compareCRS(crs(bnp_vect), new_crs, verbatim = T, verbose = T)
+crs(bnp_vect) == new_crs
 bnp_vect <- terra::project(bnp_vect, new_crs)
-compareCRS(crs(bnp_vect), new_crs, verbatim = T, verbose = T)
+crs(bnp_vect) == new_crs
 
 # how do the shapefiles line up
 plot(fknms_vect, col = "turquoise")
@@ -207,9 +208,9 @@ fill_gaps <- data.frame(
   dplyr::summarise(geometry = st_combine(geometry)) %>%
   st_cast("POLYGON")
 gaps_vect <- terra::vect(fill_gaps)
-compareCRS(crs(gaps_vect), crs(fknms_vect), verbatim = T, verbose = T)
+crs(gaps_vect) == crs(fknms_vect)
 gaps_vect <- terra::project(gaps_vect, new_crs)
-compareCRS(crs(gaps_vect), crs(fknms_vect), verbatim = T, verbose = T)
+crs(gaps_vect) == crs(fknms_vect)
 
 # take a look now
 plot(gaps_vect, col = "orange")
@@ -237,21 +238,11 @@ rm("fknms_vect", "bnp_vect", "nps_vect", "fill_gaps", "gaps_vect", "parks_union"
 # Habitat Type ------------------------------------------------------------
 
 
-# load habitat data from Unified Reef Tract Map (URM)
-# (https://myfwc.com/research/gis/regional-projects/unified-reef-map/)
-require(rgdal)
-fgdb <- paste0(source_wd, "Unified_Reef_Map/FWC_UnifiedFloridaReefMap_v2.0.gdb")
-
-# List all feature classes in the geodatabase
-subset(ogrDrivers(), grepl("GDB", name)) 
-fc_list = ogrListLayers(fgdb) 
-print(fc_list) 
-
 # Read in Unified Reef Map (URM) feature class
-reef_map <- st_read(dsn = fgdb,layer = "UnifiedReefMap") %>%
-  filter(!st_is_empty(.)) %>%
-  st_transform(., new_crs)
-compareCRS(crs(reef_map), new_crs) # check projection to be sure
+urm <- terra::vect(here("Intermediate_Data","FLKeys_UnifiedReefMap.shp"))
+crs(urm) == new_crs # check projection
+reef_map <- terra::project(urm, new_crs)
+crs(reef_map) == new_crs 
 
 # check benthic habitat classes
 unique(reef_map$ClassLv1) 
@@ -263,42 +254,50 @@ ClassLv1_list <- unique(reef_map$ClassLv1) # list categories
 ClassLv1_df <- data.frame(ID = 1:length(ClassLv1_list), ClassLv1 = ClassLv1_list) 
 # match IDs
 reef_map$ClassLv1_ID <- ClassLv1_df$ID[match(reef_map$ClassLv1, ClassLv1_df$ClassLv1)] 
-unique(reef_map$ClassLv1_ID) # did it work?  
-# save for later
-write.csv(ClassLv1_df, paste0(gis_wd, "Habitat/URM_ClassLv1_IDs.csv"), row.names = F)
+unique(reef_map$ClassLv1_ID)   
+# save index table for later
+write.csv(ClassLv1_df, here("Source_Data", "Unified_Reef_Map", "URM_ClassLv1_IDs.csv"), row.names = F)
 
-# clip unified reef map data to parks shapefile
-reef_clip <- st_intersection(st_make_valid(reef_map), parks_union)
+# aggregate polygons so there is only 1 per habitat type
+reef_map_agg <- terra::aggregate(reef_map, by = "ClassLv1")
+terra::plot(reef_map_agg, "ClassLv1")
+
+# crop unified reef map data to parks shapefile
+reef_crop <- terra::crop(reef_map_agg, parks_vect)
 
 # create a palette for plotting benthic habitat classes
 pal_benthic <- pnw_palette("Bay", 14, type = "continuous") 
 
-tm_shape(parks_union) +
-  tm_fill("pink") +
-  tm_shape(reef_clip, projection = new_crs) +
-  tm_fill("ClassLv1_ID", palette = pal_benthic, style = "cat")
+plot(parks_vect, col = "purple")
+plot(reef_crop, "ClassLv1", add = T)
+
+# clean up
+rm(urm, reef_map, reef_map_agg, ClassLv1_list)
 
 
 # supplementary shoreline mangrove habitat data
 # (https://geodata.myfwc.com/datasets/mangrove-habitat-in-florida-1/explore)
-mg_shore <- st_read(dsn = paste0(source_wd, 
-                                 "Mangrove_Habitat/Mangrove_Habitat_in_Florida.shp")) %>%
-  filter(!st_is_empty(.)) %>%
-  st_transform(., new_crs) %>%
-  st_cast(., "MULTIPOLYGON")
-compareCRS(crs(mg_shore), new_crs)
+mg_shore <- vect(here("Source_Data","Mangrove_Habitat","Mangrove_Habitat_in_Florida.shp"))
+crs(mg_shore) == new_crs
+mg_shore <- terra::project(mg_shore, new_crs)
+crs(mg_shore) == new_crs
+
+mg_keys <- terra::crop(mg_shore, parks_vect)
 
 # there is a small gap between the mangrove data and the reef tract map along 
 # the mainland coast, and these missing areas are important coastline mangroves 
-# (visible in satellite imagery) add a 10 m buffer around the mangrove data and 
+# (visible in satellite imagery) add a 100 m buffer around the mangrove data and 
 # then use gDifference to keep only the non-overlapping areas (AKA, respect the 
 # boundaries of the reef map).
-mg_buff <- st_buffer(mg_shore, dist = 10)
+mg_buff <- terra::buffer(mg_keys, width = 100)
 
-# now keep only the non-overlapping regions of the mangrove data 
-# (FYI: time-consuming step)
-mg_clip <- rgeos::gDifference(as_Spatial(st_intersection(mg_buff, parks_union)),
-                              as_Spatial(reef_clip)) %>% st_as_sf()
+plot(parks_vect, col = "turquoise", border = NULL)
+polys(mg_buff, col = "darkgreen", border = "darkgreen")
+polys(mg_keys, col = "red", border = NULL)
+
+# now merge the reef map and the mangrove data
+# reef map data takes precedence over mangrove buffer
+reef_mg <- terra::merge(reef_crop, mg_buff)
 
 # double check the ID assigned to mangroves from the reef map and add it to the
 # mangrove data
