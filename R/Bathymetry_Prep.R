@@ -2,10 +2,11 @@
 
 # This is script 1 of __ in Isla's data analysis pipeline.
 
-# This script is used to prepare a bathymetry dataset for Isla Turcke's first 
+# This script is used to prepare spatial predictor datasets for Isla Turcke's first 
 # MSc chapter in the lab of Dr. S.J. Green at the University of Alberta (2022-2025). 
 # Data are specific to southern Florida and were subsequently used for habitat
 # suitability modeling using maximum entropy models.
+# Specific Spatial Predictors: Bathymetry, Habitat type
 
 ### TO USE THIS FILE ###
 # Before running this R script:
@@ -187,8 +188,8 @@ bnp_vect <- terra::project(bnp_vect, new_crs)
 crs(bnp_vect) == new_crs
 
 # how do the shapefiles line up
-plot(fknms_vect, col = "turquoise")
-plot(bnp_vect, col = "purple", add = T)
+#plot(fknms_vect, col = "turquoise")
+#plot(bnp_vect, col = "purple", add = T)
 
 # there are gaps at the interior seams where FKNMS and BNP should meet, here is 
 # an arbitrary polygon that I constructed in a GIS to fill the interior gaps 
@@ -213,9 +214,9 @@ gaps_vect <- terra::project(gaps_vect, new_crs)
 crs(gaps_vect) == crs(fknms_vect)
 
 # take a look now
-plot(gaps_vect, col = "orange")
-plot(fknms_vect, col = "turquoise", add = T)
-plot(bnp_vect, col = "purple", add = T)
+#plot(gaps_vect, col = "orange")
+#plot(fknms_vect, col = "turquoise", add = T)
+#plot(bnp_vect, col = "purple", add = T)
 
 # union the parks and gap fill data to produce one complete polygon
 parks_union <- terra::union(fknms_vect, bnp_vect)
@@ -223,8 +224,8 @@ parks_union <- terra::union(parks_union, gaps_vect)
 parks_vect <- terra::aggregate(parks_union, by = NULL, dissolve = T)
 
 # we now have an outline now of the parks' outer borders! 
-plot(parks_union)
-plot(parks_vect)
+#plot(parks_union)
+#plot(parks_vect)
 
 # output new parks shapefile to intermediate data folder
 writeVector(parks_vect, here("Intermediate_Data","parks_border.shp"), 
@@ -259,8 +260,8 @@ unique(reef_map$ClassLv1_ID)
 write.csv(ClassLv1_df, here("Source_Data", "Unified_Reef_Map", "URM_ClassLv1_IDs.csv"), row.names = F)
 
 # aggregate polygons so there is only 1 per habitat type
-reef_map_agg <- terra::aggregate(reef_map, by = "ClassLv1")
-terra::plot(reef_map_agg, "ClassLv1")
+reef_map_agg <- terra::aggregate(reef_map, by = "ClassLv1_ID")
+#terra::plot(reef_map_agg, "ClassLv1")
 
 # crop unified reef map data to parks shapefile
 reef_crop <- terra::crop(reef_map_agg, parks_vect)
@@ -268,8 +269,8 @@ reef_crop <- terra::crop(reef_map_agg, parks_vect)
 # create a palette for plotting benthic habitat classes
 pal_benthic <- pnw_palette("Bay", 14, type = "continuous") 
 
-plot(parks_vect, col = "purple")
-plot(reef_crop, "ClassLv1", add = T)
+#plot(parks_vect, col = "purple")
+#plot(reef_crop, "ClassLv1", add = T)
 
 # clean up
 rm(urm, reef_map, reef_map_agg, ClassLv1_list)
@@ -291,13 +292,32 @@ mg_keys <- terra::crop(mg_shore, parks_vect)
 # boundaries of the reef map).
 mg_buff <- terra::buffer(mg_keys, width = 100)
 
+# add column to match reef map data, assigning the value 11 for mangrove
+mg_buff$ClassLv1_ID <- rep(11, nrow(mg_buff))
+
+rm(mg_shore, mg_keys)
+
 plot(parks_vect, col = "turquoise", border = NULL)
 polys(mg_buff, col = "darkgreen", border = "darkgreen")
 polys(mg_keys, col = "red", border = NULL)
 
+
+
+# Rasterize and Combine Habitat Layers ---------------------------------------
+
+# read in the depth DEM to use as a raster template
+depth_5x5 <- rast(here("Intermediate_Data","depth_5x5.tif"))
+
+# rasterize the reef map and mangrove data sets
+reef_rast <- terra::rasterize(reef_crop, depth_5x5, field = "ClassLv1_ID")
+rm(reef_crop)
+mg_rast <- terra::rasterize(mg_buff, depth_5x5, field = "ClassLv1_ID")
+rm(mg_buff, depth_5x5)
+
+
 # now merge the reef map and the mangrove data
 # reef map data takes precedence over mangrove buffer
-reef_mg <- terra::merge(reef_crop, mg_buff)
+reef_mg <- terra::merge(reef_rast, mg_rast, first = T, na.rm = T)
 
 # double check the ID assigned to mangroves from the reef map and add it to the
 # mangrove data
