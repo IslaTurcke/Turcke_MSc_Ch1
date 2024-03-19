@@ -10,9 +10,10 @@
 
 ### TO USE THIS FILE ###
 # Before running this R script:
-# - open the Florida Unified Reef Map geodatabase in ArcGIS (https://myfwc.com/research/gis/regional-projects/unified-reef-map/)
+# - Open the Florida Unified Reef Map geodatabase in ArcGIS (https://myfwc.com/research/gis/regional-projects/unified-reef-map/)
 #   and export the "UnifiedReefMap" layer as a shapefile.
-#   Save this file as "FLKeys_UnifiedReefMap.shp" in the Intermediate_Data folder.
+# - Save this file as "FLKeys_UnifiedReefMap.shp" in the "Unified_Reef_Map" folder
+#   in the "Source_Data" folder.
 
 ### CONTACT ###
 # Isla Turcke (turcke@ualberta.ca)
@@ -165,6 +166,8 @@ print(cudem_5x5)
 print(lidar_5x5)
 print(depth_5x5)
 
+### END OF BATHYMETRY PREPARATION ... UNTIL FINAL CROPPING LATER
+
 
 
 # Park Boundaries ---------------------------------------------------------
@@ -240,7 +243,7 @@ rm("fknms_vect", "bnp_vect", "nps_vect", "fill_gaps", "gaps_vect", "parks_union"
 
 
 # Read in Unified Reef Map (URM) feature class
-urm <- terra::vect(here("Intermediate_Data","FLKeys_UnifiedReefMap.shp"))
+urm <- terra::vect(here("Source_Data","Unified_Reef_Map","FLKeys_UnifiedReefMap.shp"))
 crs(urm) == new_crs # check projection
 reef_map <- terra::project(urm, new_crs)
 crs(reef_map) == new_crs 
@@ -272,6 +275,10 @@ pal_benthic <- pnw_palette("Bay", 14, type = "continuous")
 #plot(parks_vect, col = "purple")
 #plot(reef_crop, "ClassLv1", add = T)
 
+# output reef habitat shapefile for mapping
+writeVector(reef_crop, here("Intermediate_Data","reef_map.shp"), 
+            filetype = "ESRI Shapefile", overwrite = TRUE)
+
 # clean up
 rm(urm, reef_map, reef_map_agg, ClassLv1_list)
 
@@ -284,6 +291,10 @@ mg_shore <- terra::project(mg_shore, new_crs)
 crs(mg_shore) == new_crs
 
 mg_keys <- terra::crop(mg_shore, parks_vect)
+
+# output cropped mangrove data for mapping
+writeVector(mg_keys, here("Intermediate_Data","mangrove_map.shp"), 
+            filetype = "ESRI Shapefile", overwrite = TRUE)
 
 # there is a small gap between the mangrove data and the reef tract map along 
 # the mainland coast, and these missing areas are important coastline mangroves 
@@ -299,7 +310,6 @@ rm(mg_shore, mg_keys)
 
 plot(parks_vect, col = "turquoise", border = NULL)
 polys(mg_buff, col = "darkgreen", border = "darkgreen")
-polys(mg_keys, col = "red", border = NULL)
 
 
 
@@ -310,52 +320,50 @@ depth_5x5 <- rast(here("Intermediate_Data","depth_5x5.tif"))
 
 # rasterize the reef map and mangrove data sets
 reef_rast <- terra::rasterize(reef_crop, depth_5x5, field = "ClassLv1_ID")
-rm(reef_crop)
 mg_rast <- terra::rasterize(mg_buff, depth_5x5, field = "ClassLv1_ID")
-rm(mg_buff, depth_5x5)
 
 
 # now merge the reef map and the mangrove data
 # reef map data takes precedence over mangrove buffer
 reef_mg <- terra::merge(reef_rast, mg_rast, first = T, na.rm = T)
 
-# double check the ID assigned to mangroves from the reef map and add it to the
-# mangrove data
-ClassLv1_df
-mg_clip$ClassLv1 <- rep(as.character("Mangrove"), nrow(mg_clip))
-mg_clip$ClassLv1_ID <- rep(as.integer(11), nrow(mg_clip))
+# clean up
+rm(reef_crop, reef_rast, mg_buff, mg_rast)
 
-# save mangrove and reef data for mapping
-st_write(mg_clip, dsn = paste0(gis_wd, "Habitat/Mangrove_Habitat.shp"), 
-         driver = "ESRI Shapefile", append = F)
-st_write(reef_clip, dsn = paste0(gis_wd, "Habitat/Reef_Map_Habitat.shp"), 
-         driver = "ESRI Shapefile", append = F)
+# plot the new reef mangrove raster
+plot(reef_mg)
+polys(parks_vect, border = "blue", col = NULL)
 
-#  check geometry for both habitat layers
-head(mg_clip, 1) # sf column: geometry 
-head(reef_clip, 1) # sf column: Shape
-reef_clip = reef_clip %>% rename(geometry = Shape)
-head(reef_clip, 1) # fixed
+# filtering out classes "Land" (9) and "Not Classified" (7)
+reef_mg[reef_mg == 7 | reef_mg == 9] <- NA
 
-# combining the reef and mangrove habitat layers
-# filtering out classes "Land" and "Not Classified"
-habitat_polys <- rbind(mg_clip, select(reef_clip, geometry, ClassLv1, ClassLv1_ID)) %>%
-  filter(!ClassLv1 %in% c("Land", "Not Classified")) %>% # only want real benthic habitats
-  st_cast("MULTIPOLYGON")
+# output combined mangrove and reef raster (not yet cropped to study region)
+writeRaster(reef_mg, here("Intermediate_Data","habitat_type_full.tif"), 
+            overwrite = TRUE)
 
-# plot habitat type polygons
-tm_shape(habitat_polys, projection = new_crs) +
-  tm_fill("ClassLv1_ID", palette = pal_benthic, style = "cat") 
 
-# write out habitat type polygons
-st_write(habitat_polys, dsn = paste0(gis_wd, "Habitat/Habitat_Type.shp"), append = F)
 
-# template raster for habitat w/ 1 x 1 m res and standard CRS
-template_raster <- raster(ext = extent(habitat_polys), res = c(1,1), crs = new_crs)
+# Final Study Area Raster Template and Polygon ----------------------------
 
-# convert benthic habitat polygons to a temporary raster
-habitat_raster <- fasterize(habitat_polys, template_raster, field = "ClassLv1_ID", fun = "max") 
+# add depth and habitat rasters together to get all NA values from both
+depth_plus_hab <- depth_5x5 + reef_mg
 
-# write out habitat type raster to temporary folder
-# once it is clipped to the final study domain it will be the final habitat raster
-writeRaster(habitat_raster, file = file.path(gis_wd, "Habitat/habitat_raster.tif"), format = "GTiff", overwrite = T)
+# give all non-NA cells a value of 1
+depth_plus_hab[!is.na(depth_plus_hab)] <- 1
+plot(depth_plus_hab)
+
+# convert study region raster to a polygon
+study_poly <- as.polygons(depth_plus_hab, aggregate = T, na.rm = T)
+plot(study_poly)
+
+# save the crs for these final datasets (it seems it changed slightly?)
+# I think this one is a compound CRS - horizontal and vertical components
+final_crs <- crs(study_poly)
+
+# output final study domain raster and polygon to Final_Data folder
+writeRaster(depth_plus_hab, here("Final_Data","Study_Region.tif"), 
+            overwrite = TRUE)
+writeVector(study_poly, here("Final_Data","Study_Region.shp"), 
+            filetype = "ESRI Shapefile", overwrite = TRUE)
+
+### END OF STUDY REGION PREPARATION
