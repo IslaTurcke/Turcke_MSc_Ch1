@@ -166,6 +166,9 @@ print(cudem_5x5)
 print(lidar_5x5)
 print(depth_5x5)
 
+# clean up
+rm(cudem_5x5, lidar_5x5, depth_5x5)
+
 ### END OF BATHYMETRY PREPARATION ... UNTIL FINAL CROPPING LATER
 
 
@@ -353,7 +356,7 @@ depth_plus_hab[!is.na(depth_plus_hab)] <- 1
 plot(depth_plus_hab)
 
 # convert study region raster to a polygon
-study_poly <- as.polygons(depth_plus_hab, aggregate = T, na.rm = T)
+study_poly <- as.polygons(depth_plus_hab, aggregate = T, values = T, na.rm = T)
 plot(study_poly)
 
 # save the crs for these final datasets (it seems it changed slightly?)
@@ -365,5 +368,8 @@ writeRaster(depth_plus_hab, here("Final_Data","Study_Region.tif"),
             overwrite = TRUE)
 writeVector(study_poly, here("Final_Data","Study_Region.shp"), 
             filetype = "ESRI Shapefile", overwrite = TRUE)
+
+# clean up - remove all variables from the environment
+rm(list = ls())
 
 ### END OF STUDY REGION PREPARATION
