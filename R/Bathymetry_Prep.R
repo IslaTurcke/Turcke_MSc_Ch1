@@ -38,6 +38,75 @@ old_crs <- crs("+init=epsg:26958")
 
 
 
+# Park Boundaries ---------------------------------------------------------
+
+
+# Read in park/marine sanctuary polygons
+# Florida Keys National Marine Sanctuary (FKNMS) shapefile 
+# (https://sanctuaries.noaa.gov/library/imast_gis.html)
+
+fknms_vect <- terra::vect(here("Source_Data","Parks","fknms_py.shp"))
+crs(fknms_vect) == new_crs # check projection
+fknms_vect <- terra::project(fknms_vect, new_crs)
+crs(fknms_vect) == new_crs # check projection again
+
+# National Park Service shapefile (for Biscayne National Park (BNP))
+# (https://public-nps.opendata.arcgis.com/datasets/nps-boundary-1/data)
+nps_vect <- terra::vect(here("Source_Data","Parks","NPS_-_Land_Resources_Division_Boundary_and_Tract_Data_Service.shp"))
+bnp_vect <- nps_vect[nps_vect$UNIT_NAME == "Biscayne National Park",] # extract BNP
+crs(bnp_vect) == new_crs
+bnp_vect <- terra::project(bnp_vect, new_crs)
+crs(bnp_vect) == new_crs
+
+# how do the shapefiles line up
+#plot(fknms_vect, col = "turquoise")
+#plot(bnp_vect, col = "purple", add = T)
+
+# there are gaps at the interior seams where FKNMS and BNP should meet, here is 
+# an arbitrary polygon that I constructed in a GIS to fill the interior gaps 
+# while still respecting the outer boundaries of the two parks
+fill_gaps <- data.frame(
+  lon = c(291433.147, 292034.632, 292232.734, 292246.008, 285348.704, 279047.242,
+          275554.735, 275369.526, 275054.142, 274774.742, 274393.741, 272105.355,
+          270054.830, 269509.126, 268907.462, 268944.004, 269174.427, 270765.899,
+          272195.446, 274481.451, 275137.619, 275518.619, 276132.454, 279709.628,
+          284056.211, 290049.036, 290684.037),
+  lat = c(145564.616, 146169.449, 146170.187, 132196.017, 103890.571, 110144.275, 
+          110223.650, 111678.862, 112384.771, 112841.972, 113121.373, 114417.569, 
+          114864.055, 115029.419, 114478.159, 114673.867, 115390.709, 115045.427,
+          114723.957, 113390.455, 113030.621, 112247.452, 111570.118, 111675.951, 
+          107164.796, 137644.857, 145185.497)) %>%
+  st_as_sf(coords = c("lon", "lat"), crs = old_crs) %>%
+  dplyr::summarise(geometry = st_combine(geometry)) %>%
+  st_cast("POLYGON")
+gaps_vect <- terra::vect(fill_gaps)
+crs(gaps_vect) == crs(fknms_vect)
+gaps_vect <- terra::project(gaps_vect, new_crs)
+crs(gaps_vect) == crs(fknms_vect)
+
+# take a look now
+#plot(gaps_vect, col = "orange")
+#plot(fknms_vect, col = "turquoise", add = T)
+#plot(bnp_vect, col = "purple", add = T)
+
+# union the parks and gap fill data to produce one complete polygon
+parks_union <- terra::union(fknms_vect, bnp_vect)
+parks_union <- terra::union(parks_union, gaps_vect)
+parks_vect <- terra::aggregate(parks_union, by = NULL, dissolve = T)
+
+# we now have an outline now of the parks' outer borders! 
+#plot(parks_union)
+#plot(parks_vect)
+
+# output new parks shapefile to intermediate data folder
+writeVector(parks_vect, here("Intermediate_Data","parks_border.shp"), 
+            filetype = "ESRI Shapefile", overwrite = TRUE)
+
+# remove temporary data
+rm("fknms_vect", "bnp_vect", "nps_vect", "fill_gaps", "gaps_vect", "parks_union", "old_crs")
+
+
+
 # Build NOAA Lidar Post-Irma DEM from Tiles ------------------------------------
 
 
@@ -157,88 +226,18 @@ rm(cudem_full_m)
 # values in overlapping cells are averaged
 depth_5x5 <- mosaic(cudem_5x5, lidar_5x5)
 
-# Save the combined raster to a new file
-writeRaster(depth_5x5, here("Intermediate_Data","depth_5x5.tif"), 
-                            overwrite = TRUE, filetype = "GTiff")
+# crop the raster to fall within the extent of the parks boundary
+depth <- terra::crop(depth_5x5, ext(parks_vect))
+plot(depth)
 
-# print summary info
-print(cudem_5x5)
-print(lidar_5x5)
-print(depth_5x5)
+# Save the combined raster to a new file
+writeRaster(depth, here("Intermediate_Data","depth_5x5.tif"), 
+            overwrite = TRUE, filetype = "GTiff")
 
 # clean up
-rm(cudem_5x5, lidar_5x5, depth_5x5)
+rm(cudem_5x5, lidar_5x5, depth_5x5, depth)
 
 ### END OF BATHYMETRY PREPARATION ... UNTIL FINAL CROPPING LATER
-
-
-
-# Park Boundaries ---------------------------------------------------------
-
-
-# Read in park/marine sanctuary polygons
-# Florida Keys National Marine Sanctuary (FKNMS) shapefile 
-# (https://sanctuaries.noaa.gov/library/imast_gis.html)
-
-fknms_vect <- terra::vect(here("Source_Data","Parks","fknms_py.shp"))
-crs(fknms_vect) == new_crs # check projection
-fknms_vect <- terra::project(fknms_vect, new_crs)
-crs(fknms_vect) == new_crs # check projection again
-
-# National Park Service shapefile (for Biscayne National Park (BNP))
-# (https://public-nps.opendata.arcgis.com/datasets/nps-boundary-1/data)
-nps_vect <- terra::vect(here("Source_Data","Parks","NPS_-_Land_Resources_Division_Boundary_and_Tract_Data_Service.shp"))
-bnp_vect <- nps_vect[nps_vect$UNIT_NAME == "Biscayne National Park",] # extract BNP
-crs(bnp_vect) == new_crs
-bnp_vect <- terra::project(bnp_vect, new_crs)
-crs(bnp_vect) == new_crs
-
-# how do the shapefiles line up
-#plot(fknms_vect, col = "turquoise")
-#plot(bnp_vect, col = "purple", add = T)
-
-# there are gaps at the interior seams where FKNMS and BNP should meet, here is 
-# an arbitrary polygon that I constructed in a GIS to fill the interior gaps 
-# while still respecting the outer boundaries of the two parks
-fill_gaps <- data.frame(
-  lon = c(291433.147, 292034.632, 292232.734, 292246.008, 285348.704, 279047.242,
-          275554.735, 275369.526, 275054.142, 274774.742, 274393.741, 272105.355,
-          270054.830, 269509.126, 268907.462, 268944.004, 269174.427, 270765.899,
-          272195.446, 274481.451, 275137.619, 275518.619, 276132.454, 279709.628,
-          284056.211, 290049.036, 290684.037),
-  lat = c(145564.616, 146169.449, 146170.187, 132196.017, 103890.571, 110144.275, 
-          110223.650, 111678.862, 112384.771, 112841.972, 113121.373, 114417.569, 
-          114864.055, 115029.419, 114478.159, 114673.867, 115390.709, 115045.427,
-          114723.957, 113390.455, 113030.621, 112247.452, 111570.118, 111675.951, 
-          107164.796, 137644.857, 145185.497)) %>%
-  st_as_sf(coords = c("lon", "lat"), crs = old_crs) %>%
-  dplyr::summarise(geometry = st_combine(geometry)) %>%
-  st_cast("POLYGON")
-gaps_vect <- terra::vect(fill_gaps)
-crs(gaps_vect) == crs(fknms_vect)
-gaps_vect <- terra::project(gaps_vect, new_crs)
-crs(gaps_vect) == crs(fknms_vect)
-
-# take a look now
-#plot(gaps_vect, col = "orange")
-#plot(fknms_vect, col = "turquoise", add = T)
-#plot(bnp_vect, col = "purple", add = T)
-
-# union the parks and gap fill data to produce one complete polygon
-parks_union <- terra::union(fknms_vect, bnp_vect)
-parks_union <- terra::union(parks_union, gaps_vect)
-parks_vect <- terra::aggregate(parks_union, by = NULL, dissolve = T)
-
-# we now have an outline now of the parks' outer borders! 
-#plot(parks_union)
-#plot(parks_vect)
-
-# output new parks shapefile to intermediate data folder
-writeVector(parks_vect, here("Intermediate_Data","parks_border.shp"), 
-            filetype = "ESRI Shapefile", overwrite = TRUE)
-
-# remove temporary data
-rm("fknms_vect", "bnp_vect", "nps_vect", "fill_gaps", "gaps_vect", "parks_union", "old_crs")
 
 
 
@@ -318,12 +317,13 @@ polys(mg_buff, col = "darkgreen", border = "darkgreen")
 
 # Rasterize and Combine Habitat Layers ---------------------------------------
 
+
 # read in the depth DEM to use as a raster template
-depth_5x5 <- rast(here("Intermediate_Data","depth_5x5.tif"))
+depth <- rast(here("Intermediate_Data","depth_5x5.tif"))
 
 # rasterize the reef map and mangrove data sets
-reef_rast <- terra::rasterize(reef_crop, depth_5x5, field = "ClassLv1_ID")
-mg_rast <- terra::rasterize(mg_buff, depth_5x5, field = "ClassLv1_ID")
+reef_rast <- terra::rasterize(reef_crop, depth, field = "ClassLv1_ID")
+mg_rast <- terra::rasterize(mg_buff, depth, field = "ClassLv1_ID")
 
 
 # now merge the reef map and the mangrove data
@@ -344,19 +344,36 @@ reef_mg[reef_mg == 7 | reef_mg == 9] <- NA
 writeRaster(reef_mg, here("Intermediate_Data","habitat_type_full.tif"), 
             overwrite = TRUE)
 
+### END OF HABITAT TYPE PREPARATION - except for final cropping
 
 
-# Final Study Area Raster Template and Polygon ----------------------------
+
+# Make Distance to Mangrove Raster ----------------------------------------
+
+
+# set all values != 11 (mangrove) to NA
+mangrove <- reef_mg
+mangrove[mangrove != 11] <- NA
+mangrove
+mangrove_dist <- distance(mangrove)
+rm(mangrove)
+
+### END OF DISTANCE TO MANGROVE PREPARATION - except for final cropping
+
+
+
+# Final Study Region Raster and Polygon ---------------------------------------
+
 
 # add depth and habitat rasters together to get all NA values from both
-depth_plus_hab <- depth_5x5 + reef_mg
+study_rast <- depth + reef_mg
 
 # give all non-NA cells a value of 1
-depth_plus_hab[!is.na(depth_plus_hab)] <- 1
-plot(depth_plus_hab)
+study_rast[!is.na(study_rast)] <- 1
+plot(study_rast)
 
 # convert study region raster to a polygon
-study_poly <- as.polygons(depth_plus_hab, aggregate = T, values = T, na.rm = T)
+study_poly <- as.polygons(study_rast, aggregate = T, values = T, na.rm = T)
 plot(study_poly)
 
 # save the crs for these final datasets (it seems it changed slightly?)
@@ -364,12 +381,35 @@ plot(study_poly)
 final_crs <- crs(study_poly)
 
 # output final study domain raster and polygon to Final_Data folder
-writeRaster(depth_plus_hab, here("Final_Data","Study_Region.tif"), 
+writeRaster(study_rast, here("Final_Data","Study_Region.tif"), 
             overwrite = TRUE)
 writeVector(study_poly, here("Final_Data","Study_Region.shp"), 
             filetype = "ESRI Shapefile", overwrite = TRUE)
 
+### END OF STUDY REGION PREPARATION
+
+
+
+# Final Cropping for Spatial Datasets -------------------------------------
+
+
+# cropping depth, habitat type, and distance to mangrove to final study region
+depth_crop <- depth * study_rast
+habitat_crop <- reef_mg * study_rast
+mg_dist_crop <- mangrove_dist * study_rast
+
+# take a look
+plot(mg_dist_crop)
+polys(study_poly)
+polys(parks_vect, border = "red")
+
+# save cropped datasets to Final_Data folder
+writeRaster(depth_crop, here("Final_Data","Depth.tif"), 
+            overwrite = TRUE)
+writeRaster(habitat_crop, here("Final_Data","Habitat.tif"), 
+            overwrite = TRUE)
+writeRaster(mg_dist_crop, here("Final_Data","Mangrove_Distance.tif"), 
+            overwrite = TRUE)
+  
 # clean up - remove all variables from the environment
 rm(list = ls())
-
-### END OF STUDY REGION PREPARATION
