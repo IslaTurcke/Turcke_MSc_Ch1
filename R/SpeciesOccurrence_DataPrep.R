@@ -43,7 +43,7 @@ old_crs <- crs("+init=epsg:26958")
 
 
 
-# Reading in Source Data --------------------------------------------------
+# Reading in Source Data for Years of Interest --------------------------------
 
 
 # rvc -> install and load the South Florida Reef Visual Census package from
@@ -56,50 +56,48 @@ library(rvc)
 # Other data accessible with: getStratumData, getBenthicData, getTaxonomicData
 rvc <- as_tibble(getSampleData(years = c(2014, 2016, 2018, 2022), regions = "FLA KEYS"))
 
-# mvs
-# this function reads numeric values as numeric and creates a tibble 
+# read in mvs data from excel file
 mvs <- read_xlsx(path = paste0(here("Source_Data","MVS","for_Isla_MANGROVE FISH DATA 1998W_2022W.xlsx")))
 
-# filter by year
-mvs <- mvs %>% filter(YR %in% c(2014:2022))
+# filter to keep years of interest and omit rows with "NO_SURVEY"
+mvs <- mvs %>% filter(YR %in% c(2014:2022)) %>% filter(SP != "NO_SURVEY")
 
 
 
 # Creating Unique IDs, DATE and Matching Species Codes --------------------------
 
-
-# adding columns for unique survey ID and unique site ID
-
-rvc_IDs <- rvc %>% 
-  unite("ID_SURV", c(PRIMARY_SAMPLE_UNIT,STATION_NR,YEAR), sep = "_", remove = FALSE) %>% 
-  unite("ID_SITE", c(PRIMARY_SAMPLE_UNIT,STATION_NR), sep = "_", remove = TRUE) %>% 
-  unite("DATE", c(YEAR, MONTH), sep = "-", remove = TRUE)
-
-
-mvs_IDs <- mvs %>% 
-  unite("ID_SURV", c(`Ref Site`,Site,YR), sep = "_", remove = FALSE) %>%
-  unite("ID_SITE", c(`Ref Site`,Site), sep = "_", remove = TRUE) %>% 
-  unite("DATE", c(YR, MO), sep = "-", remove = TRUE)
-
-
 # edit rvc species codes
-rvc_IDs$SPECIES_CODE <- sub(" ", "_", rvc_IDs$SPECIES_CD)
+rvc$SPECIES_CODE <- sub(" ", "_", rvc$SPECIES_CD)
 
-# read in mvs code conversion table
-mvs_code_dict <- read.csv(here("Source_Data","Species_Info","MVS_Code_Dictionary.csv"), row.names = "X")
+# output a list of all the unique species in each dataset
+mvs_species <- as_tibble(unique(mvs$SP))
+write.csv(mvs_species, here("GitHub_Repositories","MSc_Ch1_DataPrep","Data_SmallFiles","Fish","MVS_SpeciesList.csv"))
+rvc_species <- as_tibble(unique(rvc$SPECIES_CODE))
+write.csv(rvc_species, here("GitHub_Repositories","MSc_Ch1_DataPrep","Data_SmallFiles","Fish","RVC_SpeciesList.csv"))
+
+# read in mvs to rvc species code dictionary
+code_dict <- read_xlsx(here("GitHub_Repositories","MSc_Ch1_DataPrep","Data_SmallFiles","Fish","MVS-RVC_SpeciesCodes_Dictionary.xlsx"), col_names = T)
 
 # merge in new codes
 mvs_1 <- merge(mvs_IDs, mvs_code_dict, by.x = "SP", by.y = "OLD_CODE", 
                all.x = TRUE, all.y = FALSE)
 
+# adding columns for unique survey ID and unique site ID
+rvc_IDs <- rvc %>% 
+  unite("ID_SURV", c(PRIMARY_SAMPLE_UNIT,STATION_NR,YEAR), sep = "_", remove = FALSE) %>% 
+  unite("ID_SITE", c(PRIMARY_SAMPLE_UNIT,STATION_NR), sep = "_", remove = TRUE) %>% 
+  unite("DATE", c(YEAR, MONTH), sep = "-", remove = TRUE)
+mvs_IDs <- mvs %>% 
+  unite("ID_SURV", c(`Ref Site`,Site,YR), sep = "_", remove = FALSE) %>%
+  unite("ID_SITE", c(`Ref Site`,Site), sep = "_", remove = TRUE) %>% 
+  unite("DATE", c(YR, MO), sep = "-", remove = TRUE)
 
-# Keep only Necessary Columns ---------------------------------------------
-
+# keep only necessary columns
 rvc_2 <- rvc_IDs %>% select(ID_SURV, ID_SITE, DATE, LON_DEGREES, LAT_DEGREES, 
                             UNDERWATER_VISIBILITY, SPECIES_CODE, NUM, LEN)
-
 mvs_2 <- mvs_1 %>% select(ID_SURV, ID_SITE, DATE, LON, LAT, SPECIES_CODE, NO, 
                           MIN_IN, AVE_IN, MAX_IN)
+
 
 
 # Unit Conversions --------------------------------------------------------
@@ -152,7 +150,7 @@ rm(rvc, rvc_IDs, rvc_2, rvc_3, rvc_4, mvs, mvs_IDs, mvs_1, mvs_2, mvs_3, mvs_4)
 
 # read in our study domain
 study_poly <- vect(here("Final_Data","Study_Region.shp"))
-study_rast <- rast(here("Final_Data","Study_Region.tif"))
+#study_rast <- rast(here("Final_Data","Study_Region.tif"))
 
 # project occurrence data to match crs with study region
 rvc_vect <- terra::project(rvc_vect, new_crs)
@@ -166,14 +164,18 @@ plot(study_poly)
 points(rvc_mask, col = "turquoise3")
 points(mvs_mask, col = "purple")
 
+# add source column to say if data is from rvc or mvs
+rvc_mask$SOURCE <- "RVC"
+mvs_mask$SOURCE <- "MVS"
 
 
 
 # Outputting final datasets as .csv ---------------------------------------
 
-# add source column to say if data is from rvc or mvs
-rvc_clip$SOURCE <- "RVC"
-mvs_clip$SOURCE <- "MVS"
+
+# save as csv to Intermediate_Data folder
+writeVector(mvs_mask, here("Intermediate_Data","MVS_Start.csv"), 
+            filetype = "CSV", overwrite = T)
 
 # select desired cols in desired order
 rvc_start <- rvc_clip %>% 
