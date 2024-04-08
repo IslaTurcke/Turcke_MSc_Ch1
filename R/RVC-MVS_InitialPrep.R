@@ -31,7 +31,7 @@ conflicted::conflict_prefer("filter", "dplyr")
 
 # SET UP RELATIVE PATHS TO DIRECTORIES USING 'HERE'
 # set the Isla_MSc_Ch1 folder as the root directory 
-here::i_am("GitHub_Repositories/MSc_Ch1_DataPrep/R/SpeciesOccurrence_DataPrep.R")
+here::i_am("GitHub_Repositories/MSc_Ch1_DataPrep/R/RVC-MVS_InitialPrep.R")
 
 # DEFINE COORDINATE SYSTEMS 
 # project CRS - EPSG:6346 NAD 1983 (2011) UTM Zone 17N
@@ -57,7 +57,8 @@ library(rvc)
 rvc <- as_tibble(getSampleData(years = c(2014, 2016, 2018, 2022), regions = "FLA KEYS"))
 
 # read in mvs data from excel file
-mvs <- read_xlsx(path = paste0(here("Source_Data","MVS","for_Isla_MANGROVE FISH DATA 1998W_2022W.xlsx")))
+mvs <- read_xlsx(path = paste0(here("GitHub_Repositories","MSc_Ch1_DataPrep",
+                                    "Data_SmallFiles","Fish","MangroveFishData_1998W-2023W_withMetadata.xlsx")))
 
 # filter to keep years of interest and omit rows with "NO_SURVEY"
 mvs <- mvs %>% filter(YR %in% c(2014:2022)) %>% filter(SP != "NO_SURVEY")
@@ -174,8 +175,8 @@ mvs_mask$SOURCE <- "MVS"
 
 
 # convert from spatVector to data.frame 
-rvc_df <- terra::as.data.frame(rvc_mask, xy = T)
-mvs_df <- terra::as.data.frame(mvs_mask, xy = T)
+rvc_df <- terra::as.data.frame(rvc_mask, geom = "XY")
+mvs_df <- terra::as.data.frame(mvs_mask, geom = "XY")
 
 # save as csv to Intermediate_Data folder
 write_csv(mvs_df, here("GitHub_Repositories","MSc_Ch1_DataPrep","Data_SmallFiles",
