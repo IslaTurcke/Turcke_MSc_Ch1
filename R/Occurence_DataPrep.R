@@ -124,6 +124,9 @@ for (i in 1:nrow(mvs_focal)) {
 # check out the latest length samples
 hist(samples)
 
+# clean up
+rm(i, p, samples, stdev, temp)
+
 
 
 # Combine RVC and MVS -----------------------------------------------------
@@ -137,19 +140,22 @@ rvc_focal["TOT_LEN"] <- NA
 for (i in 1:nrow(rvc_focal)) {
   
   if (rvc_focal[i, "SPECIES_CODE"] == "SCA_COER"){
-    rvc_focal$TOT_LEN[i] = rvc_focal$LEN[i] * 1.049 ### FIND PROPER VALUES
+    rvc_focal$TOT_LEN[i] = rvc_focal$LEN[i] * 1.050 
   }
   if (rvc_focal[i, "SPECIES_CODE"] == "SCA_COEL"){
-    rvc_focal$TOT_LEN[i] = rvc_focal$LEN[i] * 1.049
+    rvc_focal$TOT_LEN[i] = rvc_focal$LEN[i] * 1.000 # no value in FishBase
+  }
+  if (rvc_focal[i, "SPECIES_CODE"] == "SCA_COES"){
+    rvc_focal$TOT_LEN[i] = rvc_focal$LEN[i] * 1.025 # average of coer and coel
   }
   if (rvc_focal[i, "SPECIES_CODE"] == "SCA_GUAC"){
-    rvc_focal$TOT_LEN[i] = rvc_focal$LEN[i] * 1.049
+    rvc_focal$TOT_LEN[i] = rvc_focal$LEN[i] * 1.000
   }
   if (rvc_focal[i, "SPECIES_CODE"] == "LUT_GRIS"){
     rvc_focal$TOT_LEN[i] = rvc_focal$LEN[i] * 1.049
   }
   if (rvc_focal[i, "SPECIES_CODE"] == "HAE_SCIU"){
-    rvc_focal$TOT_LEN[i] = rvc_focal$LEN[i] * 1.049
+    rvc_focal$TOT_LEN[i] = rvc_focal$LEN[i] * 1.034
   }
 }
 
@@ -210,11 +216,18 @@ all_subadults <- rbind(all_subadults, temp)
 # -> split COES density between COEL and COER
 # -> calculate total numbers of our focal species
 all_sub_w <- all_subadults %>% dcast(., SOURCE+ID_SURV+ID_SITE+x+y ~ SPECIES_CODE, 
-                               value.var = "NUM", fun.aggregate = sum) %>%
-  mutate(SCA_COEL = SCA_COEL + (SCA_COES / 2), SCA_COER = SCA_COER + (SCA_COES / 2)) %>% 
-  select(-SCA_COES) %>% 
-  mutate(INVERT = HAE_SCIU + LUT_GRIS) %>% 
-  mutate(HERB = SCA_COEL + SCA_COER + SCA_GUAC)
+                               value.var = "NUM", fun.aggregate = sum)
+
+# if there are any SCA_COES present, split them between SCA_COER and SCA_COEL  
+if ("SCA_COES" %in% colnames(all_sub_w)) {
+    all_sub_w <- all_sub_w %>% mutate(SCA_COEL = SCA_COEL + (SCA_COES / 2), 
+                                      SCA_COER = SCA_COER + (SCA_COES / 2)) %>% 
+    select(-SCA_COES)
+  }
+  
+# add columns for our two functional groups: herbivores and invertivores
+all_sub_w <- all_sub_w %>% mutate(INVERT = HAE_SCIU + LUT_GRIS,
+                                  HERB = SCA_COEL + SCA_COER + SCA_GUAC)
 
 
 
@@ -251,37 +264,88 @@ sciu <- all_sub_PA %>% select(SOURCE, ID_SURV, x, y, PRES_SCIU) %>%
 invert <- all_sub_PA %>% select(SOURCE, ID_SURV, x, y, PRES_INVERT) %>% 
   filter(PRES_INVERT == 1)
 
-##################
+
+
+# Clean Up ----------------------------------------------------------------
+
+rm(rvc, mvs, rvc_focal, mvs_focal, mvs_expanded, all_focal, all_subadults, temp,
+    all_sub_w, all_sub_PA)
+
+
+
+# Split into Training and Testing Data ------------------------------------
+
+
+# randomly split data for model training and evaluation (70-30%, respectively)
+library(ISLR)
+# set seed to ensure replicability
+set.seed(123)  
+# blue parrotfish
+coer_train_index <- sample(seq_len(nrow(coer)), size = floor(0.70*nrow(coer)))  
+coer_train <- coer[coer_train_index,] 
+coer_test <- coer[-coer_train_index,]  
+# midnight parrotfish
+coel_train_index = sample(seq_len(nrow(coel)), size = floor(0.70*nrow(coel)))  
+coel_train = coel[coel_train_index,] 
+coel_test = coel[-coel_train_index,]
+# rainbow parrotfish
+guac_train_index = sample(seq_len(nrow(guac)), size = floor(0.70*nrow(guac)))  
+guac_train = guac[guac_train_index,] 
+guac_test = guac[-guac_train_index,]
+# herbivore functional group
+herb_train_index = sample(seq_len(nrow(herb)), size = floor(0.70*nrow(herb)))  
+herb_train = herb[herb_train_index,] 
+herb_test = herb[-herb_train_index,]
+# gray snapper
+gris_train_index = sample(seq_len(nrow(gris)), size = floor(0.70*nrow(gris)))  
+gris_train = gris[gris_train_index,] 
+gris_test = gris[-gris_train_index,]
+# bluestriped grunt
+sciu_train_index = sample(seq_len(nrow(sciu)), size = floor(0.70*nrow(sciu)))  
+sciu_train = sciu[sciu_train_index,] 
+sciu_test = sciu[-sciu_train_index,]
+# invertivore functional group
+invert_train_index = sample(seq_len(nrow(invert)), size = floor(0.70*nrow(invert)))  
+invert_train = invert[invert_train_index,] 
+invert_test = invert[-invert_train_index,]
+
 
 
 # Write out Datasets ------------------------------------------------------
 
-write.csv(density_scarus, paste0(species_wd, "Density_Scarus.csv"))
-write.csv(density_juvenile, paste0(species_wd, "Density_Juvenile.csv"))
-write.csv(density_subadult, paste0(species_wd, "Density_Sub-adult.csv"))
-write.csv(density_adult, paste0(species_wd, "Density_Adult.csv"))
 
-write.csv(pa_scarus, paste0(species_wd, "PA_Scarus.csv"))
-write.csv(pa_juvenile, paste0(species_wd, "PA_Juvenile.csv"))
-write.csv(pa_subadult, paste0(species_wd, "PA_Sub-adult.csv"))
-write.csv(pa_adult, paste0(species_wd, "PA_Adult.csv"))
-
-write.csv(pres_scarus, paste0(species_wd, "Presence_Scarus.csv"))
-write.csv(pres_juvenile, paste0(species_wd, "Presence_Juvenile.csv"))
-write.csv(pres_subadult, paste0(species_wd, "Presence_Sub-adult.csv"))
-write.csv(pres_adult, paste0(species_wd, "Presence_Adult.csv"))
-
-write.csv(pres_scarus_coer, paste0(species_wd, "Presence_Scarus_COER.csv"))
-write.csv(pres_juvenile_coer, paste0(species_wd, "Presence_Juvenile_COER.csv"))
-write.csv(pres_subadult_coer, paste0(species_wd, "Presence_Sub-adult_COER.csv"))
-write.csv(pres_adult_coer, paste0(species_wd, "Presence_Adult_COER.csv"))
-
-write.csv(pres_scarus_coel, paste0(species_wd, "Presence_Scarus_COEL.csv"))
-write.csv(pres_juvenile_coel, paste0(species_wd, "Presence_Juvenile_COEL.csv"))
-write.csv(pres_subadult_coel, paste0(species_wd, "Presence_Sub-adult_COEL.csv"))
-write.csv(pres_adult_coel, paste0(species_wd, "Presence_Adult_COEL.csv"))
-
-write.csv(pres_scarus_guac, paste0(species_wd, "Presence_Scarus_GUAC.csv"))
-write.csv(pres_juvenile_guac, paste0(species_wd, "Presence_Juvenile_GUAC.csv"))
-write.csv(pres_subadult_guac, paste0(species_wd, "Presence_Sub-adult_GUAC.csv"))
-write.csv(pres_adult_guac, paste0(species_wd, "Presence_Adult_GUAC.csv")) 
+# Midnight parrotfish
+write_csv(coel_train, here("Final_Data","Species_Training","Midnight_Parrotfish_PO_Train.csv")
+          , append = F)
+write_csv(coel_test, here("Final_Data","Species_Testing","Midnight_Parrotfish_PO_Test.csv")
+          , append = F)
+# Blue parrotfish
+write_csv(coer_train, here("Final_Data","Species_Training","Blue_Parrotfish_PO_Train.csv")
+          , append = F)
+write_csv(coer_test, here("Final_Data","Species_Testing","Blue_Parrotfish_PO_Test.csv")
+          , append = F)
+# Rainbow parrotfish
+write_csv(guac_train, here("Final_Data","Species_Training","Rainbow_Parrotfish_PO_Train.csv")
+          , append = F)
+write_csv(guac_test, here("Final_Data","Species_Testing","Rainbow_Parrotfish_PO_Test.csv")
+          , append = F)
+# Gray Snapper
+write_csv(gris_train, here("Final_Data","Species_Training","Gray_Snapper_PO_Train.csv")
+          , append = F)
+write_csv(gris_test, here("Final_Data","Species_Testing","Gray_Snapper_PO_Test.csv")
+          , append = F)
+# Bluestriped Grunt
+write_csv(sciu_train, here("Final_Data","Species_Training","Bluestriped_Grunt_PO_Train.csv")
+          , append = F)
+write_csv(sciu_test, here("Final_Data","Species_Testing","Bluestriped_Grunt_PO_Test.csv")
+          , append = F)
+# Herbivores
+write_csv(herb_train, here("Final_Data","Species_Training","Herbivores_PO_Train.csv")
+          , append = F)
+write_csv(herb_test, here("Final_Data","Species_Testing","Herbivores_PO_Test.csv")
+          , append = F)
+# Invertivores
+write_csv(invert_train, here("Final_Data","Species_Training","Invertivores_PO_Train.csv")
+          , append = F)
+write_csv(invert_test, here("Final_Data","Species_Testing","Invertivores_PO_Test.csv")
+          , append = F)
