@@ -251,3 +251,137 @@ var_temp <- read.csv(here("Intermediate_Data","Water_Quality","temp_var.csv"))
 # clean up
 rm(final_aves_do, final_aves_sal, final_aves_temp, final_var_do, final_var_sal, final_var_temp)
 
+
+
+# Beginning of Spatial Interpolation Process ------------------------------
+
+
+library(gstat)
+library(sp)
+
+# convert dataframes to SPDF for correlograms and variogram modeling
+# (Spatial Points Data Frame)
+sal_ave_sp <- aves_sal %>% st_drop_geometry()
+coordinates(sal_ave_sp) <- ~ LON_M + LAT_M
+proj4string(sal_ave_sp) <- new_crs
+summary(sal_ave_sp)
+
+temp_ave_sp <- aves_temp %>% st_drop_geometry()
+coordinates(temp_ave_sp) <- ~ LON_M + LAT_M
+proj4string(temp_ave_sp) <- new_crs
+summary(temp_ave_sp)
+
+do_ave_sp <- aves_do %>% st_drop_geometry()
+coordinates(do_ave_sp) <- ~ LON_M + LAT_M
+proj4string(do_ave_sp) <- new_crs
+summary(do_ave_sp)
+
+sal_var_sp <- var_sal %>% st_drop_geometry()
+coordinates(sal_var_sp) <- ~ LON_M + LAT_M
+proj4string(sal_var_sp) <- new_crs
+summary(sal_var_sp)
+
+temp_var_sp <- var_temp %>% st_drop_geometry()
+coordinates(temp_var_sp) <- ~ LON_M + LAT_M
+proj4string(temp_var_sp) <- new_crs
+summary(temp_var_sp)
+
+do_var_sp <- var_do %>% st_drop_geometry()
+coordinates(do_var_sp) <- ~ LON_M + LAT_M
+proj4string(do_var_sp) <- new_crs
+summary(do_var_sp)
+
+
+### AVE TEMP ###
+
+# check out summary plots - they are pretty Gaussian! 
+hist(temp_ave_sp$AVE_TEMP, nclass=10)
+plot(ecdf(temp_ave_sp$AVE_TEMP))
+
+# set colour thresholds
+# cuts <- c() idk how he chose these values
+
+# bubble plot
+bubble(temp_ave_sp, "AVE_TEMP", fill = F, maxsize = 2, identify = F)
+
+# spatial point plot
+spplot(temp_ave_sp, "AVE_TEMP") # can add: cuts = cuts to choose colour groups
+
+## CORRELOGRAMS & MORAN'S I VALUE ##
+
+# look at correlograms and Moran's I value to ensure there is spatial dependence
+tempave_coords <- cbind(temp_ave_sp$LON_M, temp_ave_sp$LAT_M)
+colnames(tempave_coords) <- c("LON_M","LAT_M")
+tempave_distmat <- as.matrix(dist(tempave_coords))
+tempave_maxdist <- 2/3 * max(tempave_distmat) # max distance to consider
+
+# spline correlograms with 95% pointwise bootstrap CIs
+tempave_corr <- spline.correlog(x = temp_ave_sp$LON_M, y = temp_ave_sp$LAT_M, z = temp_ave_sp$AVE_TEMP,
+                                xmax = tempave_maxdist, resamp = 100, type = "boot")
+ 
+# neighbourhood list (neighbours within 16 km so every site has >=1 neighbour)
+tempave_neigh <- dnearneigh(x = tempave_coords, d1 = 0, d2 = 16000, longlat = F)
+plot(tempave_neigh, coordinates(tempave_coords))
+
+# weights matrix for calculating Moran's I value
+tempave_wts <- nb2listw(neighbours = tempave_neigh, style = "W", zero.policy = T)
+
+# Moran's I test under assumption of normality 
+moran.test(temp_ave_sp$AVE_TEMP, listw = tempave_wts, randomisation = F, zero.policy = T)
+# results: Moran's I stat = 0.444684, p < 2.2e-16 --> sig. spatial dependence
+
+# Moran's I with Monte Carlo permutations
+moran.mc(temp_ave_sp$AVE_TEMP, listw = tempave_wts, nsim = 1000, zero.policy = T)
+# results: Moran's I stat = 0.444680, p = 0.00111 --> sig. spatial dependence
+
+# based on Moran's I results we can move on to...
+# variogram modeling to capture spatial structure(s) of temp correlation
+require(gstat)
+
+# empirical variogram
+tempave_evgm <- variogram(AVE_TEMP ~ 1, temp_ave_sp, cutoff = tempave_maxdist)
+plot(tempave_evgm, xlab = "Distance (m)", pch = 19)
+
+# fit variogram
+tempave_fvgm <- fit.variogram(tempave_evgm, vgm(psill=0.6, model="Sph", range=150000, nugget=0))
+tempave_svgm_plot <- plot(tempave_evgm, model = tempave_fvgm, xlab = "Distance (m)", pch = 19)
+tempave_svgm_plot
+print(tempave_fvgm)
+
+# clean up
+rm(aves_do, aves_sal, aves_temp, var_do, var_sal, var_temp, cl, domain, domain_rast, tempave_coords, 
+   tempave_corr, tempave_distmat, tempave_maxdist, tempave_neigh, tempave_wts,
+   tempave_evgm, tempave_svgm_plot)
+
+
+
+# Kriging Interpolation ---------------------------------------------------
+
+
+# make a grid based off of the study region raster
+library(raster)
+domain_rast <- raster(here::here("Final_Data","Study_Region.tif"))
+grid <- domain_rast*0
+grid
+grid <- grid %>% as(., "SpatialPixels")
+proj4string(grid) = proj4string(new_crs)
+grid
+
+# initiate cluster and divide prediction grid for cores
+library(parallel)
+n_cores <- 10
+cl <- makeCluster(n_cores)
+parts <- split(x = 1:length(grid), f = 1:n_cores)
+stopCluster(cl)
+
+### TEMP AVE ###
+
+cl <- makeCluster(n_cores)
+clusterExport(cl = cl, varlist = c("temp_ave_sp", "grid", "parts", "tempave_fvgm"),
+              envir = .GlobalEnv)
+clusterEvalQ(cl = cl, expr = c(library('sp'), library('gstat')))
+tempave_par <- parLapply(cl = cl, X = 1:n_cores, fun = function(x)
+  krige(formula = AVE_TEMP ~ 1, locations = temp_ave_sp, 
+        newdata = grid[parts[[x]],], model = tempave_fvgm))
+stopCluster(cl)
+showConnections()
