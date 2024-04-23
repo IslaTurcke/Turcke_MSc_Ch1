@@ -29,9 +29,11 @@
 library(easypackages) ### gdalUtils is not available for this version of R ###
 
 install_packages("tidyr", "rgdal", "gdalUtils", "sf", "terra", "tidyverse", 
-                 "PNWColors", "tibble", "readxl", "dplyr", "conflicted", "ncf", "spdep")
+                 "PNWColors", "tibble", "readxl", "dplyr", "conflicted", "ncf", 
+                 "spdep", "maptools")
 libraries("here", "tidyr", "rgdal", "gdalUtils", "sf", "terra", "tidyverse", 
-          "PNWColors", "tibble", "readxl", "dplyr", "conflicted", "ncf", "spdep") 
+          "PNWColors", "tibble", "readxl", "dplyr", "conflicted", "ncf", 
+          "spdep", "maptools") 
 conflict_prefer("select", "dplyr")
 conflict_prefer("filter", "dplyr")
 conflicted::conflict_prefer("xlim", "spex")
@@ -362,10 +364,12 @@ rm(aves_do, aves_sal, aves_temp, var_do, var_sal, var_temp, cl, domain, domain_r
 library(raster)
 domain_rast <- raster(here::here("Final_Data","Study_Region.tif"))
 grid <- domain_rast*0
-grid
+crs(grid) <- new_crs
+plot(grid)
 grid <- grid %>% as(., "SpatialPixels")
-proj4string(grid) = proj4string(new_crs)
-grid
+proj4string(grid) == proj4string(temp_ave_sp)
+summary(grid)
+rm(domain_rast)
 
 # initiate cluster and divide prediction grid for cores
 library(parallel)
@@ -385,3 +389,39 @@ tempave_par <- parLapply(cl = cl, X = 1:n_cores, fun = function(x)
         newdata = grid[parts[[x]],], model = tempave_fvgm))
 stopCluster(cl)
 showConnections()
+
+# combine the resulting part from each parallel core
+tempave_merge <- rbind(tempave_par[[1]], tempave_par[[2]])
+for (j in 3:length(tempave_par)) {
+  tempave_merge <- rbind(tempave_merge, tempave_par[[j]])
+}
+tempave_terra <- terra::rast(tempave_merge["var1.pred"])
+summary(tempave_terra)
+
+# save new surface as a .tif 
+writeRaster(tempave_terra, filename = here("Final_Data","Temperature_Ave.tif"),
+            overwrite = T)
+
+# clean up 
+rm(cl, domain_terra, tempave_fvgm, tempave_merge, tempave_par)
+
+
+
+# Plotting to Inspect the Interpolation -----------------------------------
+
+
+### AVE TEMP ###
+
+# plot study region with interpolated data's domain
+# note: interpolated extent is slightly smaller than study region extent 
+domain_terra <- rast(here("Final_Data", "Study_Region.tif"))
+terra::plot(domain_terra)
+terra::polys(terra::ext(tempave_terra), col = NA, border = "red")
+
+# plot interpolated temperature raster under observed values
+terra::plot(domain_terra, col = "purple")
+terra::plot(tempave_terra, add = T)
+tempave_points <- vect(temp_ave_sp)
+terra::plot(tempave_points, col = tempave_points$AVE_TEMP, legend = T, add = T)
+
+
