@@ -56,9 +56,6 @@ us_ft <- crs("+init=epsg:2236")
 # EPSG:3857 WGS 84 / Pseudo-Mercator
 bb_crs <- crs("+init=epsg:3857")
 
-# import study domain shapefile
-domain <- vect(here("Final_Data","Study_Region.shp"))
-
 
 
 # Initial Prep - Water Quality Monitoring Network ----------------------------
@@ -293,23 +290,22 @@ coordinates(do_var_sp) <- ~ LON_M + LAT_M
 proj4string(do_var_sp) <- new_crs
 summary(do_var_sp)
 
+# clean up
+rm(aves_temp, aves_sal, aves_do, var_temp, var_sal, var_do)
 
-### AVE TEMP ###
+
+
+# Correlograms and Moran's I ----------------------------------------------
+
+
+### AVERAGE TEMP ###
 
 # check out summary plots - they are pretty Gaussian! 
 hist(temp_ave_sp$AVE_TEMP, nclass=10)
 plot(ecdf(temp_ave_sp$AVE_TEMP))
 
-# set colour thresholds
-# cuts <- c() idk how he chose these values
-
-# bubble plot
-bubble(temp_ave_sp, "AVE_TEMP", fill = F, maxsize = 2, identify = F)
-
 # spatial point plot
 spplot(temp_ave_sp, "AVE_TEMP") # can add: cuts = cuts to choose colour groups
-
-## CORRELOGRAMS & MORAN'S I VALUE ##
 
 # look at correlograms and Moran's I value to ensure there is spatial dependence
 tempave_coords <- cbind(temp_ave_sp$LON_M, temp_ave_sp$LAT_M)
@@ -351,9 +347,263 @@ tempave_svgm_plot
 print(tempave_fvgm)
 
 # clean up
-rm(aves_do, aves_sal, aves_temp, var_do, var_sal, var_temp, cl, domain, domain_rast, tempave_coords, 
-   tempave_corr, tempave_distmat, tempave_maxdist, tempave_neigh, tempave_wts,
-   tempave_evgm, tempave_svgm_plot)
+rm(tempave_coords, tempave_corr, tempave_distmat, tempave_maxdist, tempave_neigh, 
+   tempave_wts, tempave_evgm)
+
+### AVERAGE SALINITY ###
+
+# check out summary plots - they are NOT very Gaussian! 
+hist(sal_ave_sp$AVE_SAL, nclass=10)
+plot(ecdf(sal_ave_sp$AVE_SAL))
+
+# spatial point plot
+spplot(sal_ave_sp, "AVE_SAL") # can add: cuts = cuts to choose colour groups
+
+# look at correlograms and Moran's I value to ensure there is spatial dependence
+salave_coords <- cbind(sal_ave_sp$LON_M, sal_ave_sp$LAT_M)
+colnames(salave_coords) <- c("LON_M","LAT_M")
+salave_distmat <- as.matrix(dist(salave_coords))
+salave_maxdist <- 2/3 * max(salave_distmat) # max distance to consider
+
+# spline correlograms with 95% pointwise bootstrap CIs
+salave_corr <- spline.correlog(x = sal_ave_sp$LON_M, y = sal_ave_sp$LAT_M, z = sal_ave_sp$AVE_SAL,
+                                xmax = salave_maxdist, resamp = 100, type = "boot")
+
+# neighbourhood list (neighbours within 16 km so every site has >=1 neighbour)
+salave_neigh <- dnearneigh(x = salave_coords, d1 = 0, d2 = 16000, longlat = F)
+plot(salave_neigh, coordinates(salave_coords))
+
+# weights matrix for calculating Moran's I value
+salave_wts <- nb2listw(neighbours = salave_neigh, style = "W", zero.policy = T)
+
+# Moran's I test under assumption of normality 
+moran.test(sal_ave_sp$AVE_SAL, listw = salave_wts, randomisation = F, zero.policy = T)
+# results: Moran's I stat = 0.452918, p < 2.2e-16 --> sig. spatial dependence
+
+# Moran's I with Monte Carlo permutations
+moran.mc(sal_ave_sp$AVE_SAL, listw = salave_wts, nsim = 1000, zero.policy = T)
+# results: Moran's I stat = 0.45292, p = 0.000999 --> sig. spatial dependence
+
+# based on Moran's I results we can move on to...
+# variogram modeling to capture spatial structure(s) of sal correlation
+
+# empirical variogram
+salave_evgm <- variogram(AVE_SAL ~ 1, sal_ave_sp, cutoff = salave_maxdist)
+plot(salave_evgm, xlab = "Distance (m)", pch = 19)
+
+# fit variogram
+salave_fvgm <- fit.variogram(salave_evgm, vgm(psill=6, model="Sph", range=150000, nugget=0))
+salave_svgm_plot <- plot(salave_evgm, model = salave_fvgm, xlab = "Distance (m)", pch = 19)
+salave_svgm_plot
+print(salave_fvgm)
+
+# clean up
+rm(salave_coords, salave_corr, salave_distmat, salave_maxdist, salave_neigh, 
+   salave_wts, salave_evgm)
+
+### AVERAGE DISSOLVED OXYGEN ###
+
+# check out summary plots - they are somewhat Gaussian... 
+hist(do_ave_sp$AVE_DO, nclass=10)
+plot(ecdf(do_ave_sp$AVE_DO))
+
+# spatial point plot
+spplot(do_ave_sp, "AVE_DO") # can add: cuts = cuts to choose colour groups
+
+# look at correlograms and Moran's I value to ensure there is spatial dependence
+doave_coords <- cbind(do_ave_sp$LON_M, do_ave_sp$LAT_M)
+colnames(doave_coords) <- c("LON_M","LAT_M")
+doave_distmat <- as.matrix(dist(doave_coords))
+doave_maxdist <- 2/3 * max(doave_distmat) # max distance to consider
+
+# spline correlograms with 95% pointwise bootstrap CIs
+doave_corr <- spline.correlog(x = do_ave_sp$LON_M, y = do_ave_sp$LAT_M, z = do_ave_sp$AVE_DO,
+                                xmax = doave_maxdist, resamp = 100, type = "boot")
+
+# neighbourhood list (neighbours within 16 km so every site has >=1 neighbour)
+doave_neigh <- dnearneigh(x = doave_coords, d1 = 0, d2 = 16000, longlat = F)
+plot(doave_neigh, coordinates(doave_coords))
+
+# weights matrix for calculating Moran's I value
+doave_wts <- nb2listw(neighbours = doave_neigh, style = "W", zero.policy = T)
+
+# Moran's I test under assumption of normality 
+moran.test(do_ave_sp$AVE_DO, listw = doave_wts, randomisation = F, zero.policy = T)
+# results: Moran's I stat = 0.198228, p = 1.445e-11 --> sig. spatial dependence
+
+# Moran's I with Monte Carlo permutations
+moran.mc(do_ave_sp$AVE_DO, listw = doave_wts, nsim = 1000, zero.policy = T)
+# results: Moran's I stat = 0.19823, p = 0.000999 --> sig. spatial dependence
+
+# based on Moran's I results we can move on to...
+# variogram modeling to capture spatial structure(s) of do correlation
+
+# empirical variogram
+doave_evgm <- variogram(AVE_DO ~ 1, do_ave_sp, cutoff = doave_maxdist)
+plot(doave_evgm, xlab = "Distance (m)", pch = 19)
+
+# fit variogram
+doave_fvgm <- fit.variogram(doave_evgm, vgm(psill=0.06, model = "Sph", range=10000, nugget=0.05))
+doave_svgm_plot <- plot(doave_evgm, model = doave_fvgm, xlab = "Distance (m)", pch = 19)
+doave_svgm_plot
+print(doave_fvgm)
+
+# clean up
+rm(doave_coords, doave_corr, doave_distmat, doave_maxdist, doave_neigh, 
+   doave_wts, doave_evgm)
+
+### VARIANCE IN TEMP ###
+
+# check out summary plots - they are somewhat Gaussian...
+hist(temp_var_sp$VAR_TEMP, nclass=10)
+plot(ecdf(temp_var_sp$VAR_TEMP))
+
+# spatial point plot
+spplot(temp_var_sp, "VAR_TEMP") # can add: cuts = cuts to choose colour groups
+
+# look at correlograms and Moran's I value to ensure there is spatial dependence
+tempvar_coords <- cbind(temp_var_sp$LON_M, temp_var_sp$LAT_M)
+colnames(tempvar_coords) <- c("LON_M","LAT_M")
+tempvar_distmat <- as.matrix(dist(tempvar_coords))
+tempvar_maxdist <- 2/3 * max(tempvar_distmat) # max distance to consider
+
+# spline correlograms with 95% pointwise bootstrap CIs
+tempvar_corr <- spline.correlog(x = temp_var_sp$LON_M, y = temp_var_sp$LAT_M, z = temp_var_sp$VAR_TEMP,
+                                xmax = tempvar_maxdist, resamp = 100, type = "boot")
+
+# neighbourhood list (neighbours within 16 km so every site has >=1 neighbour)
+tempvar_neigh <- dnearneigh(x = tempvar_coords, d1 = 0, d2 = 16000, longlat = F)
+plot(tempvar_neigh, coordinates(tempvar_coords))
+
+# weights matrix for calculating Moran's I value
+tempvar_wts <- nb2listw(neighbours = tempvar_neigh, style = "W", zero.policy = T)
+
+# Moran's I test under assumption of normality 
+moran.test(temp_var_sp$VAR_TEMP, listw = tempvar_wts, randomisation = F, zero.policy = T)
+# results: Moran's I stat = 0.359817, p < 2.2e-16 --> sig. spatial dependence
+
+# Moran's I with Monte Carlo permutations
+moran.mc(temp_var_sp$VAR_TEMP, listw = tempvar_wts, nsim = 1000, zero.policy = T)
+# results: Moran's I stat = 0.35982, p = 0.000999 --> sig. spatial dependence
+
+# based on Moran's I results we can move on to...
+# variogram modeling to capture spatial structure(s) of temp correlation
+
+# empirical variogram
+tempvar_evgm <- variogram(VAR_TEMP ~ 1, temp_var_sp, cutoff = tempvar_maxdist)
+plot(tempvar_evgm, xlab = "Distance (m)", pch = 19)
+
+# fit variogram
+tempvar_fvgm <- fit.variogram(tempvar_evgm, vgm(psill=15, model="Sph", range=50000, nugget=3))
+tempvar_svgm_plot <- plot(tempvar_evgm, model = tempvar_fvgm, xlab = "Distance (m)", pch = 19)
+tempvar_svgm_plot
+print(tempvar_fvgm)
+
+# clean up
+rm(tempvar_coords, tempvar_corr, tempvar_distmat, tempvar_maxdist, tempvar_neigh, 
+   tempvar_wts, tempvar_evgm)
+
+### VARIANCE IN SALINITY ###
+
+# check out summary plots - they are NOT AT ALL Gaussian! 
+hist(sal_var_sp$VAR_SAL, nclass=10)
+plot(ecdf(sal_var_sp$VAR_SAL))
+
+# spatial point plot
+spplot(sal_var_sp, "VAR_SAL") # can add: cuts = cuts to choose colour groups
+
+# look at correlograms and Moran's I value to ensure there is spatial dependence
+salvar_coords <- cbind(sal_var_sp$LON_M, sal_var_sp$LAT_M)
+colnames(salvar_coords) <- c("LON_M","LAT_M")
+salvar_distmat <- as.matrix(dist(salvar_coords))
+salvar_maxdist <- 2/3 * max(salvar_distmat) # max distance to consider
+
+# spline correlograms with 95% pointwise bootstrap CIs
+salvar_corr <- spline.correlog(x = sal_var_sp$LON_M, y = sal_var_sp$LAT_M, z = sal_var_sp$VAR_SAL,
+                               xmax = salvar_maxdist, resamp = 100, type = "boot")
+
+# neighbourhood list (neighbours within 16 km so every site has >=1 neighbour)
+salvar_neigh <- dnearneigh(x = salvar_coords, d1 = 0, d2 = 16000, longlat = F)
+plot(salvar_neigh, coordinates(salvar_coords))
+
+# weights matrix for calculating Moran's I value
+salvar_wts <- nb2listw(neighbours = salvar_neigh, style = "W", zero.policy = T)
+
+# Moran's I test under assumption of normality 
+moran.test(sal_var_sp$VAR_SAL, listw = salvar_wts, randomisation = F, zero.policy = T)
+# results: Moran's I stat = 0.337261, p < 2.2e-16 --> sig. spatial dependence
+
+# Moran's I with Monte Carlo permutations
+moran.mc(sal_var_sp$VAR_SAL, listw = salvar_wts, nsim = 1000, zero.policy = T)
+# results: Moran's I stat = 0.33726, p = 0.000999 --> sig. spatial dependence
+
+# based on Moran's I results we can move on to...
+# variogram modeling to capture spatial structure(s) of sal correlation
+
+# empirical variogram
+salvar_evgm <- variogram(VAR_SAL ~ 1, sal_var_sp, cutoff = salvar_maxdist)
+plot(salvar_evgm, xlab = "Distance (m)", pch = 19)
+
+# fit variogram
+salvar_fvgm <- fit.variogram(salvar_evgm, vgm(psill=50, model="Sph", range=10000, nugget=50))
+salvar_svgm_plot <- plot(salvar_evgm, model = salvar_fvgm, xlab = "Distance (m)", pch = 19)
+salvar_svgm_plot
+print(salvar_fvgm)
+
+# clean up
+rm(salvar_coords, salvar_corr, salvar_distmat, salvar_maxdist, salvar_neigh, 
+   salvar_wts, salvar_evgm)
+
+### VARIANCE IN DISSOLVED OXYGEN ###
+
+# check out summary plots - they are NOT AT ALL Gaussian! 
+hist(do_var_sp$VAR_DO, nclass=10)
+plot(ecdf(do_var_sp$VAR_DO))
+
+# spatial point plot
+spplot(do_var_sp, "VAR_DO") # can add: cuts = cuts to choose colour groups
+
+# look at correlograms and Moran's I value to ensure there is spatial dependence
+dovar_coords <- cbind(do_var_sp$LON_M, do_var_sp$LAT_M)
+colnames(dovar_coords) <- c("LON_M","LAT_M")
+dovar_distmat <- as.matrix(dist(dovar_coords))
+dovar_maxdist <- 2/3 * max(dovar_distmat) # max distance to consider
+
+# spline correlograms with 95% pointwise bootstrap CIs
+dovar_corr <- spline.correlog(x = do_var_sp$LON_M, y = do_var_sp$LAT_M, z = do_var_sp$VAR_DO,
+                              xmax = dovar_maxdist, resamp = 100, type = "boot")
+
+# neighbourhood list (neighbours within 16 km so every site has >=1 neighbour)
+dovar_neigh <- dnearneigh(x = dovar_coords, d1 = 0, d2 = 16000, longlat = F)
+plot(dovar_neigh, coordinates(dovar_coords))
+
+# weights matrix for calculating Moran's I value
+dovar_wts <- nb2listw(neighbours = dovar_neigh, style = "W", zero.policy = T)
+
+# Moran's I test under assumption of normality 
+moran.test(do_var_sp$VAR_DO, listw = dovar_wts, randomisation = F, zero.policy = T)
+# results: Moran's I stat = 0.392182, p < 2.2e-16 --> sig. spatial dependence
+
+# Moran's I with Monte Carlo permutations
+moran.mc(do_var_sp$VAR_DO, listw = dovar_wts, nsim = 1000, zero.policy = T)
+# results: Moran's I stat = 0.39218, p = 0.000999 --> sig. spatial dependence
+
+# based on Moran's I results we can move on to...
+# variogram modeling to capture spatial structure(s) of do correlation
+
+# empirical variogram
+dovar_evgm <- variogram(VAR_DO ~ 1, do_var_sp, cutoff = dovar_maxdist)
+plot(dovar_evgm, xlab = "Distance (m)", pch = 19)
+
+# fit variogram
+dovar_fvgm <- fit.variogram(dovar_evgm, vgm(psill=0.3, model="Sph", range=1e10, nugget=0.45))
+dovar_svgm_plot <- plot(dovar_evgm, model = dovar_fvgm, xlab = "Distance (m)", pch = 19)
+dovar_svgm_plot
+print(dovar_fvgm)
+
+# clean up
+rm(dovar_coords, dovar_corr, dovar_distmat, dovar_maxdist, dovar_neigh, 
+   dovar_wts, dovar_evgm)
 
 
 
@@ -378,7 +628,7 @@ cl <- makeCluster(n_cores)
 parts <- split(x = 1:length(grid), f = 1:n_cores)
 stopCluster(cl)
 
-### TEMP AVE ###
+### AVERAGE TEMP ###
 
 cl <- makeCluster(n_cores)
 clusterExport(cl = cl, varlist = c("temp_ave_sp", "grid", "parts", "tempave_fvgm"),
@@ -403,7 +653,143 @@ writeRaster(tempave_terra, filename = here("Final_Data","Temperature_Ave.tif"),
             overwrite = T)
 
 # clean up 
-rm(cl, domain_terra, tempave_fvgm, tempave_merge, tempave_par)
+rm(cl, tempave_fvgm, tempave_merge, tempave_par)
+
+### AVERAGE SALINITY ###
+
+cl = makeCluster(n_cores)
+clusterExport(cl = cl, varlist = c("sal_ave_sp", "grid", "parts", "salave_fvgm"),
+              envir = .GlobalEnv)
+clusterEvalQ(cl = cl, expr = c(library('sp'), library('gstat')))
+salave_par <- parLapply(cl = cl, X = 1:n_cores, fun = function(x)
+  krige(formula = AVE_SAL ~ 1, locations = sal_ave_sp, 
+        newdata = grid[parts[[x]],], model = salave_fvgm))
+stopCluster(cl)
+showConnections()
+
+# combine the resulting part from each parallel core
+salave_merge <- rbind(salave_par[[1]], salave_par[[2]])
+for (j in 3:length(salave_par)) {
+  salave_merge <- rbind(salave_merge, salave_par[[j]])
+}
+salave_terra <- terra::rast(salave_merge["var1.pred"])
+summary(salave_terra)
+
+# save new surface as a .tif 
+writeRaster(salave_terra, filename = here("Final_Data","Salinity_Ave.tif"),
+            overwrite = T)
+
+# clean up 
+rm(cl, salave_fvgm, salave_merge, salave_par)
+
+
+### AVERAGE DISSOLVED OXYGEN ###
+
+cl = makeCluster(n_cores)
+clusterExport(cl = cl, varlist = c("do_ave_sp", "grid", "parts", "doave_fvgm"),
+              envir = .GlobalEnv)
+clusterEvalQ(cl = cl, expr = c(library('sp'), library('gstat')))
+doave_par <- parLapply(cl = cl, X = 1:n_cores, fun = function(x)
+  krige(formula = AVE_DO ~ 1, locations = do_ave_sp, 
+        newdata = grid[parts[[x]],], model = doave_fvgm))
+stopCluster(cl)
+showConnections()
+
+# combine the resulting part from each parallel core
+doave_merge <- rbind(doave_par[[1]], doave_par[[2]])
+for (j in 3:length(doave_par)) {
+  doave_merge <- rbind(doave_merge, doave_par[[j]])
+}
+doave_terra <- terra::rast(doave_merge["var1.pred"])
+summary(doave_terra)
+
+# save new surface as a .tif 
+writeRaster(doave_terra, filename = here("Final_Data","Dissolved_Oxygen_Ave.tif"),
+            overwrite = T)
+
+# clean up 
+rm(cl, doave_fvgm, doave_merge, doave_par)
+
+### VARIANCE IN TEMP ###
+
+cl = makeCluster(n_cores)
+clusterExport(cl = cl, varlist = c("temp_var_sp", "grid", "parts", "tempvar_fvgm"),
+              envir = .GlobalEnv)
+clusterEvalQ(cl = cl, expr = c(library('sp'), library('gstat')))
+tempvar_par <- parLapply(cl = cl, X = 1:n_cores, fun = function(x)
+  krige(formula = VAR_TEMP ~ 1, locations = temp_var_sp, 
+        newdata = grid[parts[[x]],], model = tempvar_fvgm))
+stopCluster(cl)
+showConnections()
+
+# combine the resulting part from each parallel core
+tempvar_merge <- rbind(tempvar_par[[1]], tempvar_par[[2]])
+for (j in 3:length(tempvar_par)) {
+  tempvar_merge <- rbind(tempvar_merge, tempvar_par[[j]])
+}
+tempvar_terra <- terra::rast(tempvar_merge["var1.pred"])
+summary(tempvar_terra)
+
+# svar new surface as a .tif 
+writeRaster(tempvar_terra, filename = here("Final_Data","Temperature_Var.tif"),
+            overwrite = T)
+
+# clean up 
+rm(cl, tempvar_fvgm, tempvar_merge, tempvar_par)
+
+### VARIANCE IN SALINITY ###
+
+cl = makeCluster(n_cores)
+clusterExport(cl = cl, varlist = c("sal_var_sp", "grid", "parts", "salvar_fvgm"),
+              envir = .GlobalEnv)
+clusterEvalQ(cl = cl, expr = c(library('sp'), library('gstat')))
+salvar_par <- parLapply(cl = cl, X = 1:n_cores, fun = function(x)
+  krige(formula = VAR_SAL ~ 1, locations = sal_var_sp, 
+        newdata = grid[parts[[x]],], model = salvar_fvgm))
+stopCluster(cl)
+showConnections()
+
+# combine the resulting part from each parallel core
+salvar_merge <- rbind(salvar_par[[1]], salvar_par[[2]])
+for (j in 3:length(salvar_par)) {
+  salvar_merge <- rbind(salvar_merge, salvar_par[[j]])
+}
+salvar_terra <- terra::rast(salvar_merge["var1.pred"])
+summary(salvar_terra)
+
+# svar new surface as a .tif 
+writeRaster(salvar_terra, filename = here("Final_Data","Salinity_Var.tif"),
+            overwrite = T)
+
+# clean up 
+rm(cl, salvar_fvgm, salvar_merge, salvar_par)
+
+### VARIANCE IN DISSOLVED OXYGEN ###
+
+cl = makeCluster(n_cores)
+clusterExport(cl = cl, varlist = c("do_var_sp", "grid", "parts", "dovar_fvgm"),
+              envir = .GlobalEnv)
+clusterEvalQ(cl = cl, expr = c(library('sp'), library('gstat')))
+dovar_par <- parLapply(cl = cl, X = 1:n_cores, fun = function(x)
+  krige(formula = VAR_DO ~ 1, locations = do_var_sp, 
+        newdata = grid[parts[[x]],], model = dovar_fvgm))
+stopCluster(cl)
+showConnections()
+
+# combine the resulting part from each parallel core
+dovar_merge <- rbind(dovar_par[[1]], dovar_par[[2]])
+for (j in 3:length(dovar_par)) {
+  dovar_merge <- rbind(dovar_merge, dovar_par[[j]])
+}
+dovar_terra <- terra::rast(dovar_merge["var1.pred"])
+summary(dovar_terra)
+
+# svar new surface as a .tif 
+writeRaster(dovar_terra, filename = here("Final_Data","Dissolved_Oxygen_Var.tif"),
+            overwrite = T)
+
+# clean up 
+rm(cl, dovar_fvgm, dovar_merge, dovar_par)
 
 
 
