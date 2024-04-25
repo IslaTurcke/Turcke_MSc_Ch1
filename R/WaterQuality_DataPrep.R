@@ -28,10 +28,10 @@
 # load packages
 library(easypackages) ### gdalUtils is not available for this version of R ###
 
-install_packages("tidyr", "rgdal", "gdalUtils", "sf", "terra", "tidyverse", 
+install_packages("tidyr", "rgdal", "sf", "terra", "tidyverse", 
                  "PNWColors", "tibble", "readxl", "dplyr", "conflicted", "ncf", 
                  "spdep", "maptools")
-libraries("here", "tidyr", "rgdal", "gdalUtils", "sf", "terra", "tidyverse", 
+libraries("here", "tidyr", "rgdal", "sf", "terra", "tidyverse", 
           "PNWColors", "tibble", "readxl", "dplyr", "conflicted", "ncf", 
           "spdep", "maptools") 
 conflict_prefer("select", "dplyr")
@@ -45,8 +45,6 @@ here::i_am("GitHub_Repositories/MSc_Ch1_DataPrep/R/Occurence_DataPrep.R")
 # save PROJ.4 string for NEW and OLD standard projection 
 # EPSG:6346 NAD 1983 2011 UTM Zone 17N
 new_crs <- crs("+init=epsg:6346")
-# ESPG:26958 NAD 83/Florida East (meters)
-old_crs <- crs("+init=epsg:26958")
 
 # and source data: 
 # EPSG:4326 WGS 84/World Geodetic System 1984 (decdeg)
@@ -653,7 +651,7 @@ writeRaster(tempave_terra, filename = here("Final_Data","Temperature_Ave.tif"),
             overwrite = T)
 
 # clean up 
-rm(cl, tempave_fvgm, tempave_merge, tempave_par)
+rm(cl, tempave_fvgm, tempave_merge, tempave_par, tempave_terra, temp_ave_sp)
 
 ### AVERAGE SALINITY ###
 
@@ -680,7 +678,7 @@ writeRaster(salave_terra, filename = here("Final_Data","Salinity_Ave.tif"),
             overwrite = T)
 
 # clean up 
-rm(cl, salave_fvgm, salave_merge, salave_par)
+rm(cl, salave_fvgm, salave_merge, salave_par, salave_terra, sal_ave_sp)
 
 
 ### AVERAGE DISSOLVED OXYGEN ###
@@ -708,7 +706,7 @@ writeRaster(doave_terra, filename = here("Final_Data","Dissolved_Oxygen_Ave.tif"
             overwrite = T)
 
 # clean up 
-rm(cl, doave_fvgm, doave_merge, doave_par)
+rm(cl, doave_fvgm, doave_merge, doave_par, doave_terra, do_ave_sp)
 
 ### VARIANCE IN TEMP ###
 
@@ -735,7 +733,7 @@ writeRaster(tempvar_terra, filename = here("Final_Data","Temperature_Var.tif"),
             overwrite = T)
 
 # clean up 
-rm(cl, tempvar_fvgm, tempvar_merge, tempvar_par)
+rm(cl, tempvar_fvgm, tempvar_merge, tempvar_par, tempvar_terra, temp_var_sp)
 
 ### VARIANCE IN SALINITY ###
 
@@ -762,7 +760,7 @@ writeRaster(salvar_terra, filename = here("Final_Data","Salinity_Var.tif"),
             overwrite = T)
 
 # clean up 
-rm(cl, salvar_fvgm, salvar_merge, salvar_par)
+rm(cl, salvar_fvgm, salvar_merge, salvar_par, salvar_terra, sal_var_sp)
 
 ### VARIANCE IN DISSOLVED OXYGEN ###
 
@@ -789,7 +787,7 @@ writeRaster(dovar_terra, filename = here("Final_Data","Dissolved_Oxygen_Var.tif"
             overwrite = T)
 
 # clean up 
-rm(cl, dovar_fvgm, dovar_merge, dovar_par)
+rm(cl, dovar_fvgm, dovar_merge, dovar_par, dovar_terra, do_var_sp)
 
 
 
@@ -806,8 +804,8 @@ terra::polys(terra::ext(tempave_terra), col = NA, border = "red")
 
 # plot interpolated temperature raster under observed values
 terra::plot(domain_terra, col = "purple")
-terra::plot(tempave_terra, add = T)
-tempave_points <- vect(temp_ave_sp)
-terra::plot(tempave_points, col = tempave_points$AVE_TEMP, legend = T, add = T)
+terra::plot(salave_terra)
+salave_points <- vect(sal_ave_sp)
+terra::plot(salave_points, col = salave_points$AVE_SAL, legend = T, add = T)
 
 
