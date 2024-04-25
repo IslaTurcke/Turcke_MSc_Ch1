@@ -237,66 +237,47 @@ write_csv(final_var_do, here("Intermediate_Data","Water_Quality","do_var.csv"), 
 write_csv(final_var_sal, here("Intermediate_Data","Water_Quality","sal_var.csv"), append = FALSE)
 write_csv(final_var_temp, here("Intermediate_Data","Water_Quality","temp_var.csv"), append = FALSE) 
 
-# reading in data sets (shortcut for working on next part of script)
-aves_do <- read.csv(here("Intermediate_Data","Water_Quality","do_ave.csv"))
-aves_sal <- read.csv(here("Intermediate_Data","Water_Quality","sal_ave.csv"))
-aves_temp <- read.csv(here("Intermediate_Data","Water_Quality","temp_ave.csv"))
-var_do <- read.csv(here("Intermediate_Data","Water_Quality","do_var.csv"))
-var_sal <- read.csv(here("Intermediate_Data","Water_Quality","sal_var.csv"))
-var_temp <- read.csv(here("Intermediate_Data","Water_Quality","temp_var.csv")) 
-
-# clean up
-rm(final_aves_do, final_aves_sal, final_aves_temp, final_var_do, final_var_sal, final_var_temp)
 
 
-
-# Beginning of Spatial Interpolation Process ------------------------------
+# Grid for Spatial Interpolation ------------------------------------------
 
 
 library(gstat)
 library(sp)
 
-# convert dataframes to SPDF for correlograms and variogram modeling
-# (Spatial Points Data Frame)
-sal_ave_sp <- aves_sal %>% st_drop_geometry()
-coordinates(sal_ave_sp) <- ~ LON_M + LAT_M
-proj4string(sal_ave_sp) <- new_crs
-summary(sal_ave_sp)
+# make a grid based off of the study region raster
+library(raster)
+domain_rast <- raster(here::here("Final_Data","Study_Region.tif"))
+grid <- domain_rast*0
+crs(grid) <- new_crs
+plot(grid)
+grid <- grid %>% as(., "SpatialPixels")
+proj4string(grid) == proj4string(temp_ave_sp)
+summary(grid)
+rm(domain_rast)
 
+# initiate cluster and divide prediction grid for cores
+library(parallel)
+n_cores <- 10
+cl <- makeCluster(n_cores)
+parts <- split(x = 1:length(grid), f = 1:n_cores)
+stopCluster(cl)
+
+# clean up
+rm(domain_rast)
+
+
+
+# AVERAGE TEMPERATURE -----------------------------------------------------
+
+
+### CORRELOGRAMS ###
+
+aves_temp <- read.csv(here("Intermediate_Data","Water_Quality","temp_ave.csv"))
 temp_ave_sp <- aves_temp %>% st_drop_geometry()
 coordinates(temp_ave_sp) <- ~ LON_M + LAT_M
 proj4string(temp_ave_sp) <- new_crs
-summary(temp_ave_sp)
-
-do_ave_sp <- aves_do %>% st_drop_geometry()
-coordinates(do_ave_sp) <- ~ LON_M + LAT_M
-proj4string(do_ave_sp) <- new_crs
-summary(do_ave_sp)
-
-sal_var_sp <- var_sal %>% st_drop_geometry()
-coordinates(sal_var_sp) <- ~ LON_M + LAT_M
-proj4string(sal_var_sp) <- new_crs
-summary(sal_var_sp)
-
-temp_var_sp <- var_temp %>% st_drop_geometry()
-coordinates(temp_var_sp) <- ~ LON_M + LAT_M
-proj4string(temp_var_sp) <- new_crs
-summary(temp_var_sp)
-
-do_var_sp <- var_do %>% st_drop_geometry()
-coordinates(do_var_sp) <- ~ LON_M + LAT_M
-proj4string(do_var_sp) <- new_crs
-summary(do_var_sp)
-
-# clean up
-rm(aves_temp, aves_sal, aves_do, var_temp, var_sal, var_do)
-
-
-
-# Correlograms and Moran's I ----------------------------------------------
-
-
-### AVERAGE TEMP ###
+rm(aves_temp)
 
 # check out summary plots - they are pretty Gaussian! 
 hist(temp_ave_sp$AVE_TEMP, nclass=10)
@@ -332,6 +313,9 @@ moran.mc(temp_ave_sp$AVE_TEMP, listw = tempave_wts, nsim = 1000, zero.policy = T
 
 # based on Moran's I results we can move on to...
 # variogram modeling to capture spatial structure(s) of temp correlation
+
+### VARIOGRAMS ###
+
 require(gstat)
 
 # empirical variogram
@@ -348,7 +332,45 @@ print(tempave_fvgm)
 rm(tempave_coords, tempave_corr, tempave_distmat, tempave_maxdist, tempave_neigh, 
    tempave_wts, tempave_evgm)
 
-### AVERAGE SALINITY ###
+### KRIGING ###
+
+cl <- makeCluster(n_cores)
+clusterExport(cl = cl, varlist = c("temp_ave_sp", "grid", "parts", "tempave_fvgm"),
+              envir = .GlobalEnv)
+clusterEvalQ(cl = cl, expr = c(library('sp'), library('gstat')))
+tempave_par <- parLapply(cl = cl, X = 1:n_cores, fun = function(x)
+  krige(formula = AVE_TEMP ~ 1, locations = temp_ave_sp, 
+        newdata = grid[parts[[x]],], model = tempave_fvgm))
+stopCluster(cl)
+showConnections()
+
+# combine the resulting part from each parallel core
+tempave_merge <- rbind(tempave_par[[1]], tempave_par[[2]])
+for (j in 3:length(tempave_par)) {
+  tempave_merge <- rbind(tempave_merge, tempave_par[[j]])
+}
+tempave_terra <- terra::rast(tempave_merge["var1.pred"])
+summary(tempave_terra)
+
+# save new surface as a .tif 
+writeRaster(tempave_terra, filename = here("Final_Data","Temperature_Ave.tif"),
+            overwrite = T)
+
+# clean up 
+rm(cl, tempave_fvgm, tempave_merge, tempave_par, tempave_terra, temp_ave_sp)
+
+
+
+# AVERAGE SALINITY --------------------------------------------------------
+
+
+### CORRELOGRAMS ###
+
+aves_sal <- read.csv(here("Intermediate_Data","Water_Quality","sal_ave.csv"))
+sal_ave_sp <- aves_sal %>% st_drop_geometry()
+coordinates(sal_ave_sp) <- ~ LON_M + LAT_M
+proj4string(sal_ave_sp) <- new_crs
+rm(aves_sal)
 
 # check out summary plots - they are NOT very Gaussian! 
 hist(sal_ave_sp$AVE_SAL, nclass=10)
@@ -385,6 +407,8 @@ moran.mc(sal_ave_sp$AVE_SAL, listw = salave_wts, nsim = 1000, zero.policy = T)
 # based on Moran's I results we can move on to...
 # variogram modeling to capture spatial structure(s) of sal correlation
 
+### VARIOGRAMS ###
+
 # empirical variogram
 salave_evgm <- variogram(AVE_SAL ~ 1, sal_ave_sp, cutoff = salave_maxdist)
 plot(salave_evgm, xlab = "Distance (m)", pch = 19)
@@ -399,7 +423,45 @@ print(salave_fvgm)
 rm(salave_coords, salave_corr, salave_distmat, salave_maxdist, salave_neigh, 
    salave_wts, salave_evgm)
 
-### AVERAGE DISSOLVED OXYGEN ###
+### KRIGING ###
+
+cl = makeCluster(n_cores)
+clusterExport(cl = cl, varlist = c("sal_ave_sp", "grid", "parts", "salave_fvgm"),
+              envir = .GlobalEnv)
+clusterEvalQ(cl = cl, expr = c(library('sp'), library('gstat')))
+salave_par <- parLapply(cl = cl, X = 1:n_cores, fun = function(x)
+  krige(formula = AVE_SAL ~ 1, locations = sal_ave_sp, 
+        newdata = grid[parts[[x]],], model = salave_fvgm))
+stopCluster(cl)
+showConnections()
+
+# combine the resulting part from each parallel core
+salave_merge <- rbind(salave_par[[1]], salave_par[[2]])
+for (j in 3:length(salave_par)) {
+  salave_merge <- rbind(salave_merge, salave_par[[j]])
+}
+salave_terra <- terra::rast(salave_merge["var1.pred"])
+summary(salave_terra)
+
+# save new surface as a .tif 
+writeRaster(salave_terra, filename = here("Final_Data","Salinity_Ave.tif"),
+            overwrite = T)
+
+# clean up 
+rm(cl, salave_fvgm, salave_merge, salave_par, salave_terra, sal_ave_sp)
+
+
+
+# AVERAGE DISSOLVED OXYGEN ------------------------------------------------
+
+
+### CORRELOGRAMS ###
+
+aves_do <- read.csv(here("Intermediate_Data","Water_Quality","do_ave.csv"))
+do_ave_sp <- aves_do %>% st_drop_geometry()
+coordinates(do_ave_sp) <- ~ LON_M + LAT_M
+proj4string(do_ave_sp) <- new_crs
+rm(aves_do)
 
 # check out summary plots - they are somewhat Gaussian... 
 hist(do_ave_sp$AVE_DO, nclass=10)
@@ -416,7 +478,7 @@ doave_maxdist <- 2/3 * max(doave_distmat) # max distance to consider
 
 # spline correlograms with 95% pointwise bootstrap CIs
 doave_corr <- spline.correlog(x = do_ave_sp$LON_M, y = do_ave_sp$LAT_M, z = do_ave_sp$AVE_DO,
-                                xmax = doave_maxdist, resamp = 100, type = "boot")
+                              xmax = doave_maxdist, resamp = 100, type = "boot")
 
 # neighbourhood list (neighbours within 16 km so every site has >=1 neighbour)
 doave_neigh <- dnearneigh(x = doave_coords, d1 = 0, d2 = 16000, longlat = F)
@@ -436,6 +498,8 @@ moran.mc(do_ave_sp$AVE_DO, listw = doave_wts, nsim = 1000, zero.policy = T)
 # based on Moran's I results we can move on to...
 # variogram modeling to capture spatial structure(s) of do correlation
 
+### VARIOGRAMS ###
+
 # empirical variogram
 doave_evgm <- variogram(AVE_DO ~ 1, do_ave_sp, cutoff = doave_maxdist)
 plot(doave_evgm, xlab = "Distance (m)", pch = 19)
@@ -450,7 +514,45 @@ print(doave_fvgm)
 rm(doave_coords, doave_corr, doave_distmat, doave_maxdist, doave_neigh, 
    doave_wts, doave_evgm)
 
-### VARIANCE IN TEMP ###
+### KRIGING ###
+
+cl = makeCluster(n_cores)
+clusterExport(cl = cl, varlist = c("do_ave_sp", "grid", "parts", "doave_fvgm"),
+              envir = .GlobalEnv)
+clusterEvalQ(cl = cl, expr = c(library('sp'), library('gstat')))
+doave_par <- parLapply(cl = cl, X = 1:n_cores, fun = function(x)
+  krige(formula = AVE_DO ~ 1, locations = do_ave_sp, 
+        newdata = grid[parts[[x]],], model = doave_fvgm))
+stopCluster(cl)
+showConnections()
+
+# combine the resulting part from each parallel core
+doave_merge <- rbind(doave_par[[1]], doave_par[[2]])
+for (j in 3:length(doave_par)) {
+  doave_merge <- rbind(doave_merge, doave_par[[j]])
+}
+doave_terra <- terra::rast(doave_merge["var1.pred"])
+summary(doave_terra)
+
+# save new surface as a .tif 
+writeRaster(doave_terra, filename = here("Final_Data","Dissolved_Oxygen_Ave.tif"),
+            overwrite = T)
+
+# clean up 
+rm(cl, doave_fvgm, doave_merge, doave_par, doave_terra, do_ave_sp)
+
+
+
+# VARIANCE IN TEMP --------------------------------------------------------
+
+
+### CORRELOGRAMS ###
+
+var_temp <- read.csv(here("Intermediate_Data","Water_Quality","temp_var.csv"))
+temp_var_sp <- var_temp %>% st_drop_geometry()
+coordinates(temp_var_sp) <- ~ LON_M + LAT_M
+proj4string(temp_var_sp) <- new_crs
+rm(var_temp)
 
 # check out summary plots - they are somewhat Gaussian...
 hist(temp_var_sp$VAR_TEMP, nclass=10)
@@ -487,6 +589,8 @@ moran.mc(temp_var_sp$VAR_TEMP, listw = tempvar_wts, nsim = 1000, zero.policy = T
 # based on Moran's I results we can move on to...
 # variogram modeling to capture spatial structure(s) of temp correlation
 
+### VARIOGRAMS ###
+
 # empirical variogram
 tempvar_evgm <- variogram(VAR_TEMP ~ 1, temp_var_sp, cutoff = tempvar_maxdist)
 plot(tempvar_evgm, xlab = "Distance (m)", pch = 19)
@@ -501,7 +605,45 @@ print(tempvar_fvgm)
 rm(tempvar_coords, tempvar_corr, tempvar_distmat, tempvar_maxdist, tempvar_neigh, 
    tempvar_wts, tempvar_evgm)
 
-### VARIANCE IN SALINITY ###
+### KRIGING ###
+
+cl = makeCluster(n_cores)
+clusterExport(cl = cl, varlist = c("temp_var_sp", "grid", "parts", "tempvar_fvgm"),
+              envir = .GlobalEnv)
+clusterEvalQ(cl = cl, expr = c(library('sp'), library('gstat')))
+tempvar_par <- parLapply(cl = cl, X = 1:n_cores, fun = function(x)
+  krige(formula = VAR_TEMP ~ 1, locations = temp_var_sp, 
+        newdata = grid[parts[[x]],], model = tempvar_fvgm))
+stopCluster(cl)
+showConnections()
+
+# combine the resulting part from each parallel core
+tempvar_merge <- rbind(tempvar_par[[1]], tempvar_par[[2]])
+for (j in 3:length(tempvar_par)) {
+  tempvar_merge <- rbind(tempvar_merge, tempvar_par[[j]])
+}
+tempvar_terra <- terra::rast(tempvar_merge["var1.pred"])
+summary(tempvar_terra)
+
+# svar new surface as a .tif 
+writeRaster(tempvar_terra, filename = here("Final_Data","Temperature_Var.tif"),
+            overwrite = T)
+
+# clean up 
+rm(cl, tempvar_fvgm, tempvar_merge, tempvar_par, tempvar_terra, temp_var_sp)
+
+
+
+# VARIANCE IN SALINITY ----------------------------------------------------
+
+
+### CORRELOGRAMS ###
+
+var_sal <- read.csv(here("Intermediate_Data","Water_Quality","sal_var.csv"))
+sal_var_sp <- var_sal %>% st_drop_geometry()
+coordinates(sal_var_sp) <- ~ LON_M + LAT_M
+proj4string(sal_var_sp) <- new_crs
+rm(var_sal)
 
 # check out summary plots - they are NOT AT ALL Gaussian! 
 hist(sal_var_sp$VAR_SAL, nclass=10)
@@ -538,6 +680,8 @@ moran.mc(sal_var_sp$VAR_SAL, listw = salvar_wts, nsim = 1000, zero.policy = T)
 # based on Moran's I results we can move on to...
 # variogram modeling to capture spatial structure(s) of sal correlation
 
+### VARIOGRAMS ###
+
 # empirical variogram
 salvar_evgm <- variogram(VAR_SAL ~ 1, sal_var_sp, cutoff = salvar_maxdist)
 plot(salvar_evgm, xlab = "Distance (m)", pch = 19)
@@ -552,7 +696,45 @@ print(salvar_fvgm)
 rm(salvar_coords, salvar_corr, salvar_distmat, salvar_maxdist, salvar_neigh, 
    salvar_wts, salvar_evgm)
 
-### VARIANCE IN DISSOLVED OXYGEN ###
+### KRIGING ###
+
+cl = makeCluster(n_cores)
+clusterExport(cl = cl, varlist = c("sal_var_sp", "grid", "parts", "salvar_fvgm"),
+              envir = .GlobalEnv)
+clusterEvalQ(cl = cl, expr = c(library('sp'), library('gstat')))
+salvar_par <- parLapply(cl = cl, X = 1:n_cores, fun = function(x)
+  krige(formula = VAR_SAL ~ 1, locations = sal_var_sp, 
+        newdata = grid[parts[[x]],], model = salvar_fvgm))
+stopCluster(cl)
+showConnections()
+
+# combine the resulting part from each parallel core
+salvar_merge <- rbind(salvar_par[[1]], salvar_par[[2]])
+for (j in 3:length(salvar_par)) {
+  salvar_merge <- rbind(salvar_merge, salvar_par[[j]])
+}
+salvar_terra <- terra::rast(salvar_merge["var1.pred"])
+summary(salvar_terra)
+
+# svar new surface as a .tif 
+writeRaster(salvar_terra, filename = here("Final_Data","Salinity_Var.tif"),
+            overwrite = T)
+
+# clean up 
+rm(cl, salvar_fvgm, salvar_merge, salvar_par, salvar_terra, sal_var_sp)
+
+
+
+# VARIANCE IN DISSOLVED OXYGEN --------------------------------------------
+
+
+### CORRELOGRAMS ###
+
+var_do <- read.csv(here("Intermediate_Data","Water_Quality","do_var.csv"))
+do_var_sp <- var_do %>% st_drop_geometry()
+coordinates(do_var_sp) <- ~ LON_M + LAT_M
+proj4string(do_var_sp) <- new_crs
+rm(var_do)
 
 # check out summary plots - they are NOT AT ALL Gaussian! 
 hist(do_var_sp$VAR_DO, nclass=10)
@@ -589,6 +771,8 @@ moran.mc(do_var_sp$VAR_DO, listw = dovar_wts, nsim = 1000, zero.policy = T)
 # based on Moran's I results we can move on to...
 # variogram modeling to capture spatial structure(s) of do correlation
 
+### VARIOGRAMS ###
+
 # empirical variogram
 dovar_evgm <- variogram(VAR_DO ~ 1, do_var_sp, cutoff = dovar_maxdist)
 plot(dovar_evgm, xlab = "Distance (m)", pch = 19)
@@ -603,166 +787,7 @@ print(dovar_fvgm)
 rm(dovar_coords, dovar_corr, dovar_distmat, dovar_maxdist, dovar_neigh, 
    dovar_wts, dovar_evgm)
 
-
-
-# Kriging Interpolation ---------------------------------------------------
-
-
-# make a grid based off of the study region raster
-library(raster)
-domain_rast <- raster(here::here("Final_Data","Study_Region.tif"))
-grid <- domain_rast*0
-crs(grid) <- new_crs
-plot(grid)
-grid <- grid %>% as(., "SpatialPixels")
-proj4string(grid) == proj4string(temp_ave_sp)
-summary(grid)
-rm(domain_rast)
-
-# initiate cluster and divide prediction grid for cores
-library(parallel)
-n_cores <- 10
-cl <- makeCluster(n_cores)
-parts <- split(x = 1:length(grid), f = 1:n_cores)
-stopCluster(cl)
-
-### AVERAGE TEMP ###
-
-cl <- makeCluster(n_cores)
-clusterExport(cl = cl, varlist = c("temp_ave_sp", "grid", "parts", "tempave_fvgm"),
-              envir = .GlobalEnv)
-clusterEvalQ(cl = cl, expr = c(library('sp'), library('gstat')))
-tempave_par <- parLapply(cl = cl, X = 1:n_cores, fun = function(x)
-  krige(formula = AVE_TEMP ~ 1, locations = temp_ave_sp, 
-        newdata = grid[parts[[x]],], model = tempave_fvgm))
-stopCluster(cl)
-showConnections()
-
-# combine the resulting part from each parallel core
-tempave_merge <- rbind(tempave_par[[1]], tempave_par[[2]])
-for (j in 3:length(tempave_par)) {
-  tempave_merge <- rbind(tempave_merge, tempave_par[[j]])
-}
-tempave_terra <- terra::rast(tempave_merge["var1.pred"])
-summary(tempave_terra)
-
-# save new surface as a .tif 
-writeRaster(tempave_terra, filename = here("Final_Data","Temperature_Ave.tif"),
-            overwrite = T)
-
-# clean up 
-rm(cl, tempave_fvgm, tempave_merge, tempave_par, tempave_terra, temp_ave_sp)
-
-### AVERAGE SALINITY ###
-
-cl = makeCluster(n_cores)
-clusterExport(cl = cl, varlist = c("sal_ave_sp", "grid", "parts", "salave_fvgm"),
-              envir = .GlobalEnv)
-clusterEvalQ(cl = cl, expr = c(library('sp'), library('gstat')))
-salave_par <- parLapply(cl = cl, X = 1:n_cores, fun = function(x)
-  krige(formula = AVE_SAL ~ 1, locations = sal_ave_sp, 
-        newdata = grid[parts[[x]],], model = salave_fvgm))
-stopCluster(cl)
-showConnections()
-
-# combine the resulting part from each parallel core
-salave_merge <- rbind(salave_par[[1]], salave_par[[2]])
-for (j in 3:length(salave_par)) {
-  salave_merge <- rbind(salave_merge, salave_par[[j]])
-}
-salave_terra <- terra::rast(salave_merge["var1.pred"])
-summary(salave_terra)
-
-# save new surface as a .tif 
-writeRaster(salave_terra, filename = here("Final_Data","Salinity_Ave.tif"),
-            overwrite = T)
-
-# clean up 
-rm(cl, salave_fvgm, salave_merge, salave_par, salave_terra, sal_ave_sp)
-
-
-### AVERAGE DISSOLVED OXYGEN ###
-
-cl = makeCluster(n_cores)
-clusterExport(cl = cl, varlist = c("do_ave_sp", "grid", "parts", "doave_fvgm"),
-              envir = .GlobalEnv)
-clusterEvalQ(cl = cl, expr = c(library('sp'), library('gstat')))
-doave_par <- parLapply(cl = cl, X = 1:n_cores, fun = function(x)
-  krige(formula = AVE_DO ~ 1, locations = do_ave_sp, 
-        newdata = grid[parts[[x]],], model = doave_fvgm))
-stopCluster(cl)
-showConnections()
-
-# combine the resulting part from each parallel core
-doave_merge <- rbind(doave_par[[1]], doave_par[[2]])
-for (j in 3:length(doave_par)) {
-  doave_merge <- rbind(doave_merge, doave_par[[j]])
-}
-doave_terra <- terra::rast(doave_merge["var1.pred"])
-summary(doave_terra)
-
-# save new surface as a .tif 
-writeRaster(doave_terra, filename = here("Final_Data","Dissolved_Oxygen_Ave.tif"),
-            overwrite = T)
-
-# clean up 
-rm(cl, doave_fvgm, doave_merge, doave_par, doave_terra, do_ave_sp)
-
-### VARIANCE IN TEMP ###
-
-cl = makeCluster(n_cores)
-clusterExport(cl = cl, varlist = c("temp_var_sp", "grid", "parts", "tempvar_fvgm"),
-              envir = .GlobalEnv)
-clusterEvalQ(cl = cl, expr = c(library('sp'), library('gstat')))
-tempvar_par <- parLapply(cl = cl, X = 1:n_cores, fun = function(x)
-  krige(formula = VAR_TEMP ~ 1, locations = temp_var_sp, 
-        newdata = grid[parts[[x]],], model = tempvar_fvgm))
-stopCluster(cl)
-showConnections()
-
-# combine the resulting part from each parallel core
-tempvar_merge <- rbind(tempvar_par[[1]], tempvar_par[[2]])
-for (j in 3:length(tempvar_par)) {
-  tempvar_merge <- rbind(tempvar_merge, tempvar_par[[j]])
-}
-tempvar_terra <- terra::rast(tempvar_merge["var1.pred"])
-summary(tempvar_terra)
-
-# svar new surface as a .tif 
-writeRaster(tempvar_terra, filename = here("Final_Data","Temperature_Var.tif"),
-            overwrite = T)
-
-# clean up 
-rm(cl, tempvar_fvgm, tempvar_merge, tempvar_par, tempvar_terra, temp_var_sp)
-
-### VARIANCE IN SALINITY ###
-
-cl = makeCluster(n_cores)
-clusterExport(cl = cl, varlist = c("sal_var_sp", "grid", "parts", "salvar_fvgm"),
-              envir = .GlobalEnv)
-clusterEvalQ(cl = cl, expr = c(library('sp'), library('gstat')))
-salvar_par <- parLapply(cl = cl, X = 1:n_cores, fun = function(x)
-  krige(formula = VAR_SAL ~ 1, locations = sal_var_sp, 
-        newdata = grid[parts[[x]],], model = salvar_fvgm))
-stopCluster(cl)
-showConnections()
-
-# combine the resulting part from each parallel core
-salvar_merge <- rbind(salvar_par[[1]], salvar_par[[2]])
-for (j in 3:length(salvar_par)) {
-  salvar_merge <- rbind(salvar_merge, salvar_par[[j]])
-}
-salvar_terra <- terra::rast(salvar_merge["var1.pred"])
-summary(salvar_terra)
-
-# svar new surface as a .tif 
-writeRaster(salvar_terra, filename = here("Final_Data","Salinity_Var.tif"),
-            overwrite = T)
-
-# clean up 
-rm(cl, salvar_fvgm, salvar_merge, salvar_par, salvar_terra, sal_var_sp)
-
-### VARIANCE IN DISSOLVED OXYGEN ###
+### KRIGING ###
 
 cl = makeCluster(n_cores)
 clusterExport(cl = cl, varlist = c("do_var_sp", "grid", "parts", "dovar_fvgm"),
@@ -788,24 +813,5 @@ writeRaster(dovar_terra, filename = here("Final_Data","Dissolved_Oxygen_Var.tif"
 
 # clean up 
 rm(cl, dovar_fvgm, dovar_merge, dovar_par, dovar_terra, do_var_sp)
-
-
-
-# Plotting to Inspect the Interpolation -----------------------------------
-
-
-### AVE TEMP ###
-
-# plot study region with interpolated data's domain
-# note: interpolated extent is slightly smaller than study region extent 
-domain_terra <- rast(here("Final_Data", "Study_Region.tif"))
-terra::plot(domain_terra)
-terra::polys(terra::ext(tempave_terra), col = NA, border = "red")
-
-# plot interpolated temperature raster under observed values
-terra::plot(domain_terra, col = "purple")
-terra::plot(salave_terra)
-salave_points <- vect(sal_ave_sp)
-terra::plot(salave_points, col = salave_points$AVE_SAL, legend = T, add = T)
 
 
