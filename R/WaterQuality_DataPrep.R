@@ -12,7 +12,6 @@
 # Isla Turcke (turcke@ualberta.ca)
 
 
-
 ### WATER QUALITY DATA PREP ###
 
 # Data on water temp, DO, and salinity from Florida Keys and Biscayne Bay 
@@ -252,7 +251,6 @@ grid <- domain_rast*0
 crs(grid) <- new_crs
 plot(grid)
 grid <- grid %>% as(., "SpatialPixels")
-proj4string(grid) == proj4string(temp_ave_sp)
 summary(grid)
 rm(domain_rast)
 
@@ -262,9 +260,6 @@ n_cores <- 10
 cl <- makeCluster(n_cores)
 parts <- split(x = 1:length(grid), f = 1:n_cores)
 stopCluster(cl)
-
-# clean up
-rm(domain_rast)
 
 
 
@@ -278,6 +273,7 @@ temp_ave_sp <- aves_temp %>% st_drop_geometry()
 coordinates(temp_ave_sp) <- ~ LON_M + LAT_M
 proj4string(temp_ave_sp) <- new_crs
 rm(aves_temp)
+proj4string(grid) == proj4string(temp_ave_sp)
 
 # check out summary plots - they are pretty Gaussian! 
 hist(temp_ave_sp$AVE_TEMP, nclass=10)
@@ -330,7 +326,7 @@ print(tempave_fvgm)
 
 # clean up
 rm(tempave_coords, tempave_corr, tempave_distmat, tempave_maxdist, tempave_neigh, 
-   tempave_wts, tempave_evgm)
+   tempave_wts, tempave_evgm, tempave_svgm_plot)
 
 ### KRIGING ###
 
@@ -353,11 +349,11 @@ tempave_terra <- terra::rast(tempave_merge["var1.pred"])
 summary(tempave_terra)
 
 # save new surface as a .tif 
-writeRaster(tempave_terra, filename = here("Final_Data","Temperature_Ave.tif"),
+writeRaster(tempave_terra, filename = here("Final_Data","Water_Quality","Temperature_Ave.tif"),
             overwrite = T)
 
 # clean up 
-rm(cl, tempave_fvgm, tempave_merge, tempave_par, tempave_terra, temp_ave_sp)
+rm(cl, tempave_fvgm, tempave_merge, tempave_par, temp_ave_sp)
 
 
 
@@ -444,7 +440,7 @@ salave_terra <- terra::rast(salave_merge["var1.pred"])
 summary(salave_terra)
 
 # save new surface as a .tif 
-writeRaster(salave_terra, filename = here("Final_Data","Salinity_Ave.tif"),
+writeRaster(salave_terra, filename = here("Final_Data","Water_Quality","Salinity_Ave.tif"),
             overwrite = T)
 
 # clean up 
@@ -535,7 +531,7 @@ doave_terra <- terra::rast(doave_merge["var1.pred"])
 summary(doave_terra)
 
 # save new surface as a .tif 
-writeRaster(doave_terra, filename = here("Final_Data","Dissolved_Oxygen_Ave.tif"),
+writeRaster(doave_terra, filename = here("Final_Data","Water_Quality","Dissolved_Oxygen_Ave.tif"),
             overwrite = T)
 
 # clean up 
@@ -626,7 +622,7 @@ tempvar_terra <- terra::rast(tempvar_merge["var1.pred"])
 summary(tempvar_terra)
 
 # svar new surface as a .tif 
-writeRaster(tempvar_terra, filename = here("Final_Data","Temperature_Var.tif"),
+writeRaster(tempvar_terra, filename = here("Final_Data","Water_Quality","Temperature_Var.tif"),
             overwrite = T)
 
 # clean up 
@@ -717,7 +713,7 @@ salvar_terra <- terra::rast(salvar_merge["var1.pred"])
 summary(salvar_terra)
 
 # svar new surface as a .tif 
-writeRaster(salvar_terra, filename = here("Final_Data","Salinity_Var.tif"),
+writeRaster(salvar_terra, filename = here("Final_Data","Water_Quality","Salinity_Var.tif"),
             overwrite = T)
 
 # clean up 
@@ -808,7 +804,7 @@ dovar_terra <- terra::rast(dovar_merge["var1.pred"])
 summary(dovar_terra)
 
 # svar new surface as a .tif 
-writeRaster(dovar_terra, filename = here("Final_Data","Dissolved_Oxygen_Var.tif"),
+writeRaster(dovar_terra, filename = here("Final_Data","Water_Quality","Dissolved_Oxygen_Var.tif"),
             overwrite = T)
 
 # clean up 
