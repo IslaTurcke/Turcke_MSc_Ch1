@@ -199,26 +199,32 @@ final_aves_do <- do_data %>%
 yr_var_sal <- sal_data %>%
   group_by(LON_M, LAT_M, YEAR) %>%
   summarize(YR_VAR_SAL = var(SAL)) %>% 
-  filter(!is.na(YR_VAR_SAL))
+  filter(!is.na(YR_VAR_SAL)) %>% 
+  ungroup()
 yr_var_temp <- temp_data %>%
   group_by(LON_M, LAT_M, YEAR) %>%
   summarize(YR_VAR_TEMP = var(TEMP)) %>% 
-  filter(!is.na(YR_VAR_TEMP))
+  filter(!is.na(YR_VAR_TEMP)) %>% 
+  ungroup()
 yr_var_do <- do_data %>%
   group_by(LON_M, LAT_M, YEAR) %>%
   summarize(YR_VAR_DO = var(DO)) %>% 
-  filter(!is.na(YR_VAR_DO))
+  filter(!is.na(YR_VAR_DO)) %>% 
+  ungroup()
 
-# calculate the average yearly standard deviation in temp, do, and sal for each site
+# calculate the average yearly variation in temp, do, and sal for each site
 final_var_sal <- yr_var_sal %>%
   group_by(LON_M, LAT_M) %>%
-  summarize(VAR_SAL = mean(YR_VAR_SAL))
+  summarize(VAR_SAL = mean(YR_VAR_SAL)) %>% 
+  ungroup()
 final_var_temp <- yr_var_temp %>%
   group_by(LON_M, LAT_M) %>%
-  summarize(VAR_TEMP = mean(YR_VAR_TEMP))
+  summarize(VAR_TEMP = mean(YR_VAR_TEMP)) %>% 
+  ungroup()
 final_var_do <- yr_var_do %>%
   group_by(LON_M, LAT_M) %>%
-  summarize(VAR_DO = mean(YR_VAR_DO))
+  summarize(VAR_DO = mean(YR_VAR_DO)) %>% 
+  ungroup()
 
 # clean up storage
 rm(yr_var_do, yr_var_sal, yr_var_temp, do_data, sal_data, temp_data)
@@ -355,6 +361,9 @@ writeRaster(tempave_terra, filename = here("Final_Data","Water_Quality","Tempera
 # clean up 
 rm(cl, tempave_fvgm, tempave_merge, tempave_par, temp_ave_sp)
 
+# free unused R memory - garbage collection
+gc()
+
 
 
 # AVERAGE SALINITY --------------------------------------------------------
@@ -444,7 +453,10 @@ writeRaster(salave_terra, filename = here("Final_Data","Water_Quality","Salinity
             overwrite = T)
 
 # clean up 
-rm(cl, salave_fvgm, salave_merge, salave_par, salave_terra, sal_ave_sp)
+rm(cl, salave_fvgm, salave_merge, salave_par, salave_terra, sal_ave_sp, salave_svgm_plot)
+
+# free unused R memory - garbage collection
+gc()
 
 
 
@@ -535,7 +547,10 @@ writeRaster(doave_terra, filename = here("Final_Data","Water_Quality","Dissolved
             overwrite = T)
 
 # clean up 
-rm(cl, doave_fvgm, doave_merge, doave_par, doave_terra, do_ave_sp)
+rm(cl, doave_fvgm, doave_merge, doave_par, doave_terra, do_ave_sp, doave_svgm_plot)
+
+# free unused R memory - garbage collection
+gc()
 
 
 
@@ -628,6 +643,9 @@ writeRaster(tempvar_terra, filename = here("Final_Data","Water_Quality","Tempera
 # clean up 
 rm(cl, tempvar_fvgm, tempvar_merge, tempvar_par, tempvar_terra, temp_var_sp)
 
+# free unused R memory - garbage collection
+gc()
+
 
 
 # VARIANCE IN SALINITY ----------------------------------------------------
@@ -718,6 +736,9 @@ writeRaster(salvar_terra, filename = here("Final_Data","Water_Quality","Salinity
 
 # clean up 
 rm(cl, salvar_fvgm, salvar_merge, salvar_par, salvar_terra, sal_var_sp)
+
+# free unused R memory - garbage collection
+gc()
 
 
 
@@ -810,4 +831,5 @@ writeRaster(dovar_terra, filename = here("Final_Data","Water_Quality","Dissolved
 # clean up 
 rm(cl, dovar_fvgm, dovar_merge, dovar_par, dovar_terra, do_var_sp)
 
-
+# free unused R memory - garbage collection
+gc()
