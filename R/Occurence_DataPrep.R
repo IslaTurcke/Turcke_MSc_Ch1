@@ -41,10 +41,12 @@
 # INSTALL PACKAGES
 install.packages("truncnorm")
 install.packages("reshape2")
+install.packages("spatialEco")
 
 # LOAD PACKAGES
 library(easypackages)
-libraries("here", "devtools", "tidyverse", "conflicted", "truncnorm", "reshape2")
+libraries("here", "devtools", "tidyverse", "conflicted", "truncnorm", "reshape2", 
+          "sp", "sf", "terra", "spatialEco")
 
 # prevent conflicts between packages
 conflicted::conflict_prefer("filter", "dplyr")
@@ -53,12 +55,20 @@ conflicted::conflict_prefer("filter", "dplyr")
 # set the Isla_MSc_Ch1 folder as the root directory 
 here::i_am("GitHub_Repositories/MSc_Ch1_DataPrep/R/Occurence_DataPrep.R")
 
+# save PROJ.4 string for NEW and OLD standard projection 
+# EPSG:6346 NAD 1983 2011 UTM Zone 17N
+new_crs <- crs("+init=epsg:6346")
+
 # READ IN SPECIES OCCURRENCE DATASETS
 # pre-cleaned rvc and mvs data for FLA_KEYS 2014, 2016, 2018, 2022
 rvc <- as_tibble(read.csv(here("GitHub_Repositories","MSc_Ch1_DataPrep","Data_SmallFiles","Fish","RVC_Start.csv")))
 mvs <- as_tibble(read.csv(here("GitHub_Repositories","MSc_Ch1_DataPrep","Data_SmallFiles","Fish","MVS_Start.csv")))
 
 # NOTE: mvs dataset is already presence ONLY
+
+# find number of unique sites for generating sampling bias grid later
+rvc_sites <- rvc %>% distinct(ID_SITE, x, y)
+mvs_sites <- mvs %>% distinct(ID_SITE, x, y)
 
 
 
@@ -178,11 +188,11 @@ all_focal <- rbind(rvc_focal[rvc_focal$NUM > 0.0 ,c("SOURCE","ID_SURV","ID_SITE"
 
 # Gray snapper
 all_subadults <- all_focal %>% filter(SPECIES_CODE == "LUT_GRIS") %>% 
-  filter(.$TOT_LEN >= 9.0 & .$TOT_LEN <= 25.0)
+  filter(.$TOT_LEN >= 9.51 & .$TOT_LEN <= 24.71)
 
 # Blue-striped grunt
 temp <- all_focal %>% filter(SPECIES_CODE == "HAE_SCIU") %>% 
-  filter(.$TOT_LEN >= 11.0 & .$TOT_LEN <= 26.0)
+  filter(.$TOT_LEN >= 11.9 & .$TOT_LEN <= 25.33)
 all_subadults <- rbind(all_subadults, temp)
 
 # Blue parrotfish
@@ -349,3 +359,49 @@ write_csv(invert_train, here("Final_Data","Species_Training","Invertivores_PO_Tr
           , append = F)
 write_csv(invert_test, here("Final_Data","Species_Testing","Invertivores_PO_Test.csv")
           , append = F)
+
+
+
+# Sampling Bias Grid ------------------------------------------------------
+
+
+# create sampling effort raster to parse out sampling bias: rule of thumb for
+# selecting bandwidth according to Scott (1992) and Bowman and Azzalini (1997)
+choose_bw = function(spdf) {
+  X = coordinates(spdf)
+  sigma = c(sd(X[,1]), sd(X[,2])) * (2 / (3 * nrow(X))) ^ (1/6)
+}
+
+# creating spatial pixels data frame of sampling effort
+sampling_effort <- full_join(rvc_sites, mvs_sites) %>%
+  select(x, y) %>%
+  st_as_sf(., coords = c(1, 2), crs = new_crs) %>%
+  add_column("count" = 1)
+sampling_effort_spdf <- sampling_effort %>% as(., "Spatial")
+
+# run choose bandwidth function on sampling effort spdf
+domain_bw <- choose_bw(sampling_effort_spdf)
+
+# create a template grid using the study region raster as a guide
+domain_grid <- rast(here("Final_Data","Study_Region.tif"))
+
+# clean up
+rm(mvs, mvs_sites, rvc, rvc_sites, sampling_effort_spdf)
+gc()
+
+# calculate kernel density surface
+kde <- sp.kde(x = sampling_effort, bw = domain_bw, ref = domain_grid, res = 5,
+                     standardize = T)
+
+# save initial bias grid because that step takes a long time
+writeRaster(domain_kde, here("Intermediate_Data","initial_bias_grid.tif"), overwrite = T)
+
+# resample because even though I asked for 5 x 5 m it does not give that :(
+domain_kde <- terra::resample(kde, domain_grid, "bilinear", threads = T)
+
+# add small constant value because bias grid can't have 0 in MaxEnt
+domain_kde <- domain_kde + (1/10000)
+
+# save bias grid to Final Data Folder
+writeRaster(domain_kde, here("Final_Data","Final_ascii","Sampling_Bias.asc"), 
+            overwrite = T)
