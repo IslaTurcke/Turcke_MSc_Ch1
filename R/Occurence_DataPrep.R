@@ -184,11 +184,11 @@ all_focal <- rbind(rvc_focal[rvc_focal$NUM > 0.0 ,c("SOURCE","ID_SURV","ID_SITE"
 
 
 # Filter each species for sub-adults
-# (between size at 1 YR and size at maturation) # L_min ? L_50 ? L_100 ? 
+# (between size at 1 YR and size at maturation) 
 
 # Gray snapper
 all_subadults <- all_focal %>% filter(SPECIES_CODE == "LUT_GRIS") %>% 
-  filter(.$TOT_LEN >= 9.51 & .$TOT_LEN <= 24.71)
+  filter(.$TOT_LEN >= 9.51 & .$TOT_LEN <= 32.1)
 
 # Blue-striped grunt
 temp <- all_focal %>% filter(SPECIES_CODE == "HAE_SCIU") %>% 
@@ -197,22 +197,22 @@ all_subadults <- rbind(all_subadults, temp)
 
 # Blue parrotfish
 temp <- all_focal %>% filter(SPECIES_CODE == "SCA_COER") %>% 
-  filter(.$TOT_LEN >= 11.0 & .$TOT_LEN <= 39.0)
+  filter(.$TOT_LEN >= 23.59 & .$TOT_LEN <= 35.3)
 all_subadults <- rbind(all_subadults, temp)
 
 # Midnight parrotfish
 temp <- all_focal %>% filter(SPECIES_CODE == "SCA_COEL") %>% 
-  filter(.$TOT_LEN >= 11.0 & .$TOT_LEN <= 39.0)
+  filter(.$TOT_LEN >= 24.43 & .$TOT_LEN <= 42.5)
 all_subadults <- rbind(all_subadults, temp)
 
 # Blue or Midnight parrotfish (identification not positive)
 temp <- all_focal %>% filter(SPECIES_CODE == "SCA_COES") %>% 
-  filter(.$TOT_LEN >= 11.0 & .$TOT_LEN <= 39.0)
+  filter(.$TOT_LEN >= 23.59 & .$TOT_LEN <= 42.5)
 all_subadults <- rbind(all_subadults, temp)
 
 # Rainbow parrotfish
 temp <- all_focal %>% filter(SPECIES_CODE == "SCA_GUAC") %>% 
-  filter(.$TOT_LEN >= 11.0 & .$TOT_LEN <= 39.0)
+  filter(.$TOT_LEN >= 27.31 & .$TOT_LEN <= 42.7)
 all_subadults <- rbind(all_subadults, temp)
 
 
