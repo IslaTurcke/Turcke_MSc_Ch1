@@ -150,16 +150,16 @@ rvc_focal["TOT_LEN"] <- NA
 for (i in 1:nrow(rvc_focal)) {
   
   if (rvc_focal[i, "SPECIES_CODE"] == "SCA_COER"){
-    rvc_focal$TOT_LEN[i] = rvc_focal$LEN[i] * 1.050 
+    rvc_focal$TOT_LEN[i] = rvc_focal$LEN[i] * 1.05 
   }
   if (rvc_focal[i, "SPECIES_CODE"] == "SCA_COEL"){
-    rvc_focal$TOT_LEN[i] = rvc_focal$LEN[i] * 1.000 # no value in FishBase
+    rvc_focal$TOT_LEN[i] = rvc_focal$LEN[i] * 1.05 # no value in FishBase
   }
   if (rvc_focal[i, "SPECIES_CODE"] == "SCA_COES"){
-    rvc_focal$TOT_LEN[i] = rvc_focal$LEN[i] * 1.025 # average of coer and coel
+    rvc_focal$TOT_LEN[i] = rvc_focal$LEN[i] * 1.05 # average of coer and coel
   }
   if (rvc_focal[i, "SPECIES_CODE"] == "SCA_GUAC"){
-    rvc_focal$TOT_LEN[i] = rvc_focal$LEN[i] * 1.000
+    rvc_focal$TOT_LEN[i] = rvc_focal$LEN[i] * 1.05
   }
   if (rvc_focal[i, "SPECIES_CODE"] == "LUT_GRIS"){
     rvc_focal$TOT_LEN[i] = rvc_focal$LEN[i] * 1.049
@@ -403,5 +403,4 @@ domain_kde <- terra::resample(kde, domain_grid, "bilinear", threads = T)
 domain_kde <- domain_kde + (1/10000)
 
 # save bias grid to Final Data Folder
-writeRaster(domain_kde, here("Final_Data","Final_ascii","Sampling_Bias.asc"), 
-            overwrite = T)
+writeRaster(domain_kde, here("Final_Data","Sampling_Bias.tif"), overwrite = T)
