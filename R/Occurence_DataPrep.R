@@ -39,9 +39,9 @@
 
 
 # INSTALL PACKAGES
-install.packages("truncnorm")
-install.packages("reshape2")
-install.packages("spatialEco")
+#install.packages("truncnorm")
+#install.packages("reshape2")
+#install.packages("spatialEco")
 
 # LOAD PACKAGES
 library(easypackages)
@@ -395,12 +395,18 @@ kde <- sp.kde(x = sampling_effort, bw = domain_bw, ref = domain_grid, res = 5,
 
 # save initial bias grid because that step takes a long time
 writeRaster(domain_kde, here("Intermediate_Data","initial_bias_grid.tif"), overwrite = T)
+kde <- terra::rast(here("Intermediate_Data","initial_bias_grid.tif"))
 
 # resample because even though I asked for 5 x 5 m it does not give that :(
 domain_kde <- terra::resample(kde, domain_grid, "bilinear", threads = T)
 
 # add small constant value because bias grid can't have 0 in MaxEnt
-domain_kde <- domain_kde + (1/10000)
+domain_kde <- domain_kde + 0.0001
 
 # save bias grid to Final Data Folder
-writeRaster(domain_kde, here("Final_Data","Sampling_Bias.tif"), overwrite = T)
+terra::writeRaster(domain_kde, here("Final_Data","Sampling_Bias.tif"), overwrite = T)
+
+# read in using raster package to write it out as an ASCII file
+kde_raster <- raster::raster(here("Final_Data","Sampling_Bias.tif"))
+raster::writeRaster(kde_raster, here("Final_Data","Final_ascii","Sampling_Bias.asc"),
+                    format = "ascii", overwrite = T)
