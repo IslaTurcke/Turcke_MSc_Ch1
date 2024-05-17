@@ -12,24 +12,45 @@
 #    turcke@ualberta.ca
 # ----------------------------------------------------------------
 
-# Import arcpy module
+# Import modules
 import arcpy
-
-# Import other necessary modules
+from arcpy.sa import *
 import os 
 
 # Load required toolboxes
 arcpy.ImportToolbox("Z:/Isla_MSc_Ch1/btm-3.0-final/toolbox/btm.pyt")
 
 # Set geoprocessing environments 
-arcpy.workspace = "Z:/Isla_MSc_Ch1"
+arcpy.env.workspace = "Z:/Isla_MSc_Ch1/Geodatabases/Isla_MSc_Ch1.gdb"
+print(arcpy.env.workspace)
+arcpy.env.scratchWorkspace = "Z:/Isla_MSc_Ch1/Geodatabases/scratch.gdb"
 print(arcpy.env.scratchGDB)
-arcpy.env.scratchWorkspace = "Z:\\Isla_MSc_Ch1\\Geodatabases\\scratch.gdb"
+
+# Set output directories
+out_tif = "Z:/Isla_MSc_Ch1/Final_Data"
+out_gdb = "Z:/Isla_MSc_Ch1/Geodatabases/Isla_MSc_Ch1.gdb"
 
 # Local variables
-Isla_scratchGDB = "Z:\\Isla_MSc_Ch1\\Geodatabases\\scratch.gdb"
+Isla_gdb = "Z:/Isla_MSc_Ch1/Geodatabases/Isla_MSc_Ch1.gdb"
+scratch_gdb = "Z:/Isla_MSc_Ch1/Geodatabases/scratch.gdb"
 DEM_tif = "Z:/Isla_MSc_Ch1/Intermediate_Data/depth_5x5.tif"
+Rugosity = "Z:/Isla_MSc_Ch1/Final_Data/Rugosity.tif"
+Area_Raster = "Z:/Isla_MSc_Ch1/Intermediate_Data/rugosity_area.tif"
 
 # Convert full depth raster tif file to a file in a geodatabase
-arcpy.RasterToGeodatabase_conversion(DEM_tif, Isla_scratchGDB, "")
+DEM_gdb = arcpy.RasterToGeodatabase_conversion(DEM_tif, scratch_gdb, "")
 
+# Define spatial reference (projected coordinate system)
+proj_crs = arcpy.SpatialReference(6346)
+arcpy.DefineReference_management(DEM_tif, proj_crs)
+
+# Process: Slope
+Slope = arcpy.Slope(DEM_gdb, "DEGREE", "1", "PLANAR", "METER")
+Slope.save(out_gdb)
+Slope = Slope + ".tif"
+Slope.save(out_tif)
+
+# Process: Surface Area to Planar Area
+tempEnvironment0 = arcpy.env.parallelProcessingFactor
+arcpy.env.parallelProcessingFactor = "10"
+arcpy.surfacetoplanar_btm(DEM_gdb, Rugosity, "true", Area_Raster)
