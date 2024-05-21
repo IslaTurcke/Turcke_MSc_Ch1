@@ -42,10 +42,10 @@ DEM_gdb = arcpy.RasterToGeodatabase_conversion(DEM_tif, scratch_gdb, "")
 
 # Define spatial reference (projected coordinate system)
 proj_crs = arcpy.SpatialReference(6346)
-arcpy.DefineReference_management(DEM_tif, proj_crs)
+arcpy.DefineProjection_management(DEM_tif, proj_crs)
 
 # Process: Slope
-Slope = arcpy.Slope(DEM_gdb, "DEGREE", "1", "PLANAR", "METER")
+Slope = Slope(os.path.join(scratch_gdb,DEM_gdb), "DEGREE", "1", "PLANAR", "METER")
 Slope.save(out_gdb)
 Slope = Slope + ".tif"
 Slope.save(out_tif)
