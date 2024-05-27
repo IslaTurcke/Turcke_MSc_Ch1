@@ -279,7 +279,7 @@ invert <- all_sub_PA %>% select(SOURCE, ID_SURV, x, y, PRES_INVERT) %>%
 # Clean Up ----------------------------------------------------------------
 
 rm(rvc, mvs, rvc_focal, mvs_focal, mvs_expanded, all_focal, all_subadults, temp,
-    all_sub_w, all_sub_PA)
+    all_sub_w, all_sub_PA, i)
 
 
 
@@ -318,6 +318,10 @@ sciu_test = sciu[-sciu_train_index,]
 invert_train_index = sample(seq_len(nrow(invert)), size = floor(0.70*nrow(invert)))  
 invert_train = invert[invert_train_index,] 
 invert_test = invert[-invert_train_index,]
+
+# clean up
+rm(coel_train_index, coer_train_index, gris_train_index, guac_train_index, 
+   herb_train_index, invert_train_index, sciu_train_index)
 
 
 

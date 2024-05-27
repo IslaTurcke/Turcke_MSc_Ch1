@@ -21,6 +21,7 @@ import os
 arcpy.ImportToolbox("Z:/Isla_MSc_Ch1/btm-3.0-final/toolbox/btm.pyt")
 
 # Set geoprocessing environments 
+arcpy.CreateFileGDB_management("Z:/Isla_MSc_Ch1/Geodatabases","Isla_MSc_Ch1.gdb")
 arcpy.env.workspace = "Z:/Isla_MSc_Ch1/Geodatabases/Isla_MSc_Ch1.gdb"
 print(arcpy.env.workspace)
 arcpy.env.scratchWorkspace = "Z:/Isla_MSc_Ch1/Geodatabases/scratch.gdb"
