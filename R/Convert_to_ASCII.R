@@ -59,12 +59,15 @@ terra::plot(sum_temp)
 
 # some basic checks
 ext(study_region)
-ext(sum_do) == ext(sum_temp)
+ext(sum_do)
 crs(study_region)
 crs(sum_do)
 
+# crop study region raster to have the same extent as the water quality data
+study_crop <- terra::crop(study_region, ext(sum_temp))
+
 # mask study region using water quality datasets
-final_region <- terra::mask(study_region, sum_temp)
+final_region <- terra::mask(study_crop, sum_temp)
 
 crs(final_region)
 ext(final_region)
@@ -105,31 +108,21 @@ crs(rug_vrm) <- CRS
 crs(bpi_b) <- CRS
 crs(bpi_f) <- CRS
 
-# set extent just to double check they all match
-ext(depth) <- EXT
-ext(habitat) <- EXT
-ext(mg_dist) <- EXT
-ext(slope) <- EXT
-ext(curv) <- EXT
-ext(plan_curv) <- EXT
-ext(prof_curv) <- EXT
-ext(rug_acr) <- EXT
-ext(rug_vrm) <- EXT
-ext(bpi_b) <- EXT
-ext(bpi_f) <- EXT
+# for some reason Rugosity (ACR) is not aligned with the others
+rug_acr <- resample(rug_acr, depth, method = )
 
-# mask using final study region raster
-DEPTH <- terra::mask(depth, final_region)
-HABITAT <- terra::mask(habitat, final_region)
-MG_DIST <- terra::mask(mg_dist, final_region)
-SLOPE <- terra::mask(slope, final_region)
-CURV <- terra::mask(curv, final_region)
-PLAN_CURV <- terra::mask(plan_curv, final_region)
-PROF_CURV <- terra::mask(prof_curv, final_region)
-RUG_ACR <- terra::mask(rug_acr, final_region)
-RUG_VRM <- terra::mask(rug_vrm, final_region)
-BPI_B <- terra::mask(bpi_b, final_region)
-BPI_F <- terra::mask(bpi_f, final_region)
+# crop and mask predictors using final study region raster
+DEPTH <- terra::crop(depth, final_region, mask = T)
+HABITAT <- terra::crop(habitat, final_region, mask = T)
+MG_DIST <- terra::crop(mg_dist, final_region, mask = T)
+SLOPE <- terra::crop(slope, final_region, mask = T)
+CURV <- terra::crop(curv, final_region, mask = T)
+PLAN_CURV <- terra::crop(plan_curv, final_region, mask = T)
+PROF_CURV <- terra::crop(prof_curv, final_region, mask = T)
+RUG_ACR <- terra::crop(rug_acr, final_region, mask = T)
+RUG_VRM <- terra::crop(rug_vrm, final_region, mask = T)
+BPI_B <- terra::crop(bpi_b, final_region, mask = T)
+BPI_F <- terra::crop(bpi_f, final_region, mask = T)
 
 
 
