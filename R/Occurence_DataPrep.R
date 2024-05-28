@@ -183,37 +183,53 @@ all_focal <- rbind(rvc_focal[rvc_focal$NUM > 0.0 ,c("SOURCE","ID_SURV","ID_SITE"
 # Filter by Length --------------------------------------------------------
 
 
-# Filter each species for sub-adults
+# Filter each species for juveniles, sub-adults, and adults
 # (between size at 1 YR and size at maturation) 
 
 # Gray snapper
-all_subadults <- all_focal %>% filter(SPECIES_CODE == "LUT_GRIS") %>% 
-  filter(.$TOT_LEN >= 9.51 & .$TOT_LEN <= 32.1)
+all_juvs <- all_focal %>% filter(SPECIES_CODE == "LUT_GRIS") %>% filter(.$TOT_LEN < 9.51)
+all_subadults <- all_focal %>% filter(SPECIES_CODE == "LUT_GRIS") %>% filter(.$TOT_LEN >= 9.51 & .$TOT_LEN <= 32.1)
+all_adults <- all_focal %>% filter(SPECIES_CODE == "LUT_GRIS") %>% filter(.$TOT_LEN > 32.1)
 
 # Blue-striped grunt
-temp <- all_focal %>% filter(SPECIES_CODE == "HAE_SCIU") %>% 
-  filter(.$TOT_LEN >= 11.9 & .$TOT_LEN <= 25.33)
+temp <- all_focal %>% filter(SPECIES_CODE == "HAE_SCIU") %>% filter(.$TOT_LEN < 11.9)
+all_juvs <- rbind(all_juvs, temp)
+temp <- all_focal %>% filter(SPECIES_CODE == "HAE_SCIU") %>% filter(.$TOT_LEN >= 11.9 & .$TOT_LEN <= 25.33)
 all_subadults <- rbind(all_subadults, temp)
+temp <- all_focal %>% filter(SPECIES_CODE == "HAE_SCIU") %>% filter(.$TOT_LEN > 25.33)
+all_adults <- rbind(all_adults, temp)
 
 # Blue parrotfish
-temp <- all_focal %>% filter(SPECIES_CODE == "SCA_COER") %>% 
-  filter(.$TOT_LEN >= 23.59 & .$TOT_LEN <= 35.3)
+temp <- all_focal %>% filter(SPECIES_CODE == "SCA_COER") %>% filter(.$TOT_LEN < 23.59)
+all_juvs <- rbind(all_juvs, temp)
+temp <- all_focal %>% filter(SPECIES_CODE == "SCA_COER") %>% filter(.$TOT_LEN >= 23.59 & .$TOT_LEN <= 35.3)
 all_subadults <- rbind(all_subadults, temp)
+temp <- all_focal %>% filter(SPECIES_CODE == "SCA_COER") %>% filter(.$TOT_LEN > 35.3)
+all_adults <- rbind(all_adults, temp)
 
 # Midnight parrotfish
-temp <- all_focal %>% filter(SPECIES_CODE == "SCA_COEL") %>% 
-  filter(.$TOT_LEN >= 24.43 & .$TOT_LEN <= 42.5)
+temp <- all_focal %>% filter(SPECIES_CODE == "SCA_COEL") %>% filter(.$TOT_LEN < 24.43)
+all_juvs <- rbind(all_juvs, temp)
+temp <- all_focal %>% filter(SPECIES_CODE == "SCA_COEL") %>% filter(.$TOT_LEN >= 24.43 & .$TOT_LEN <= 42.5)
 all_subadults <- rbind(all_subadults, temp)
+temp <- all_focal %>% filter(SPECIES_CODE == "SCA_COEL") %>% filter(.$TOT_LEN > 42.5)
+all_adults <- rbind(all_adults, temp)
 
 # Blue or Midnight parrotfish (identification not positive)
-temp <- all_focal %>% filter(SPECIES_CODE == "SCA_COES") %>% 
-  filter(.$TOT_LEN >= 23.59 & .$TOT_LEN <= 42.5)
+temp <- all_focal %>% filter(SPECIES_CODE == "SCA_COES") %>% filter(.$TOT_LEN < 23.59)
+all_juvs <- rbind(all_juvs, temp)
+temp <- all_focal %>% filter(SPECIES_CODE == "SCA_COES") %>% filter(.$TOT_LEN >= 23.59 & .$TOT_LEN <= 42.5)
 all_subadults <- rbind(all_subadults, temp)
+temp <- all_focal %>% filter(SPECIES_CODE == "SCA_COES") %>% filter(.$TOT_LEN > 42.5)
+all_adults <- rbind(all_adults, temp)
 
 # Rainbow parrotfish
-temp <- all_focal %>% filter(SPECIES_CODE == "SCA_GUAC") %>% 
-  filter(.$TOT_LEN >= 27.31 & .$TOT_LEN <= 42.7)
+temp <- all_focal %>% filter(SPECIES_CODE == "SCA_GUAC") %>% filter(.$TOT_LEN < 27.3)
+all_juvs <- rbind(all_juvs, temp)
+temp <- all_focal %>% filter(SPECIES_CODE == "SCA_GUAC") %>% filter(.$TOT_LEN >= 27.31 & .$TOT_LEN <= 42.7)
 all_subadults <- rbind(all_subadults, temp)
+temp <- all_focal %>% filter(SPECIES_CODE == "SCA_GUAC") %>% filter(.$TOT_LEN > 42.7)
+all_adults <- rbind(all_adults, temp)
 
 
 
@@ -225,18 +241,36 @@ all_subadults <- rbind(all_subadults, temp)
 # -> long to wide
 # -> split COES density between COEL and COER
 # -> calculate total numbers of our focal species
-all_sub_w <- all_subadults %>% dcast(., SOURCE+ID_SURV+ID_SITE+x+y ~ SPECIES_CODE, 
+all_juv_w <- all_juvs %>% dcast(., SOURCE+ID_SURV+ID_SITE+x+y ~ SPECIES_CODE, 
                                value.var = "NUM", fun.aggregate = sum)
+all_sub_w <- all_subadults %>% dcast(., SOURCE+ID_SURV+ID_SITE+x+y ~ SPECIES_CODE, 
+                                     value.var = "NUM", fun.aggregate = sum)
+all_adt_w <- all_adults %>% dcast(., SOURCE+ID_SURV+ID_SITE+x+y ~ SPECIES_CODE, 
+                                     value.var = "NUM", fun.aggregate = sum)
 
 # if there are any SCA_COES present, split them between SCA_COER and SCA_COEL  
-if ("SCA_COES" %in% colnames(all_sub_w)) {
-    all_sub_w <- all_sub_w %>% mutate(SCA_COEL = SCA_COEL + (SCA_COES / 2), 
+if ("SCA_COES" %in% colnames(all_juv_w)) {
+    all_juv_w <- all_juv_w %>% mutate(SCA_COEL = SCA_COEL + (SCA_COES / 2), 
                                       SCA_COER = SCA_COER + (SCA_COES / 2)) %>% 
     select(-SCA_COES)
-  }
+}
+if ("SCA_COES" %in% colnames(all_sub_w)) {
+  all_sub_w <- all_sub_w %>% mutate(SCA_COEL = SCA_COEL + (SCA_COES / 2), 
+                                    SCA_COER = SCA_COER + (SCA_COES / 2)) %>% 
+    select(-SCA_COES)
+}
+if ("SCA_COES" %in% colnames(all_adt_w)) {
+  all_adt_w <- all_adt_w %>% mutate(SCA_COEL = SCA_COEL + (SCA_COES / 2), 
+                                    SCA_COER = SCA_COER + (SCA_COES / 2)) %>% 
+    select(-SCA_COES)
+}
   
 # add columns for our two functional groups: herbivores and invertivores
+all_juv_w <- all_juv_w %>% mutate(INVERT = HAE_SCIU + LUT_GRIS,
+                                  HERB = SCA_COEL + SCA_COER + SCA_GUAC)
 all_sub_w <- all_sub_w %>% mutate(INVERT = HAE_SCIU + LUT_GRIS,
+                                  HERB = SCA_COEL + SCA_COER + SCA_GUAC)
+all_adt_w <- all_adt_w %>% mutate(INVERT = HAE_SCIU + LUT_GRIS,
                                   HERB = SCA_COEL + SCA_COER + SCA_GUAC)
 
 
@@ -246,12 +280,32 @@ all_sub_w <- all_sub_w %>% mutate(INVERT = HAE_SCIU + LUT_GRIS,
 
 # if >= 1 fish was seen at the survey site it's presence [1], else absence [0]
 
+all_juv_PA <- all_juv_w %>% 
+  mutate(PRES_COEL = ifelse(SCA_COEL > 0.0, 1, 0), PRES_COER = ifelse(SCA_COER > 0.0, 1, 0),
+         PRES_GUAC = ifelse(SCA_GUAC > 0.0, 1, 0), PRES_HERB = ifelse(HERB > 0.0, 1, 0),
+         PRES_GRIS = ifelse(LUT_GRIS > 0.0, 1, 0), PRES_SCIU = ifelse(HAE_SCIU > 0.0, 1, 0),
+         PRES_INVERT = ifelse(INVERT > 0.0, 1, 0)) %>% 
+  select(-c(SCA_COEL, SCA_COER, SCA_GUAC, HERB, LUT_GRIS, HAE_SCIU, INVERT))
 all_sub_PA <- all_sub_w %>% 
   mutate(PRES_COEL = ifelse(SCA_COEL > 0.0, 1, 0), PRES_COER = ifelse(SCA_COER > 0.0, 1, 0),
          PRES_GUAC = ifelse(SCA_GUAC > 0.0, 1, 0), PRES_HERB = ifelse(HERB > 0.0, 1, 0),
          PRES_GRIS = ifelse(LUT_GRIS > 0.0, 1, 0), PRES_SCIU = ifelse(HAE_SCIU > 0.0, 1, 0),
          PRES_INVERT = ifelse(INVERT > 0.0, 1, 0)) %>% 
   select(-c(SCA_COEL, SCA_COER, SCA_GUAC, HERB, LUT_GRIS, HAE_SCIU, INVERT))
+all_adt_PA <- all_adt_w %>% 
+  mutate(PRES_COEL = ifelse(SCA_COEL > 0.0, 1, 0), PRES_COER = ifelse(SCA_COER > 0.0, 1, 0),
+         PRES_GUAC = ifelse(SCA_GUAC > 0.0, 1, 0), PRES_HERB = ifelse(HERB > 0.0, 1, 0),
+         PRES_GRIS = ifelse(LUT_GRIS > 0.0, 1, 0), PRES_SCIU = ifelse(HAE_SCIU > 0.0, 1, 0),
+         PRES_INVERT = ifelse(INVERT > 0.0, 1, 0)) %>% 
+  select(-c(SCA_COEL, SCA_COER, SCA_GUAC, HERB, LUT_GRIS, HAE_SCIU, INVERT))
+
+# write out to species occurrence folders
+write_csv(all_juv_PA, here("Final_Data","Species_Occurrence","Juvenile","Testing",
+                           "Juvenile_PA_Test.csv"), append = F)
+write_csv(all_sub_PA, here("Final_Data","Species_Occurrence","Subadult","Testing",
+                           "Subadult_PA_Test.csv"), append = F)
+write_csv(all_adt_PA, here("Final_Data","Species_Occurrence","Adult","Testing",
+                           "Adult_PA_Test.csv"), append = F)
 
 
 
@@ -259,19 +313,53 @@ all_sub_PA <- all_sub_w %>%
 
 
 # separate by species/group and filter out absences
-coer <- all_sub_PA %>% select(SOURCE, ID_SURV, x, y, PRES_COER) %>% 
+
+# juveniles
+coer_juv <- all_juv_PA %>% select(SOURCE, ID_SURV, x, y, PRES_COER) %>% 
   filter(PRES_COER == 1)
-coel <- all_sub_PA %>% select(SOURCE, ID_SURV, x, y, PRES_COEL) %>% 
+coel_juv <- all_juv_PA %>% select(SOURCE, ID_SURV, x, y, PRES_COEL) %>% 
   filter(PRES_COEL == 1)
-guac <- all_sub_PA %>% select(SOURCE, ID_SURV, x, y, PRES_GUAC) %>% 
+guac_juv <- all_juv_PA %>% select(SOURCE, ID_SURV, x, y, PRES_GUAC) %>% 
   filter(PRES_GUAC == 1)
-herb <- all_sub_PA %>% select(SOURCE, ID_SURV, x, y, PRES_HERB) %>% 
+herb_juv <- all_juv_PA %>% select(SOURCE, ID_SURV, x, y, PRES_HERB) %>% 
   filter(PRES_HERB == 1)
-gris <- all_sub_PA %>% select(SOURCE, ID_SURV, x, y, PRES_GRIS) %>% 
+gris_juv <- all_juv_PA %>% select(SOURCE, ID_SURV, x, y, PRES_GRIS) %>% 
   filter(PRES_GRIS == 1)
-sciu <- all_sub_PA %>% select(SOURCE, ID_SURV, x, y, PRES_SCIU) %>% 
+sciu_juv <- all_juv_PA %>% select(SOURCE, ID_SURV, x, y, PRES_SCIU) %>% 
   filter(PRES_SCIU == 1)
-invert <- all_sub_PA %>% select(SOURCE, ID_SURV, x, y, PRES_INVERT) %>% 
+invert_juv <- all_juv_PA %>% select(SOURCE, ID_SURV, x, y, PRES_INVERT) %>% 
+  filter(PRES_INVERT == 1)
+
+# subadults
+coer_sub <- all_sub_PA %>% select(SOURCE, ID_SURV, x, y, PRES_COER) %>% 
+  filter(PRES_COER == 1)
+coel_sub <- all_sub_PA %>% select(SOURCE, ID_SURV, x, y, PRES_COEL) %>% 
+  filter(PRES_COEL == 1)
+guac_sub <- all_sub_PA %>% select(SOURCE, ID_SURV, x, y, PRES_GUAC) %>% 
+  filter(PRES_GUAC == 1)
+herb_sub <- all_sub_PA %>% select(SOURCE, ID_SURV, x, y, PRES_HERB) %>% 
+  filter(PRES_HERB == 1)
+gris_sub <- all_sub_PA %>% select(SOURCE, ID_SURV, x, y, PRES_GRIS) %>% 
+  filter(PRES_GRIS == 1)
+sciu_sub <- all_sub_PA %>% select(SOURCE, ID_SURV, x, y, PRES_SCIU) %>% 
+  filter(PRES_SCIU == 1)
+invert_sub <- all_sub_PA %>% select(SOURCE, ID_SURV, x, y, PRES_INVERT) %>% 
+  filter(PRES_INVERT == 1)
+
+# adults
+coer_adt <- all_adt_PA %>% select(SOURCE, ID_SURV, x, y, PRES_COER) %>% 
+  filter(PRES_COER == 1)
+coel_adt <- all_adt_PA %>% select(SOURCE, ID_SURV, x, y, PRES_COEL) %>% 
+  filter(PRES_COEL == 1)
+guac_adt <- all_adt_PA %>% select(SOURCE, ID_SURV, x, y, PRES_GUAC) %>% 
+  filter(PRES_GUAC == 1)
+herb_adt <- all_adt_PA %>% select(SOURCE, ID_SURV, x, y, PRES_HERB) %>% 
+  filter(PRES_HERB == 1)
+gris_adt <- all_adt_PA %>% select(SOURCE, ID_SURV, x, y, PRES_GRIS) %>% 
+  filter(PRES_GRIS == 1)
+sciu_adt <- all_adt_PA %>% select(SOURCE, ID_SURV, x, y, PRES_SCIU) %>% 
+  filter(PRES_SCIU == 1)
+invert_adt <- all_adt_PA %>% select(SOURCE, ID_SURV, x, y, PRES_INVERT) %>% 
   filter(PRES_INVERT == 1)
 
 
@@ -287,41 +375,84 @@ rm(rvc, mvs, rvc_focal, mvs_focal, mvs_expanded, all_focal, all_subadults, temp,
 
 
 # randomly split data for model training and evaluation (70-30%, respectively)
+
 library(ISLR)
 # set seed to ensure replicability
 set.seed(123)  
+
 # blue parrotfish
-coer_train_index <- sample(seq_len(nrow(coer)), size = floor(0.70*nrow(coer)))  
-coer_train <- coer[coer_train_index,] 
-coer_test <- coer[-coer_train_index,]  
+train_index <- sample(seq_len(nrow(coer_juv)), size = floor(0.70*nrow(coer_juv)))  
+coer_juv_train <- coer_juv[train_index,] 
+coer_juv_test <- coer_juv[-train_index,]
+train_index <- sample(seq_len(nrow(coer_sub)), size = floor(0.70*nrow(coer_sub)))  
+coer_sub_train <- coer_sub[train_index,]
+coer_sub_test <- coer_sub[-train_index,]
+train_index <- sample(seq_len(nrow(coer_adt)), size = floor(0.70*nrow(coer_adt)))  
+coer_adt_train <- coer_adt[train_index,]
+coer_adt_test <- coer_adt[-train_index,]
 # midnight parrotfish
-coel_train_index = sample(seq_len(nrow(coel)), size = floor(0.70*nrow(coel)))  
-coel_train = coel[coel_train_index,] 
-coel_test = coel[-coel_train_index,]
+train_index <- sample(seq_len(nrow(coel_juv)), size = floor(0.70*nrow(coel_juv)))  
+coel_juv_train <- coel_juv[train_index,] 
+coel_juv_test <- coel_juv[-train_index,]
+train_index <- sample(seq_len(nrow(coel_sub)), size = floor(0.70*nrow(coel_sub)))  
+coel_sub_train <- coel_sub[train_index,]
+coel_sub_test <- coel_sub[-train_index,]
+train_index <- sample(seq_len(nrow(coel_adt)), size = floor(0.70*nrow(coel_adt)))  
+coel_adt_train <- coel_adt[train_index,]
+coel_adt_test <- coel_adt[-train_index,]
 # rainbow parrotfish
-guac_train_index = sample(seq_len(nrow(guac)), size = floor(0.70*nrow(guac)))  
-guac_train = guac[guac_train_index,] 
-guac_test = guac[-guac_train_index,]
+train_index <- sample(seq_len(nrow(guac_juv)), size = floor(0.70*nrow(guac_juv)))  
+guac_juv_train <- guac_juv[train_index,] 
+guac_juv_test <- guac_juv[-train_index,]
+train_index <- sample(seq_len(nrow(guac_sub)), size = floor(0.70*nrow(guac_sub)))  
+guac_sub_train <- guac_sub[train_index,]
+guac_sub_test <- guac_sub[-train_index,]
+train_index <- sample(seq_len(nrow(guac_adt)), size = floor(0.70*nrow(guac_adt)))  
+guac_adt_train <- guac_adt[train_index,]
+guac_adt_test <- guac_adt[-train_index,]
 # herbivore functional group
-herb_train_index = sample(seq_len(nrow(herb)), size = floor(0.70*nrow(herb)))  
-herb_train = herb[herb_train_index,] 
-herb_test = herb[-herb_train_index,]
+train_index <- sample(seq_len(nrow(herb_juv)), size = floor(0.70*nrow(herb_juv)))  
+herb_juv_train <- herb_juv[train_index,] 
+herb_juv_test <- herb_juv[-train_index,]
+train_index <- sample(seq_len(nrow(herb_sub)), size = floor(0.70*nrow(herb_sub)))  
+herb_sub_train <- herb_sub[train_index,]
+herb_sub_test <- herb_sub[-train_index,]
+train_index <- sample(seq_len(nrow(herb_adt)), size = floor(0.70*nrow(herb_adt)))  
+herb_adt_train <- herb_adt[train_index,]
+herb_adt_test <- herb_adt[-train_index,]
 # gray snapper
-gris_train_index = sample(seq_len(nrow(gris)), size = floor(0.70*nrow(gris)))  
-gris_train = gris[gris_train_index,] 
-gris_test = gris[-gris_train_index,]
+train_index <- sample(seq_len(nrow(gris_juv)), size = floor(0.70*nrow(gris_juv)))  
+gris_juv_train <- gris_juv[train_index,] 
+gris_juv_test <- gris_juv[-train_index,]
+train_index <- sample(seq_len(nrow(gris_sub)), size = floor(0.70*nrow(gris_sub)))  
+gris_sub_train <- gris_sub[train_index,]
+gris_sub_test <- gris_sub[-train_index,]
+train_index <- sample(seq_len(nrow(gris_adt)), size = floor(0.70*nrow(gris_adt)))  
+gris_adt_train <- gris_adt[train_index,]
+gris_adt_test <- gris_adt[-train_index,]
 # bluestriped grunt
-sciu_train_index = sample(seq_len(nrow(sciu)), size = floor(0.70*nrow(sciu)))  
-sciu_train = sciu[sciu_train_index,] 
-sciu_test = sciu[-sciu_train_index,]
+train_index <- sample(seq_len(nrow(sciu_juv)), size = floor(0.70*nrow(sciu_juv)))  
+sciu_juv_train <- sciu_juv[train_index,] 
+sciu_juv_test <- sciu_juv[-train_index,]
+train_index <- sample(seq_len(nrow(sciu_sub)), size = floor(0.70*nrow(sciu_sub)))  
+sciu_sub_train <- sciu_sub[train_index,]
+sciu_sub_test <- sciu_sub[-train_index,]
+train_index <- sample(seq_len(nrow(sciu_adt)), size = floor(0.70*nrow(sciu_adt)))  
+sciu_adt_train <- sciu_adt[train_index,]
+sciu_adt_test <- sciu_adt[-train_index,]
 # invertivore functional group
-invert_train_index = sample(seq_len(nrow(invert)), size = floor(0.70*nrow(invert)))  
-invert_train = invert[invert_train_index,] 
-invert_test = invert[-invert_train_index,]
+train_index <- sample(seq_len(nrow(invert_juv)), size = floor(0.70*nrow(invert_juv)))  
+invert_juv_train <- invert_juv[train_index,] 
+invert_juv_test <- invert_juv[-train_index,]
+train_index <- sample(seq_len(nrow(invert_sub)), size = floor(0.70*nrow(invert_sub)))  
+invert_sub_train <- invert_sub[train_index,]
+invert_sub_test <- invert_sub[-train_index,]
+train_index <- sample(seq_len(nrow(invert_adt)), size = floor(0.70*nrow(invert_adt)))  
+invert_adt_train <- invert_adt[train_index,]
+invert_adt_test <- invert_adt[-train_index,]
 
 # clean up
-rm(coel_train_index, coer_train_index, gris_train_index, guac_train_index, 
-   herb_train_index, invert_train_index, sciu_train_index)
+rm(train_index)
 
 
 
@@ -329,40 +460,96 @@ rm(coel_train_index, coer_train_index, gris_train_index, guac_train_index,
 
 
 # Midnight parrotfish
-write_csv(coel_train, here("Final_Data","Species_Training","Midnight_Parrotfish_PO_Train.csv")
-          , append = F)
-write_csv(coel_test, here("Final_Data","Species_Testing","Midnight_Parrotfish_PO_Test.csv")
-          , append = F)
+write_csv(coel_juv_train, here("Final_Data","Species_Occurrence","Juvenile","Training",
+                               "MidnightParrotfish_Juvenile_PO_Train.csv"), append = F)
+write_csv(coel_sub_train, here("Final_Data","Species_Occurrence","Subadult","Training",
+                               "MidnightParrotfish_Subadult_PO_Train.csv"), append = F)
+write_csv(coel_adt_train, here("Final_Data","Species_Occurrence","Adult","Training",
+                               "MidnightParrotfish_Adult_PO_Train.csv"), append = F)
+write_csv(coel_juv_test, here("Final_Data","Species_Occurrence","Juvenile","Testing",
+                               "MidnightParrotfish_Juvenile_PO_Test.csv"), append = F)
+write_csv(coel_sub_test, here("Final_Data","Species_Occurrence","Subadult","Testing",
+                               "MidnightParrotfish_Subadult_PO_Test.csv"), append = F)
+write_csv(coel_adt_test, here("Final_Data","Species_Occurrence","Adult","Testing",
+                               "MidnightParrotfish_Adult_PO_Test.csv"), append = F)
 # Blue parrotfish
-write_csv(coer_train, here("Final_Data","Species_Training","Blue_Parrotfish_PO_Train.csv")
-          , append = F)
-write_csv(coer_test, here("Final_Data","Species_Testing","Blue_Parrotfish_PO_Test.csv")
-          , append = F)
+write_csv(coer_juv_train, here("Final_Data","Species_Occurrence","Juvenile","Training",
+                               "BlueParrotfish_Juvenile_PO_Train.csv"), append = F)
+write_csv(coer_sub_train, here("Final_Data","Species_Occurrence","Subadult","Training",
+                               "BlueParrotfish_Subadult_PO_Train.csv"), append = F)
+write_csv(coer_adt_train, here("Final_Data","Species_Occurrence","Adult","Training",
+                               "BlueParrotfish_Adult_PO_Train.csv"), append = F)
+write_csv(coer_juv_test, here("Final_Data","Species_Occurrence","Juvenile","Testing",
+                              "BlueParrotfish_Juvenile_PO_Test.csv"), append = F)
+write_csv(coer_sub_test, here("Final_Data","Species_Occurrence","Subadult","Testing",
+                              "BlueParrotfish_Subadult_PO_Test.csv"), append = F)
+write_csv(coer_adt_test, here("Final_Data","Species_Occurrence","Adult","Testing",
+                              "BlueParrotfish_Adult_PO_Test.csv"), append = F)
 # Rainbow parrotfish
-write_csv(guac_train, here("Final_Data","Species_Training","Rainbow_Parrotfish_PO_Train.csv")
-          , append = F)
-write_csv(guac_test, here("Final_Data","Species_Testing","Rainbow_Parrotfish_PO_Test.csv")
-          , append = F)
+write_csv(guac_juv_train, here("Final_Data","Species_Occurrence","Juvenile","Training",
+                               "RainbowParrotfish_Juvenile_PO_Train.csv"), append = F)
+write_csv(guac_sub_train, here("Final_Data","Species_Occurrence","Subadult","Training",
+                               "RainbowParrotfish_Subadult_PO_Train.csv"), append = F)
+write_csv(guac_adt_train, here("Final_Data","Species_Occurrence","Adult","Training",
+                               "RainbowParrotfish_Adult_PO_Train.csv"), append = F)
+write_csv(guac_juv_test, here("Final_Data","Species_Occurrence","Juvenile","Testing",
+                              "RainbowParrotfish_Juvenile_PO_Test.csv"), append = F)
+write_csv(guac_sub_test, here("Final_Data","Species_Occurrence","Subadult","Testing",
+                              "RainbowParrotfish_Subadult_PO_Test.csv"), append = F)
+write_csv(guac_adt_test, here("Final_Data","Species_Occurrence","Adult","Testing",
+                              "RainbowParrotfish_Adult_PO_Test.csv"), append = F)
 # Gray Snapper
-write_csv(gris_train, here("Final_Data","Species_Training","Gray_Snapper_PO_Train.csv")
-          , append = F)
-write_csv(gris_test, here("Final_Data","Species_Testing","Gray_Snapper_PO_Test.csv")
-          , append = F)
+write_csv(gris_juv_train, here("Final_Data","Species_Occurrence","Juvenile","Training",
+                               "GraySnapper_Juvenile_PO_Train.csv"), append = F)
+write_csv(gris_sub_train, here("Final_Data","Species_Occurrence","Subadult","Training",
+                               "GraySnapper_Subadult_PO_Train.csv"), append = F)
+write_csv(gris_adt_train, here("Final_Data","Species_Occurrence","Adult","Training",
+                               "GraySnapper_Adult_PO_Train.csv"), append = F)
+write_csv(gris_juv_test, here("Final_Data","Species_Occurrence","Juvenile","Testing",
+                              "GraySnapper_Juvenile_PO_Test.csv"), append = F)
+write_csv(gris_sub_test, here("Final_Data","Species_Occurrence","Subadult","Testing",
+                              "GraySnapper_Subadult_PO_Test.csv"), append = F)
+write_csv(gris_adt_test, here("Final_Data","Species_Occurrence","Adult","Testing",
+                              "GraySnapper_Adult_PO_Test.csv"), append = F)
 # Bluestriped Grunt
-write_csv(sciu_train, here("Final_Data","Species_Training","Bluestriped_Grunt_PO_Train.csv")
-          , append = F)
-write_csv(sciu_test, here("Final_Data","Species_Testing","Bluestriped_Grunt_PO_Test.csv")
-          , append = F)
+write_csv(sciu_juv_train, here("Final_Data","Species_Occurrence","Juvenile","Training",
+                               "BluestripedGrunt_Juvenile_PO_Train.csv"), append = F)
+write_csv(sciu_sub_train, here("Final_Data","Species_Occurrence","Subadult","Training",
+                               "BluestripedGrunt_Subadult_PO_Train.csv"), append = F)
+write_csv(sciu_adt_train, here("Final_Data","Species_Occurrence","Adult","Training",
+                               "BluestripedGrunt_Adult_PO_Train.csv"), append = F)
+write_csv(sciu_juv_test, here("Final_Data","Species_Occurrence","Juvenile","Testing",
+                              "BluestripedGrunt_Juvenile_PO_Test.csv"), append = F)
+write_csv(sciu_sub_test, here("Final_Data","Species_Occurrence","Subadult","Testing",
+                              "BluestripedGrunt_Subadult_PO_Test.csv"), append = F)
+write_csv(sciu_adt_test, here("Final_Data","Species_Occurrence","Adult","Testing",
+                              "BluestripedGrunt_Adult_PO_Test.csv"), append = F)
 # Herbivores
-write_csv(herb_train, here("Final_Data","Species_Training","Herbivores_PO_Train.csv")
-          , append = F)
-write_csv(herb_test, here("Final_Data","Species_Testing","Herbivores_PO_Test.csv")
-          , append = F)
+write_csv(herb_juv_train, here("Final_Data","Species_Occurrence","Juvenile","Training",
+                               "Herbivore_Juvenile_PO_Train.csv"), append = F)
+write_csv(herb_sub_train, here("Final_Data","Species_Occurrence","Subadult","Training",
+                               "Herbivore_Subadult_PO_Train.csv"), append = F)
+write_csv(herb_adt_train, here("Final_Data","Species_Occurrence","Adult","Training",
+                               "Herbivore_Adult_PO_Train.csv"), append = F)
+write_csv(herb_juv_test, here("Final_Data","Species_Occurrence","Juvenile","Testing",
+                              "Herbivore_Juvenile_PO_Test.csv"), append = F)
+write_csv(herb_sub_test, here("Final_Data","Species_Occurrence","Subadult","Testing",
+                              "Herbivore_Subadult_PO_Test.csv"), append = F)
+write_csv(herb_adt_test, here("Final_Data","Species_Occurrence","Adult","Testing",
+                              "Herbivore_Adult_PO_Test.csv"), append = F)
 # Invertivores
-write_csv(invert_train, here("Final_Data","Species_Training","Invertivores_PO_Train.csv")
-          , append = F)
-write_csv(invert_test, here("Final_Data","Species_Testing","Invertivores_PO_Test.csv")
-          , append = F)
+write_csv(invert_juv_train, here("Final_Data","Species_Occurrence","Juvenile","Training",
+                               "Invertivore_Juvenile_PO_Train.csv"), append = F)
+write_csv(invert_sub_train, here("Final_Data","Species_Occurrence","Subadult","Training",
+                               "Invertivore_Subadult_PO_Train.csv"), append = F)
+write_csv(invert_adt_train, here("Final_Data","Species_Occurrence","Adult","Training",
+                               "Invertivore_Adult_PO_Train.csv"), append = F)
+write_csv(invert_juv_test, here("Final_Data","Species_Occurrence","Juvenile","Testing",
+                              "Invertivore_Juvenile_PO_Test.csv"), append = F)
+write_csv(invert_sub_test, here("Final_Data","Species_Occurrence","Subadult","Testing",
+                              "Invertivore_Subadult_PO_Test.csv"), append = F)
+write_csv(invert_adt_test, here("Final_Data","Species_Occurrence","Adult","Testing",
+                              "Invertivore_Adult_PO_Test.csv"), append = F)
 
 
 
