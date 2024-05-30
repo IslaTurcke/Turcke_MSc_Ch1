@@ -57,8 +57,8 @@ library(rvc)
 rvc <- as_tibble(getSampleData(years = c(2014, 2016, 2018, 2022), regions = "FLA KEYS"))
 
 # read in mvs data from excel file
-mvs <- read_xlsx(path = paste0(here("GitHub_Repositories","MSc_Ch1_DataPrep",
-                                    "Data_SmallFiles","Fish","MangroveFishData_1998W-2023W_withMetadata.xlsx")))
+mvs <- read_xlsx(path = paste0(here("Source_Data","Mangrove_Fish_Surveys",
+                                    "MangroveFishData_1998W-2023W_withMetadata.xlsx")))
 
 # filter to keep years of interest and omit rows with "NO_SURVEY"
 mvs <- mvs %>% filter(YR %in% c(2014, 2016, 2018, 2022)) %>% filter(SP != "NO_SURVEY")

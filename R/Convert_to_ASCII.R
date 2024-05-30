@@ -74,8 +74,12 @@ ext(final_region)
 CRS <- crs(final_region)
 EXT <- ext(final_region)
 
-terra::plot(final_region)
+terra::plot(final_region, col = "purple")
 terra::plot(sum_temp, add = T)
+
+# save final study region
+writeRaster(final_region, here("Final_Data","Final_Study_Region.tif"),
+            overwrite = T)
 
 
 
@@ -129,25 +133,25 @@ BPI_F <- terra::crop(bpi_f, final_region, mask = T)
 # Save as ASCII -----------------------------------------------------------
 
 
-terra::writeRaster(DEPTH, here("Final_Data","Final_ascii","Depth.asc"),
+terra::writeRaster(DEPTH, here("Final_Data","Predictors_ASCII","Depth.asc"),
                    overwrite = T, NAflag = -9999)
-terra::writeRaster(HABITAT, here("Final_Data","Final_ascii","Habitat_Type.asc"),
+terra::writeRaster(HABITAT, here("Final_Data","Predictors_ASCII","Habitat_Type.asc"),
                    overwrite = T, NAflag = -9999)
-terra::writeRaster(MG_DIST, here("Final_Data","Final_ascii","Mangrove_Distance.asc"),
+terra::writeRaster(MG_DIST, here("Final_Data","Predictors_ASCII","Mangrove_Distance.asc"),
                    overwrite = T, NAflag = -9999)
-terra::writeRaster(SLOPE, here("Final_Data","Final_ascii","Slope.asc"),
+terra::writeRaster(SLOPE, here("Final_Data","Predictors_ASCII","Slope.asc"),
                    overwrite = T, NAflag = -9999)
-terra::writeRaster(CURV, here("Final_Data","Final_ascii","Curvature.asc"),
+terra::writeRaster(CURV, here("Final_Data","Predictors_ASCII","Curvature.asc"),
                    overwrite = T, NAflag = -9999)
-terra::writeRaster(PLAN_CURV, here("Final_Data","Final_ascii","Planar_Curvature.asc"),
+terra::writeRaster(PLAN_CURV, here("Final_Data","Predictors_ASCII","Planar_Curvature.asc"),
                    overwrite = T, NAflag = -9999)
-terra::writeRaster(PROF_CURV, here("Final_Data","Final_ascii","Profile_Curvature.asc"),
+terra::writeRaster(PROF_CURV, here("Final_Data","Predictors_ASCII","Profile_Curvature.asc"),
                    overwrite = T, NAflag = -9999)
-terra::writeRaster(RUG_ACR, here("Final_Data","Final_ascii","Rugosity_ACR.asc"),
+terra::writeRaster(RUG_ACR, here("Final_Data","Predictors_ASCII","Rugosity_ACR.asc"),
                    overwrite = T, NAflag = -9999)
-terra::writeRaster(RUG_VRM, here("Final_Data","Final_ascii","Rugosity_VRM.asc"),
+terra::writeRaster(RUG_VRM, here("Final_Data","Predictors_ASCII","Rugosity_VRM.asc"),
                    overwrite = T, NAflag = -9999)
-terra::writeRaster(BPI_B, here("Final_Data","Final_ascii","BPI_Broad.asc"),
+terra::writeRaster(BPI_B, here("Final_Data","Predictors_ASCII","BPI_Broad.asc"),
                    overwrite = T, NAflag = -9999)
-terra::writeRaster(BPI_F, here("Final_Data","Final_ascii","BPI_Fine.asc"),
+terra::writeRaster(BPI_F, here("Final_Data","Predictors_ASCII","BPI_Fine.asc"),
                    overwrite = T, NAflag = -9999)

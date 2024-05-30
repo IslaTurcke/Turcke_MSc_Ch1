@@ -574,10 +574,10 @@ sampling_effort_spdf <- sampling_effort %>% as(., "Spatial")
 domain_bw <- choose_bw(sampling_effort_spdf)
 
 # create a template grid using the study region raster as a guide
-domain_grid <- rast(here("Final_Data","Study_Region.tif"))
+domain_grid <- rast(here("Final_Data","Final_Study_Region.tif"))
 
 # clean up
-rm(mvs, mvs_sites, rvc, rvc_sites, sampling_effort_spdf)
+rm(mvs_sites, rvc, rvc_sites, sampling_effort_spdf)
 gc()
 
 # calculate kernel density surface
@@ -585,7 +585,7 @@ kde <- sp.kde(x = sampling_effort, bw = domain_bw, ref = domain_grid, res = 5,
                      standardize = T)
 
 # save initial bias grid because that step takes a long time
-writeRaster(domain_kde, here("Intermediate_Data","initial_bias_grid.tif"), overwrite = T)
+writeRaster(kde, here("Intermediate_Data","initial_bias_grid.tif"), overwrite = T)
 kde <- terra::rast(here("Intermediate_Data","initial_bias_grid.tif"))
 
 # resample because even though I asked for 5 x 5 m it does not give that :(
