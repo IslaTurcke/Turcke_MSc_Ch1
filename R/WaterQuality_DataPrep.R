@@ -39,7 +39,7 @@ conflicted::conflict_prefer("xlim", "spex")
 
 # SET UP RELATIVE PATHS TO DIRECTORIES USING 'HERE'
 # set the Isla_MSc_Ch1 folder as the root directory 
-here::i_am("GitHub_Repositories/MSc_Ch1_DataPrep/R/Occurence_DataPrep.R")
+here::i_am("GitHub_Repositories/Turcke_MSc_Ch1/R/Occurence_DataPrep.R")
 
 # save PROJ.4 string for NEW and OLD standard projection 
 # EPSG:6346 NAD 1983 2011 UTM Zone 17N
@@ -364,7 +364,7 @@ terra::points(sumtemp_pts, col = sumtemp_pts$SUM_TEMP)
 writeRaster(sumtemp_terra, filename = here("Final_Data","Water_Quality","Summer_Temperature.tif"),
             overwrite = T)
 sumtemp_raster <- raster::raster(here("Final_Data","Water_Quality","Summer_Temperature.tif"))
-raster::writeRaster(sumtemp_raster, filename = here("Final_Data","Final_ascii","Summer_Temperature.asc"), 
+raster::writeRaster(sumtemp_raster, filename = here("Final_Data","Predictors_ASCII","Summer_Temperature.asc"), 
             format = "ascii", overwrite = T)
 writeVector(sumtemp_pts, filename = here("Final_Data","Water_Quality","Summer_Temperature.shp"),
             overwrite = T)
@@ -468,7 +468,7 @@ terra::points(sumsal_pts, col = sumsal_pts$SUM_SAL)
 writeRaster(sumsal_terra, filename = here("Final_Data","Water_Quality","Summer_Salinity.tif"),
             overwrite = T)
 sumsal_raster <- raster::raster(here("Final_Data","Water_Quality","Summer_Salinity.tif"))
-raster::writeRaster(sumsal_raster, filename = here("Final_Data","Final_ascii","Summer_Salinity.asc"), 
+raster::writeRaster(sumsal_raster, filename = here("Final_Data","Predictors_ASCII","Summer_Salinity.asc"), 
                     format = "ascii", overwrite = T)
 writeVector(sumsal_pts, filename = here("Final_Data","Water_Quality","Summer_Salinity.shp"),
             overwrite = T)
@@ -572,7 +572,7 @@ terra::points(sumdo_pts, col = sumdo_pts$SUM_DO)
 writeRaster(sumdo_terra, filename = here("Final_Data","Water_Quality","Summer_Dissolved_Oxygen.tif"),
             overwrite = T)
 sumdo_raster <- raster::raster(here("Final_Data","Water_Quality","Summer_Dissolved_Oxygen.tif"))
-raster::writeRaster(sumdo_raster, filename = here("Final_Data","Final_ascii","Summer_Dissolved_Oxygen.asc"), 
+raster::writeRaster(sumdo_raster, filename = here("Final_Data","Predictors_ASCII","Summer_Dissolved_Oxygen.asc"), 
                     format = "ascii", overwrite = T)
 writeVector(sumdo_pts, filename = here("Final_Data","Water_Quality","Summer_Dissolved_Oxygen.shp"),
             overwrite = T)
@@ -676,7 +676,7 @@ terra::points(wintemp_pts, col = wintemp_pts$WIN_TEMP)
 writeRaster(wintemp_terra, filename = here("Final_Data","Water_Quality","Winter_Temperature.tif"),
             overwrite = T)
 wintemp_raster <- raster::raster(here("Final_Data","Water_Quality","Winter_Temperature.tif"))
-raster::writeRaster(wintemp_raster, filename = here("Final_Data","Final_ascii","Winter_Temperature.asc"), 
+raster::writeRaster(wintemp_raster, filename = here("Final_Data","Predictors_ASCII","Winter_Temperature.asc"), 
                     format = "ascii", overwrite = T)
 writeVector(wintemp_pts, filename = here("Final_Data","Water_Quality","Winter_Temperature.shp"),
             overwrite = T)
@@ -780,7 +780,7 @@ terra::points(winsal_pts, col = winsal_pts$WIN_SAL)
 writeRaster(winsal_terra, filename = here("Final_Data","Water_Quality","Winter_Salinity.tif"),
             overwrite = T)
 winsal_raster <- raster::raster(here("Final_Data","Water_Quality","Winter_Salinity.tif"))
-raster::writeRaster(winsal_raster, filename = here("Final_Data","Final_ascii","Winter_Salinity.asc"), 
+raster::writeRaster(winsal_raster, filename = here("Final_Data","Predictors_ASCII","Winter_Salinity.asc"), 
                     format = "ascii", overwrite = T)
 writeVector(winsal_pts, filename = here("Final_Data","Water_Quality","Winter_Salinity.shp"),
             overwrite = T)
@@ -884,7 +884,7 @@ terra::points(windo_pts, col = windo_pts$WIN_DO)
 writeRaster(windo_terra, filename = here("Final_Data","Water_Quality","Winter_Dissolved_Oxygen.tif"),
             overwrite = T)
 windo_raster <- raster::raster(here("Final_Data","Water_Quality","Winter_Dissolved_Oxygen.tif"))
-raster::writeRaster(windo_raster, filename = here("Final_Data","Final_ascii","Winter_Dissolved_Oxygen.asc"), 
+raster::writeRaster(windo_raster, filename = here("Final_Data","Predictors_ASCII","Winter_Dissolved_Oxygen.asc"), 
                     format = "ascii", overwrite = T)
 writeVector(windo_pts, filename = here("Final_Data","Water_Quality","Winter_Dissolved_Oxygen.shp"),
             overwrite = T)

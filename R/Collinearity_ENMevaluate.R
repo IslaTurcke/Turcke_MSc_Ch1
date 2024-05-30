@@ -40,11 +40,12 @@ libraries("raster", "terra", "sf", "here", "dplyr", "usdm", "sdmpredictors", "PN
 
 # SET UP RELATIVE PATHS TO DIRECTORIES USING 'HERE'
 # set the Isla_MSc_Ch1 folder as the root directory 
-here::i_am("GitHub_Repositories/MSc_Ch1_DataPrep/R/Collinearity_ENMevaluate.R")
+here::i_am("GitHub_Repositories/Turcke_MSc_Ch1/R/Collinearity_ENMevaluate.R")
 
-# save PROJ.4 string for NEW and OLD standard projection 
+# save PROJ.4 string for NEW projection 
 # EPSG:6346 NAD 1983 2011 UTM Zone 17N
 new_crs <- crs("+init=epsg:6346")
+
 
 
 # Load Predictor Rasters --------------------------------------------------
@@ -73,26 +74,27 @@ crs(mg_dist) <- new_crs
 crs(depth) <- new_crs
 crs(slope) <- new_crs
 crs(curvature) <- new_crs
-# crs(plan_curv) <- new_crs
-# crs(prof_curv) <- new_crs
-# crs(rug_acr) <- new_crs
-# crs(rug_vrm) <- new_crs
-# crs(bpi_fine) <- new_crs
-# crs(bpi_broad) <- new_crs
-# crs(sum_temp) <- new_crs
-# crs(sum_sal) <- new_crs
-# crs(sum_do) <- new_crs
-# crs(win_temp) <- new_crs
-# crs(win_sal) <- new_crs
-# crs(win_do) <- new_crs
+crs(plan_curv) <- new_crs
+crs(prof_curv) <- new_crs
+crs(rug_acr) <- new_crs
+crs(rug_vrm) <- new_crs
+crs(bpi_fine) <- new_crs
+crs(bpi_broad) <- new_crs
+crs(sum_temp) <- new_crs
+crs(sum_sal) <- new_crs
+crs(sum_do) <- new_crs
+crs(win_temp) <- new_crs
+crs(win_sal) <- new_crs
+crs(win_do) <- new_crs
 
 # create raster stack
-pred_full <- raster::stack(x = list(habitat, mg_dist, depth, slope, curvature))
-names(pred_full) <- c("Habitat","Mangrove Dist","Depth","Slope","Curvature")
-#, 
-                       #          plan_curv, prof_curv, rug_acr, rug_vrm, bpi_fine,
-                       #          bpi_broad, sum_temp, sum_sal, sum_do, win_temp,
-                       #          win_sal, win_do))
+pred_full <- raster::stack(x = list(habitat, mg_dist, depth, slope, curvature, 
+                                    plan_curv, prof_curv, rug_acr, rug_vrm, bpi_fine,
+                                    bpi_broad, sum_temp, sum_sal, sum_do, win_temp,
+                                    win_sal, win_do))
+names(pred_full) <- c("Habitat","Mangrove_Dist","Depth","Slope","Curvature","Plan_Curv",
+                      "Profile_Curv","ACR_Rugosity","Terrain_Ruggedness","BPI_Fine","BPI_Broad",
+                      "Sum_Temp","Sum_Sal","Sum_DO","Win_Temp","Win_Sal","Win_DO")
 
 
 # Pearson Pairwise Correlation --------------------------------------------
