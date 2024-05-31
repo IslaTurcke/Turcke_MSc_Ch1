@@ -35,7 +35,7 @@ install.packages("Cairo")
 # load packages
 library(easypackages)
 libraries("raster", "terra", "sf", "here", "dplyr", "usdm", "sdmpredictors", "PNWColors",
-          "corrplot", "Cairo", "parallel", "snow")
+          "corrplot", "Cairo")
 
 
 # SET UP RELATIVE PATHS TO DIRECTORIES USING 'HERE'
@@ -50,23 +50,23 @@ new_crs <- crs("+init=epsg:6346")
 
 # Load Predictor Rasters --------------------------------------------------
 
-habitat <- raster(here("Final_Data","Final_ascii","Habitat_Type.asc"))
-mg_dist <- raster(here("Final_Data","Final_ascii","Mangrove_Distance.asc"))
-depth <- raster(here("Final_Data","Final_ascii","Depth.asc"))
-slope <- raster(here("Final_Data","Final_ascii","Slope.asc"))
-curvature <- raster(here("Final_Data","Final_ascii","Curvature.asc"))
-plan_curv <- raster(here("Final_Data","Final_ascii","Planar_Curvature.asc"))
-prof_curv <- raster(here("Final_Data","Final_ascii","Profile_Curvature.asc"))
-rug_acr <- raster(here("Final_Data","Final_ascii","Rugosity_ACR.asc"))
-rug_vrm <- raster(here("Final_Data","Final_ascii","Rugosity_VRM.asc"))
-bpi_fine <- raster(here("Final_Data","Final_ascii","BPI_Fine.asc"))
-bpi_broad <- raster(here("Final_Data","Final_ascii","BPI_Broad.asc"))
-sum_temp <- raster(here("Final_Data","Final_ascii","Summer_Temperature.asc"))
-sum_sal <- raster(here("Final_Data","Final_ascii","Summer_Salinity.asc"))
-sum_do <- raster(here("Final_Data","Final_ascii","Summer_Dissolved_Oxygen.asc"))
-win_temp <- raster(here("Final_Data","Final_ascii","Winter_Temperature.asc"))
-win_sal <- raster(here("Final_Data","Final_ascii","Winter_Salinity.asc"))
-win_do <- raster(here("Final_Data","Final_ascii","Winter_Dissolved_Oxygen.asc"))
+habitat <- raster(here("Final_Data","Predictors_ASCII","Habitat_Type.asc"))
+mg_dist <- raster(here("Final_Data","Predictors_ASCII","Mangrove_Distance.asc"))
+depth <- raster(here("Final_Data","Predictors_ASCII","Depth.asc"))
+slope <- raster(here("Final_Data","Predictors_ASCII","Slope.asc"))
+curvature <- raster(here("Final_Data","Predictors_ASCII","Curvature.asc"))
+plan_curv <- raster(here("Final_Data","Predictors_ASCII","Planar_Curvature.asc"))
+prof_curv <- raster(here("Final_Data","Predictors_ASCII","Profile_Curvature.asc"))
+rug_acr <- raster(here("Final_Data","Predictors_ASCII","Rugosity_ACR.asc"))
+rug_vrm <- raster(here("Final_Data","Predictors_ASCII","Rugosity_VRM.asc"))
+bpi_fine <- raster(here("Final_Data","Predictors_ASCII","BPI_Fine.asc"))
+bpi_broad <- raster(here("Final_Data","Predictors_ASCII","BPI_Broad.asc"))
+sum_temp <- raster(here("Final_Data","Predictors_ASCII","Summer_Temperature.asc"))
+sum_sal <- raster(here("Final_Data","Predictors_ASCII","Summer_Salinity.asc"))
+sum_do <- raster(here("Final_Data","Predictors_ASCII","Summer_Dissolved_Oxygen.asc"))
+win_temp <- raster(here("Final_Data","Predictors_ASCII","Winter_Temperature.asc"))
+win_sal <- raster(here("Final_Data","Predictors_ASCII","Winter_Salinity.asc"))
+win_do <- raster(here("Final_Data","Predictors_ASCII","Winter_Dissolved_Oxygen.asc"))
 
 # define crs for each raster
 crs(habitat) <- new_crs
@@ -96,6 +96,9 @@ names(pred_full) <- c("Habitat","Mangrove_Dist","Depth","Slope","Curvature","Pla
                       "Profile_Curv","ACR_Rugosity","Terrain_Ruggedness","BPI_Fine","BPI_Broad",
                       "Sum_Temp","Sum_Sal","Sum_DO","Win_Temp","Win_Sal","Win_DO")
 
+pred_test <- raster::stack(x = list(habitat, mg_dist, depth, slope))
+names(pred_test) <- c("Habitat","Mangrove_Dist","Depth","Slope")
+
 
 # Pearson Pairwise Correlation --------------------------------------------
 
@@ -107,22 +110,25 @@ ppcor_full <- pearson_correlation_matrix(pred_full)
 palette <- pnw_palette("Shuksan2", 200, type = "continuous")
 par(mar = c(0,0,0,0))
 corrplot(ppcor_full, method = "color", col = palette, type = "upper",
-         order = "AOE", addCoef.col = "black", number.cex = 0.5, 
-         number.digits = 2, tl.col = "black", tl.srt = 40, tl.cex = 0.8) # order = FPC, hclust
+         order = "original", addCoef.col = "black", number.cex = 0.6, 
+         number.digits = 2, tl.col = "black", tl.srt = 40, tl.cex = 0.7) # order = FPC, hclust
 
 # save plot as png
-Cairo(file = here("GitHub_Repositories","MSc_Ch1_DataPrep","Figures","Correlation_FullPredictorSet.png"),
-      bg = "white", type = "png", units = "in", width = 6, height = 5, 
+Cairo(file = here("GitHub_Repositories","Turcke_MSc_Ch1","Figures","Correlation_FullPredictorSet.png"),
+      bg = "white", type = "png", units = "in", width = 7, height = 7, 
       pointsize = 12, dpi = 600)
 par(mar = c(0,0,0,0))
 corrplot(ppcor_full, method = "color", col = palette, type = "upper",
-         order = "AOE", addCoef.col = "black", number.cex = 0.5, 
-         number.digits = 2, tl.col = "black", tl.srt = 40, tl.cex = 0.8) # order = FPC, hclust
+         order = "original", addCoef.col = "black", number.cex = 0.6,       # order = FPC, original
+         number.digits = 2, tl.col = "black", tl.srt = 40, tl.cex = 0.8) 
 dev.off()
 
 # save as .csv
-write.csv(ppcor_full, here("GitHub_Repositories","MSc_Ch1_DataPrep","Data_SmallFiles",
+write.csv(ppcor_full, here("GitHub_Repositories","Turcke_MSc_Ch1","Data_SmallFiles",
                            "Correlation_FullPredictorSet.csv"))
+
+# clean up
+rm(CRS, new_crs, ppcor_full, pred_full)
 
 
 # Variance Inflation Factors (VIF) ----------------------------------------
@@ -135,16 +141,16 @@ write.csv(ppcor_full, here("GitHub_Repositories","MSc_Ch1_DataPrep","Data_SmallF
 # standard VIF threshold of 5.
 
 # take random sample
-cl <- snow::makeCluster(10)
-x <- sampleRandom(pred_full, 10000, na.rm = TRUE)
+#cl <- snow::makeCluster(10)
+x <- raster::sampleRandom(pred_test, 10)
 # this returned fewer than 10000 because of the NAs that were removed
 # find a way to fix this
-snow::stopCluster(cl)
+#snow::stopCluster(cl)
 
 # calculate vif for random sample
 vif <- vif(as.data.frame(x))
 vif
-write.csv(vif, here("GitHub_Repositories","MSc_Ch1_DataPrep","Data_SmallFiles",
+write.csv(vif, here("GitHub_Repositories","Turcke_MSc_Ch1","Data_SmallFiles",
                     "VIF_FullPredictorSet.csv"), row.names = FALSE)
 
 
@@ -172,7 +178,7 @@ corrplot(ppcor_select, method = "color", col = palette, type = "upper",
          number.digits = 2, tl.col = "black", tl.srt = 40, tl.cex = 0.8) # order = FPC, hclust
 
 # save plot as png
-Cairo(file = here("GitHub_Repositories","MSc_Ch1_DataPrep","Figures","Correlation_SelectedPredictorSet.png"),
+Cairo(file = here("GitHub_Repositories","Turcke_MSc_Ch1","Figures","Correlation_SelectedPredictorSet.png"),
       bg = "white", type = "png", units = "in", width = 6, height = 5, 
       pointsize = 12, dpi = 600)
 par(mar = c(0,0,0,0))
@@ -182,7 +188,7 @@ corrplot(ppcor_full, method = "color", col = palette, type = "upper",
 dev.off()
 
 # save as .csv
-write.csv(ppcor_full, here("GitHub_Repositories","MSc_Ch1_DataPrep","Data_SmallFiles",
+write.csv(ppcor_full, here("GitHub_Repositories","Turcke_MSc_Ch1","Data_SmallFiles",
                            "Correlation_SelectedPredictorSet.csv"))
 
 
@@ -196,7 +202,7 @@ snow::stopCluster(cl)
 # calculate vif for random sample
 vif_select <- vif(as.data.frame(y))
 vif_select
-write.csv(vif_select, here("GitHub_Repositories","MSc_Ch1_DataPrep","Data_SmallFiles",
+write.csv(vif_select, here("GitHub_Repositories","Turcke_MSc_Ch1","Data_SmallFiles",
                            "VIF_SelectedPredictorSet.csv"), row.names = FALSE)
 
 
@@ -216,7 +222,7 @@ system.file("java", package = "dismo")
 
 # read in the survey bias file 
 # this will guide the selection of background points by MaxEnt
-bias <- raster(here("Final_Data","Final_ascii","Sampling_Bias.asc"))
+bias <- raster(here("Final_Data","Predictors_ASCII","Sampling_Bias.asc"))
 crs(bias) <- new_crs
 
 # study domain is very large, so select 10,000 background points 

@@ -10,7 +10,7 @@
 ### TO USE THIS FILE ###
 # Before running this R script:
 # - Make sure the files RVC_Start.csv and MVS_Start.csv are in the "Data_SmallFiles"
-#   folder in the MSc_Ch1_DataPrep repository on my GitHub.
+#   folder in the Turcke_MSc_Ch1 repository on my GitHub.
 # - If they are not, run the script "RVC-MVS_InitialPrep.R".
 
 ### PREPARING SCARUS DATASETS FOR HABITAT SUITABILITY MODELLING ###
@@ -53,7 +53,7 @@ conflicted::conflict_prefer("filter", "dplyr")
 
 # SET UP RELATIVE PATHS TO DIRECTORIES USING 'HERE'
 # set the Isla_MSc_Ch1 folder as the root directory 
-here::i_am("GitHub_Repositories/MSc_Ch1_DataPrep/R/Occurence_DataPrep.R")
+here::i_am("GitHub_Repositories/Turcke_MSc_Ch1/R/Occurence_DataPrep.R")
 
 # save PROJ.4 string for NEW and OLD standard projection 
 # EPSG:6346 NAD 1983 2011 UTM Zone 17N
@@ -61,8 +61,8 @@ new_crs <- crs("+init=epsg:6346")
 
 # READ IN SPECIES OCCURRENCE DATASETS
 # pre-cleaned rvc and mvs data for FLA_KEYS 2014, 2016, 2018, 2022
-rvc <- as_tibble(read.csv(here("GitHub_Repositories","MSc_Ch1_DataPrep","Data_SmallFiles","Fish","RVC_Start.csv")))
-mvs <- as_tibble(read.csv(here("GitHub_Repositories","MSc_Ch1_DataPrep","Data_SmallFiles","Fish","MVS_Start.csv")))
+rvc <- as_tibble(read.csv(here("GitHub_Repositories","Turcke_MSc_Ch1","Data_SmallFiles","Fish","RVC_Start.csv")))
+mvs <- as_tibble(read.csv(here("GitHub_Repositories","Turcke_MSc_Ch1","Data_SmallFiles","Fish","MVS_Start.csv")))
 
 # NOTE: mvs dataset is already presence ONLY
 
@@ -300,74 +300,182 @@ all_adt_PA <- all_adt_w %>%
   select(-c(SCA_COEL, SCA_COER, SCA_GUAC, HERB, LUT_GRIS, HAE_SCIU, INVERT))
 
 # write out to species occurrence folders
-write_csv(all_juv_PA, here("Final_Data","Species_Occurrence","Juvenile","Testing",
-                           "Juvenile_PA_Test.csv"), append = F)
-write_csv(all_sub_PA, here("Final_Data","Species_Occurrence","Subadult","Testing",
-                           "Subadult_PA_Test.csv"), append = F)
-write_csv(all_adt_PA, here("Final_Data","Species_Occurrence","Adult","Testing",
-                           "Adult_PA_Test.csv"), append = F)
+write_csv(all_juv_PA, here("Final_Data","Species_Occurrence","Juvenile",
+                           "Juvenile_PA_Full.csv"), append = F)
+write_csv(all_sub_PA, here("Final_Data","Species_Occurrence","Subadult",
+                           "Subadult_PA_Full.csv"), append = F)
+write_csv(all_adt_PA, here("Final_Data","Species_Occurrence","Adult",
+                           "Adult_PA_Full.csv"), append = F)
+# write out subadult data to GitHub repository
+write_csv(all_sub_PA, here("GitHub_Repositories","Turcke_MSc_Ch1","Data_SmallFiles",
+                           "Occurrence_Subadult_PA_Full.csv"), append = F)
 
 
 
-# FINAL PRESENCE ONLY DATASETS --------------------------------------------
+# Final FULL PA Datasets --------------------------------------------
 
 
-# separate by species/group and filter out absences
+# separate by species/group
+# make binary presence (0/1) a factor and add PRES2 as a factor
+# add a column for species code
 
 # juveniles
-coer_juv <- all_juv_PA %>% select(SOURCE, ID_SURV, x, y, PRES_COER) %>% 
-  filter(PRES_COER == 1)
-coel_juv <- all_juv_PA %>% select(SOURCE, ID_SURV, x, y, PRES_COEL) %>% 
-  filter(PRES_COEL == 1)
-guac_juv <- all_juv_PA %>% select(SOURCE, ID_SURV, x, y, PRES_GUAC) %>% 
-  filter(PRES_GUAC == 1)
-herb_juv <- all_juv_PA %>% select(SOURCE, ID_SURV, x, y, PRES_HERB) %>% 
-  filter(PRES_HERB == 1)
-gris_juv <- all_juv_PA %>% select(SOURCE, ID_SURV, x, y, PRES_GRIS) %>% 
-  filter(PRES_GRIS == 1)
-sciu_juv <- all_juv_PA %>% select(SOURCE, ID_SURV, x, y, PRES_SCIU) %>% 
-  filter(PRES_SCIU == 1)
-invert_juv <- all_juv_PA %>% select(SOURCE, ID_SURV, x, y, PRES_INVERT) %>% 
-  filter(PRES_INVERT == 1)
+coer_juv_PA <- all_juv_PA %>% mutate(PRES = as.factor(PRES_COER), PRES2 = as.factor(ifelse(all_juv_PA$PRES_COER == 1, "PRESENCE","ABSENCE"))) %>% 
+  mutate(SPECIES_CODE = "SCA_COER") %>% select(SPECIES_CODE, SOURCE, ID_SURV, x, y, PRES, PRES2)
+coel_juv_PA <- all_juv_PA %>% mutate(PRES = as.factor(PRES_COEL), PRES2 = as.factor(ifelse(all_juv_PA$PRES_COEL == 1, "PRESENCE","ABSENCE"))) %>%
+  mutate(SPECIES_CODE = "SCA_COEL") %>% select(SPECIES_CODE, SOURCE, ID_SURV, x, y, PRES, PRES2)
+guac_juv_PA <- all_juv_PA %>% mutate(PRES = as.factor(PRES_GUAC), PRES2 = as.factor(ifelse(all_juv_PA$PRES_GUAC == 1, "PRESENCE","ABSENCE"))) %>%
+  mutate(SPECIES_CODE = "SCA_GUAC") %>% select(SPECIES_CODE, SOURCE, ID_SURV, x, y, PRES, PRES2)
+herb_juv_PA <- all_juv_PA %>% mutate(PRES = as.factor(PRES_HERB), PRES2 = as.factor(ifelse(all_juv_PA$PRES_HERB == 1, "PRESENCE","ABSENCE"))) %>%
+  mutate(SPECIES_CODE = "HERB") %>% select(SPECIES_CODE, SOURCE, ID_SURV, x, y, PRES, PRES2)
+gris_juv_PA <- all_juv_PA %>% mutate(PRES = as.factor(PRES_GRIS), PRES2 = as.factor(ifelse(all_juv_PA$PRES_GRIS == 1, "PRESENCE","ABSENCE"))) %>%
+  mutate(SPECIES_CODE = "LUT_GRIS") %>% select(SPECIES_CODE, SOURCE, ID_SURV, x, y, PRES, PRES2)
+sciu_juv_PA <- all_juv_PA %>% mutate(PRES = as.factor(PRES_SCIU), PRES2 = as.factor(ifelse(all_juv_PA$PRES_SCIU == 1, "PRESENCE","ABSENCE"))) %>%
+  mutate(SPECIES_CODE = "HAE_SCIU") %>% select(SPECIES_CODE, SOURCE, ID_SURV, x, y, PRES, PRES2)
+invert_juv_PA <- all_juv_PA %>% mutate(PRES = as.factor(PRES_INVERT), PRES2 = as.factor(ifelse(all_juv_PA$PRES_INVERT == 1, "PRESENCE","ABSENCE"))) %>%
+  mutate(SPECIES_CODE = "INVERT") %>% select(SPECIES_CODE, SOURCE, ID_SURV, x, y, PRES, PRES2)
 
 # subadults
-coer_sub <- all_sub_PA %>% select(SOURCE, ID_SURV, x, y, PRES_COER) %>% 
-  filter(PRES_COER == 1)
-coel_sub <- all_sub_PA %>% select(SOURCE, ID_SURV, x, y, PRES_COEL) %>% 
-  filter(PRES_COEL == 1)
-guac_sub <- all_sub_PA %>% select(SOURCE, ID_SURV, x, y, PRES_GUAC) %>% 
-  filter(PRES_GUAC == 1)
-herb_sub <- all_sub_PA %>% select(SOURCE, ID_SURV, x, y, PRES_HERB) %>% 
-  filter(PRES_HERB == 1)
-gris_sub <- all_sub_PA %>% select(SOURCE, ID_SURV, x, y, PRES_GRIS) %>% 
-  filter(PRES_GRIS == 1)
-sciu_sub <- all_sub_PA %>% select(SOURCE, ID_SURV, x, y, PRES_SCIU) %>% 
-  filter(PRES_SCIU == 1)
-invert_sub <- all_sub_PA %>% select(SOURCE, ID_SURV, x, y, PRES_INVERT) %>% 
-  filter(PRES_INVERT == 1)
+coer_sub_PA <- all_sub_PA %>% mutate(PRES = as.factor(PRES_COER), PRES2 = as.factor(ifelse(all_sub_PA$PRES_COER == 1, "PRESENCE","ABSENCE"))) %>%
+  mutate(SPECIES_CODE = "SCA_COER") %>% select(SPECIES_CODE, SOURCE, ID_SURV, x, y, PRES, PRES2)
+coel_sub_PA <- all_sub_PA %>% mutate(PRES = as.factor(PRES_COEL), PRES2 = as.factor(ifelse(all_sub_PA$PRES_COEL == 1, "PRESENCE","ABSENCE"))) %>%
+  mutate(SPECIES_CODE = "SCA_COEL") %>% select(SPECIES_CODE, SOURCE, ID_SURV, x, y, PRES, PRES2)
+guac_sub_PA <- all_sub_PA %>% mutate(PRES = as.factor(PRES_GUAC), PRES2 = as.factor(ifelse(all_sub_PA$PRES_GUAC == 1, "PRESENCE","ABSENCE"))) %>%
+  mutate(SPECIES_CODE = "SCA_GUAC") %>% select(SPECIES_CODE, SOURCE, ID_SURV, x, y, PRES, PRES2)
+herb_sub_PA <- all_sub_PA %>% mutate(PRES = as.factor(PRES_HERB), PRES2 = as.factor(ifelse(all_sub_PA$PRES_HERB == 1, "PRESENCE","ABSENCE"))) %>%
+  mutate(SPECIES_CODE = "HERB") %>% select(SPECIES_CODE, SOURCE, ID_SURV, x, y, PRES, PRES2)
+gris_sub_PA <- all_sub_PA %>% mutate(PRES = as.factor(PRES_GRIS), PRES2 = as.factor(ifelse(all_sub_PA$PRES_GRIS == 1, "PRESENCE","ABSENCE"))) %>%
+  mutate(SPECIES_CODE = "LUT_GRIS") %>% select(SPECIES_CODE, SOURCE, ID_SURV, x, y, PRES, PRES2)
+sciu_sub_PA <- all_sub_PA %>% mutate(PRES = as.factor(PRES_SCIU), PRES2 = as.factor(ifelse(all_sub_PA$PRES_SCIU == 1, "PRESENCE","ABSENCE"))) %>%
+  mutate(SPECIES_CODE = "HAE_SCIU") %>% select(SPECIES_CODE, SOURCE, ID_SURV, x, y, PRES, PRES2)
+invert_sub_PA <- all_sub_PA %>% mutate(PRES = as.factor(PRES_INVERT), PRES2 = as.factor(ifelse(all_sub_PA$PRES_INVERT == 1, "PRESENCE","ABSENCE"))) %>%
+  mutate(SPECIES_CODE = "INVERT") %>% select(SPECIES_CODE, SOURCE, ID_SURV, x, y, PRES, PRES2)
 
 # adults
-coer_adt <- all_adt_PA %>% select(SOURCE, ID_SURV, x, y, PRES_COER) %>% 
-  filter(PRES_COER == 1)
-coel_adt <- all_adt_PA %>% select(SOURCE, ID_SURV, x, y, PRES_COEL) %>% 
-  filter(PRES_COEL == 1)
-guac_adt <- all_adt_PA %>% select(SOURCE, ID_SURV, x, y, PRES_GUAC) %>% 
-  filter(PRES_GUAC == 1)
-herb_adt <- all_adt_PA %>% select(SOURCE, ID_SURV, x, y, PRES_HERB) %>% 
-  filter(PRES_HERB == 1)
-gris_adt <- all_adt_PA %>% select(SOURCE, ID_SURV, x, y, PRES_GRIS) %>% 
-  filter(PRES_GRIS == 1)
-sciu_adt <- all_adt_PA %>% select(SOURCE, ID_SURV, x, y, PRES_SCIU) %>% 
-  filter(PRES_SCIU == 1)
-invert_adt <- all_adt_PA %>% select(SOURCE, ID_SURV, x, y, PRES_INVERT) %>% 
-  filter(PRES_INVERT == 1)
+coer_adt_PA <- all_adt_PA %>% mutate(PRES = as.factor(PRES_COER), PRES2 = as.factor(ifelse(all_adt_PA$PRES_COER == 1, "PRESENCE","ABSENCE"))) %>%
+  mutate(SPECIES_CODE = "SCA_COER") %>% select(SPECIES_CODE, SOURCE, ID_SURV, x, y, PRES, PRES2)
+coel_adt_PA <- all_adt_PA %>% mutate(PRES = as.factor(PRES_COEL), PRES2 = as.factor(ifelse(all_adt_PA$PRES_COEL == 1, "PRESENCE","ABSENCE"))) %>%
+  mutate(SPECIES_CODE = "SCA_COEL") %>% select(SPECIES_CODE, SOURCE, ID_SURV, x, y, PRES, PRES2)
+guac_adt_PA <- all_adt_PA %>% mutate(PRES = as.factor(PRES_GUAC), PRES2 = as.factor(ifelse(all_adt_PA$PRES_GUAC == 1, "PRESENCE","ABSENCE"))) %>%
+  mutate(SPECIES_CODE = "SCA_GUAC") %>% select(SPECIES_CODE, SOURCE, ID_SURV, x, y, PRES, PRES2)
+herb_adt_PA <- all_adt_PA %>% mutate(PRES = as.factor(PRES_HERB), PRES2 = as.factor(ifelse(all_adt_PA$PRES_HERB == 1, "PRESENCE","ABSENCE"))) %>%
+  mutate(SPECIES_CODE = "HERB") %>% select(SPECIES_CODE, SOURCE, ID_SURV, x, y, PRES, PRES2)
+gris_adt_PA <- all_adt_PA %>% mutate(PRES = as.factor(PRES_GRIS), PRES2 = as.factor(ifelse(all_adt_PA$PRES_GRIS == 1, "PRESENCE","ABSENCE"))) %>%
+  mutate(SPECIES_CODE = "LUT_GRIS") %>% select(SPECIES_CODE, SOURCE, ID_SURV, x, y, PRES, PRES2)
+sciu_adt_PA <- all_adt_PA %>% mutate(PRES = as.factor(PRES_SCIU), PRES2 = as.factor(ifelse(all_adt_PA$PRES_SCIU == 1, "PRESENCE","ABSENCE"))) %>%
+  mutate(SPECIES_CODE = "HAE_SCIU") %>% select(SPECIES_CODE, SOURCE, ID_SURV, x, y, PRES, PRES2)
+invert_adt_PA <- all_adt_PA %>% mutate(PRES = as.factor(PRES_INVERT), PRES2 = as.factor(ifelse(all_adt_PA$PRES_INVERT == 1, "PRESENCE","ABSENCE"))) %>%
+  mutate(SPECIES_CODE = "INVERT") %>% select(SPECIES_CODE, SOURCE, ID_SURV, x, y, PRES, PRES2)
+
+# clean up
+rm(rvc, mvs, rvc_focal, mvs_focal, mvs_expanded, all_focal, all_juvs, all_subadults, all_adults,
+   all_juv_w, all_sub_w, all_adt_w, all_juv_PA, all_sub_PA, all_adt_PA, temp, i)
+
+# save FULL PA datasets
+# blue parrotfish
+write.csv(coer_juv_PA, here("Final_Data","Species_Occurrence","Juvenile","Juvenile_BlueParrotfish_PA_Full.csv"),
+          append = F)
+write.csv(coer_sub_PA, here("Final_Data","Species_Occurrence","Subadult","Subadult_BlueParrotfish_PA_Full.csv"),
+          append = F)
+write.csv(coer_adt_PA, here("Final_Data","Species_Occurrence","Adult","Adult_BlueParrotfish_PA_Full.csv"),
+          append = F)
+# midnight parrotfish
+write.csv(coel_juv_PA, here("Final_Data","Species_Occurrence","Juvenile","Juvenile_MidnightParrotfish_PA_Full.csv"),
+          append = F)
+write.csv(coel_sub_PA, here("Final_Data","Species_Occurrence","Subadult","Subadult_MidnightParrotfish_PA_Full.csv"),
+          append = F)
+write.csv(coel_adt_PA, here("Final_Data","Species_Occurrence","Adult","Adult_MidnightParrotfish_PA_Full.csv"),
+          append = F)
+# rainbow parrotfish
+write.csv(guac_juv_PA, here("Final_Data","Species_Occurrence","Juvenile","Juvenile_RainbowParrotfish_PA_Full.csv"),
+          append = F)
+write.csv(guac_sub_PA, here("Final_Data","Species_Occurrence","Subadult","Subadult_RainbowParrotfish_PA_Full.csv"),
+          append = F)
+write.csv(guac_adt_PA, here("Final_Data","Species_Occurrence","Adult","Adult_RainbowParrotfish_PA_Full.csv"),
+          append = F)
+# bluestriped grunt
+write.csv(sciu_juv_PA, here("Final_Data","Species_Occurrence","Juvenile","Juvenile_BluestripedGrunt_PA_Full.csv"),
+          append = F)
+write.csv(sciu_sub_PA, here("Final_Data","Species_Occurrence","Subadult","Subadult_BluestripedGrunt_PA_Full.csv"),
+          append = F)
+write.csv(sciu_adt_PA, here("Final_Data","Species_Occurrence","Adult","Adult_BluestripedGrunt_PA_Full.csv"),
+          append = F)
+# gray snapper
+write.csv(gris_juv_PA, here("Final_Data","Species_Occurrence","Juvenile","Juvenile_GraySnapper_PA_Full.csv"),
+          append = F)
+write.csv(gris_sub_PA, here("Final_Data","Species_Occurrence","Subadult","Subadult_GraySnapper_PA_Full.csv"),
+          append = F)
+write.csv(gris_adt_PA, here("Final_Data","Species_Occurrence","Adult""Adult_GraySnapper_PA_Full.csv"),
+          append = F)
+# herbivores
+write.csv(herb_juv_PA, here("Final_Data","Species_Occurrence","Juvenile","Juvenile_Herbivore_PA_Full.csv"),
+          append = F)
+write.csv(herb_sub_PA, here("Final_Data","Species_Occurrence","Subadult","Subadult_Herbivore_PA_Full.csv"),
+          append = F)
+write.csv(herb_adt_PA, here("Final_Data","Species_Occurrence","Adult","Adult_Herbivore_PA_Full.csv"),
+          append = F)
+# invertivores
+write.csv(invert_juv_PA, here("Final_Data","Species_Occurrence","Juvenile","Juvenile_Invertivore_PA_Full.csv"),
+          append = F)
+write.csv(invert_sub_PA, here("Final_Data","Species_Occurrence","Subadult","Subadult_Invertivore_PA_Full.csv"),
+          append = F)
+write.csv(invert_adt_PA, here("Final_Data","Species_Occurrence","Adult","Adult_Invertivore_PA_Full.csv"),
+          append = F)
 
 
 
-# Clean Up ----------------------------------------------------------------
+# Final FULL PO Datasets --------------------------------------------
 
-rm(rvc, mvs, rvc_focal, mvs_focal, mvs_expanded, all_focal, all_subadults, temp,
-    all_sub_w, all_sub_PA, i)
+
+# blue parrotfish
+write.csv(coer_juv_PA %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y), 
+          here("Final_Data","Species_Occurrence","Juvenile","Juvenile_BlueParrotfish_PO_Full.csv"), append = F)
+write.csv(coer_sub_PA %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y), 
+          here("Final_Data","Species_Occurrence","Subadult","Subadult_BlueParrotfish_PO_Full.csv"), append = F)
+write.csv(coer_adt_PA %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y), 
+          here("Final_Data","Species_Occurrence","Adult","Adult_BlueParrotfish_PO_Full.csv"), append = F)
+# midnight parrotfish
+write.csv(coel_juv_PA %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y), 
+          here("Final_Data","Species_Occurrence","Juvenile","Juvenile_MidnightParrotfish_PO_Full.csv"), append = F)
+write.csv(coel_sub_PA %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y), 
+          here("Final_Data","Species_Occurrence","Subadult","Subadult_MidnightParrotfish_PO_Full.csv"), append = F)
+write.csv(coel_adt_PA %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y), 
+          here("Final_Data","Species_Occurrence","Adult","Adult_MidnightParrotfish_PO_Full.csv"), append = F)
+# rainbow parrotfish
+write.csv(guac_juv_PA %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y), 
+          here("Final_Data","Species_Occurrence","Juvenile","Juvenile_RainbowParrotfish_PO_Full.csv"), append = F)
+write.csv(guac_sub_PA %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y), 
+          here("Final_Data","Species_Occurrence","Subadult","Subadult_RainbowParrotfish_PO_Full.csv"), append = F)
+write.csv(guac_adt_PA %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y), 
+          here("Final_Data","Species_Occurrence","Adult","Adult_RainbowParrotfish_PO_Full.csv"), append = F)
+# bluestriped grunt
+write.csv(sciu_juv_PA %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y), 
+          here("Final_Data","Species_Occurrence","Juvenile","Juvenile_BluestripedGrunt_PO_Full.csv"), append = F)
+write.csv(sciu_sub_PA %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y), 
+          here("Final_Data","Species_Occurrence","Subadult","Subadult_BluestripedGrunt_PO_Full.csv"), append = F)
+write.csv(sciu_adt_PA %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y), 
+          here("Final_Data","Species_Occurrence","Adult","Adult_BluestripedGrunt_PO_Full.csv"), append = F)
+# gray snapper
+write.csv(gris_juv_PA %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y), 
+          here("Final_Data","Species_Occurrence","Juvenile","Juvenile_GraySnapper_PO_Full.csv"), append = F)
+write.csv(gris_sub_PA %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y), 
+          here("Final_Data","Species_Occurrence","Subadult","Subadult_GraySnapper_PO_Full.csv"), append = F)
+write.csv(gris_adt_PA %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y), 
+          here("Final_Data","Species_Occurrence","Adult""Adult_GraySnapper_PO_Full.csv"), append = F)
+# herbivores
+write.csv(herb_juv_PA %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y), 
+          here("Final_Data","Species_Occurrence","Juvenile","Juvenile_Herbivore_PO_Full.csv"), append = F)
+write.csv(herb_sub_PA %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y), 
+          here("Final_Data","Species_Occurrence","Subadult","Subadult_Herbivore_PO_Full.csv"), append = F)
+write.csv(herb_adt_PA %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y), 
+          here("Final_Data","Species_Occurrence","Adult","Adult_Herbivore_PO_Full.csv"), append = F)
+# invertivores
+write.csv(invert_juv_PA %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y), 
+          here("Final_Data","Species_Occurrence","Juvenile","Juvenile_Invertivore_PO_Full.csv"), append = F)
+write.csv(invert_sub_PA %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y), 
+          here("Final_Data","Species_Occurrence","Subadult","Subadult_Invertivore_PO_Full.csv"), append = F)
+write.csv(invert_adt_PA %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y), 
+          here("Final_Data","Species_Occurrence","Adult","Adult_Invertivore_PO_Full.csv"), append = F)
 
 
 
@@ -381,82 +489,82 @@ library(ISLR)
 set.seed(123)  
 
 # blue parrotfish
-train_index <- sample(seq_len(nrow(coer_juv)), size = floor(0.70*nrow(coer_juv)))  
-coer_juv_train <- coer_juv[train_index,] 
-coer_juv_test <- coer_juv[-train_index,]
-train_index <- sample(seq_len(nrow(coer_sub)), size = floor(0.70*nrow(coer_sub)))  
-coer_sub_train <- coer_sub[train_index,]
-coer_sub_test <- coer_sub[-train_index,]
-train_index <- sample(seq_len(nrow(coer_adt)), size = floor(0.70*nrow(coer_adt)))  
-coer_adt_train <- coer_adt[train_index,]
-coer_adt_test <- coer_adt[-train_index,]
+train_index <- sample(seq_len(nrow(coer_juv_PA)), size = ceiling(0.70*nrow(coer_juv_PA))) 
+coer_juv_PO_train <- coer_juv_PA[train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y) 
+coer_juv_PO_test <- coer_juv_PA[-train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
+train_index <- sample(seq_len(nrow(coer_sub_PA)), size = ceiling(0.70*nrow(coer_sub_PA)))  
+coer_sub_PO_train <- coer_sub_PA[train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
+coer_sub_PO_test <- coer_sub_PA[-train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
+train_index <- sample(seq_len(nrow(coer_adt_PA)), size = ceiling(0.70*nrow(coer_adt_PA)))  
+coer_adt_PO_train <- coer_adt_PA[train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
+coer_adt_PO_test <- coer_adt_PA[-train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
 # midnight parrotfish
-train_index <- sample(seq_len(nrow(coel_juv)), size = floor(0.70*nrow(coel_juv)))  
-coel_juv_train <- coel_juv[train_index,] 
-coel_juv_test <- coel_juv[-train_index,]
-train_index <- sample(seq_len(nrow(coel_sub)), size = floor(0.70*nrow(coel_sub)))  
-coel_sub_train <- coel_sub[train_index,]
-coel_sub_test <- coel_sub[-train_index,]
-train_index <- sample(seq_len(nrow(coel_adt)), size = floor(0.70*nrow(coel_adt)))  
-coel_adt_train <- coel_adt[train_index,]
-coel_adt_test <- coel_adt[-train_index,]
+train_index <- sample(seq_len(nrow(coel_juv_PA)), size = ceiling(0.70*nrow(coel_juv_PA)))  
+coel_juv_PO_train <- coel_juv_PA[train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y) 
+coel_juv_PO_test <- coel_juv_PA[-train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
+train_index <- sample(seq_len(nrow(coel_sub_PA)), size = ceiling(0.70*nrow(coel_sub_PA)))  
+coel_sub_PO_train <- coel_sub_PA[train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
+coel_sub_PO_test <- coel_sub_PA[-train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
+train_index <- sample(seq_len(nrow(coel_adt_PA)), size = ceiling(0.70*nrow(coel_adt_PA)))  
+coel_adt_PO_train <- coel_adt_PA[train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
+coel_adt_PO_test <- coel_adt_PA[-train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
 # rainbow parrotfish
-train_index <- sample(seq_len(nrow(guac_juv)), size = floor(0.70*nrow(guac_juv)))  
-guac_juv_train <- guac_juv[train_index,] 
-guac_juv_test <- guac_juv[-train_index,]
-train_index <- sample(seq_len(nrow(guac_sub)), size = floor(0.70*nrow(guac_sub)))  
-guac_sub_train <- guac_sub[train_index,]
-guac_sub_test <- guac_sub[-train_index,]
-train_index <- sample(seq_len(nrow(guac_adt)), size = floor(0.70*nrow(guac_adt)))  
-guac_adt_train <- guac_adt[train_index,]
-guac_adt_test <- guac_adt[-train_index,]
+train_index <- sample(seq_len(nrow(guac_juv_PA)), size = ceiling(0.70*nrow(guac_juv_PA)))  
+guac_juv_PO_train <- guac_juv_PA[train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y) 
+guac_juv_PO_test <- guac_juv_PA[-train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
+train_index <- sample(seq_len(nrow(guac_sub_PA)), size = ceiling(0.70*nrow(guac_sub_PA)))  
+guac_sub_PO_train <- guac_sub_PA[train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
+guac_sub_PO_test <- guac_sub_PA[-train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
+train_index <- sample(seq_len(nrow(guac_adt_PA)), size = ceiling(0.70*nrow(guac_adt_PA)))  
+guac_adt_PO_train <- guac_adt_PA[train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
+guac_adt_PO_test <- guac_adt_PA[-train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
 # herbivore functional group
-train_index <- sample(seq_len(nrow(herb_juv)), size = floor(0.70*nrow(herb_juv)))  
-herb_juv_train <- herb_juv[train_index,] 
-herb_juv_test <- herb_juv[-train_index,]
-train_index <- sample(seq_len(nrow(herb_sub)), size = floor(0.70*nrow(herb_sub)))  
-herb_sub_train <- herb_sub[train_index,]
-herb_sub_test <- herb_sub[-train_index,]
-train_index <- sample(seq_len(nrow(herb_adt)), size = floor(0.70*nrow(herb_adt)))  
-herb_adt_train <- herb_adt[train_index,]
-herb_adt_test <- herb_adt[-train_index,]
+train_index <- sample(seq_len(nrow(herb_juv_PA)), size = ceiling(0.70*nrow(herb_juv_PA)))  
+herb_juv_PO_train <- herb_juv_PA[train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y) 
+herb_juv_PO_test <- herb_juv_PA[-train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
+train_index <- sample(seq_len(nrow(herb_sub_PA)), size = ceiling(0.70*nrow(herb_sub_PA)))  
+herb_sub_PO_train <- herb_sub_PA[train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
+herb_sub_PO_test <- herb_sub_PA[-train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
+train_index <- sample(seq_len(nrow(herb_adt_PA)), size = ceiling(0.70*nrow(herb_adt_PA)))  
+herb_adt_PO_train <- herb_adt_PA[train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
+herb_adt_PO_test <- herb_adt_PA[-train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
 # gray snapper
-train_index <- sample(seq_len(nrow(gris_juv)), size = floor(0.70*nrow(gris_juv)))  
-gris_juv_train <- gris_juv[train_index,] 
-gris_juv_test <- gris_juv[-train_index,]
-train_index <- sample(seq_len(nrow(gris_sub)), size = floor(0.70*nrow(gris_sub)))  
-gris_sub_train <- gris_sub[train_index,]
-gris_sub_test <- gris_sub[-train_index,]
-train_index <- sample(seq_len(nrow(gris_adt)), size = floor(0.70*nrow(gris_adt)))  
-gris_adt_train <- gris_adt[train_index,]
-gris_adt_test <- gris_adt[-train_index,]
+train_index <- sample(seq_len(nrow(gris_juv_PA)), size = ceiling(0.70*nrow(gris_juv_PA)))  
+gris_juv_PO_train <- gris_juv_PA[train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y) 
+gris_juv_PO_test <- gris_juv_PA[-train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
+train_index <- sample(seq_len(nrow(gris_sub_PA)), size = ceiling(0.70*nrow(gris_sub_PA)))  
+gris_sub_PO_train <- gris_sub_PA[train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
+gris_sub_PO_test <- gris_sub_PA[-train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
+train_index <- sample(seq_len(nrow(gris_adt_PA)), size = ceiling(0.70*nrow(gris_adt_PA)))  
+gris_adt_PO_train <- gris_adt_PA[train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
+gris_adt_PO_test <- gris_adt_PA[-train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
 # bluestriped grunt
-train_index <- sample(seq_len(nrow(sciu_juv)), size = floor(0.70*nrow(sciu_juv)))  
-sciu_juv_train <- sciu_juv[train_index,] 
-sciu_juv_test <- sciu_juv[-train_index,]
-train_index <- sample(seq_len(nrow(sciu_sub)), size = floor(0.70*nrow(sciu_sub)))  
-sciu_sub_train <- sciu_sub[train_index,]
-sciu_sub_test <- sciu_sub[-train_index,]
-train_index <- sample(seq_len(nrow(sciu_adt)), size = floor(0.70*nrow(sciu_adt)))  
-sciu_adt_train <- sciu_adt[train_index,]
-sciu_adt_test <- sciu_adt[-train_index,]
+train_index <- sample(seq_len(nrow(sciu_juv_PA)), size = ceiling(0.70*nrow(sciu_juv_PA)))  
+sciu_juv_PO_train <- sciu_juv_PA[train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y) 
+sciu_juv_PO_test <- sciu_juv_PA[-train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
+train_index <- sample(seq_len(nrow(sciu_sub_PA)), size = ceiling(0.70*nrow(sciu_sub_PA)))  
+sciu_sub_PO_train <- sciu_sub_PA[train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
+sciu_sub_PO_test <- sciu_sub_PA[-train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
+train_index <- sample(seq_len(nrow(sciu_adt_PA)), size = ceiling(0.70*nrow(sciu_adt_PA)))  
+sciu_adt_PO_train <- sciu_adt_PA[train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
+sciu_adt_PO_test <- sciu_adt_PA[-train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
 # invertivore functional group
-train_index <- sample(seq_len(nrow(invert_juv)), size = floor(0.70*nrow(invert_juv)))  
-invert_juv_train <- invert_juv[train_index,] 
-invert_juv_test <- invert_juv[-train_index,]
-train_index <- sample(seq_len(nrow(invert_sub)), size = floor(0.70*nrow(invert_sub)))  
-invert_sub_train <- invert_sub[train_index,]
-invert_sub_test <- invert_sub[-train_index,]
-train_index <- sample(seq_len(nrow(invert_adt)), size = floor(0.70*nrow(invert_adt)))  
-invert_adt_train <- invert_adt[train_index,]
-invert_adt_test <- invert_adt[-train_index,]
+train_index <- sample(seq_len(nrow(invert_juv_PA)), size = ceiling(0.70*nrow(invert_juv_PA)))  
+invert_juv_PO_train <- invert_juv_PA[train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y) 
+invert_juv_PO_test <- invert_juv_PA[-train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
+train_index <- sample(seq_len(nrow(invert_sub_PA)), size = ceiling(0.70*nrow(invert_sub_PA)))  
+invert_sub_PO_train <- invert_sub_PA[train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
+invert_sub_PO_test <- invert_sub_PA[-train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
+train_index <- sample(seq_len(nrow(invert_adt_PA)), size = ceiling(0.70*nrow(invert_adt_PA)))  
+invert_adt_PO_train <- invert_adt_PA[train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
+invert_adt_PO_test <- invert_adt_PA[-train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
 
 # clean up
 rm(train_index)
 
 
 
-# Write out Datasets ------------------------------------------------------
+# Write out PO Train/Test Datasets ------------------------------------------------------
 
 
 # Midnight parrotfish
