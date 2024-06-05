@@ -46,10 +46,12 @@
 # LOAD PACKAGES
 library(easypackages)
 libraries("here", "devtools", "tidyverse", "conflicted", "truncnorm", "reshape2", 
-          "sp", "sf", "terra", "spatialEco")
+          "sp", "sf", "terra", "spatialEco", "data.table")
 
 # prevent conflicts between packages
 conflicted::conflict_prefer("filter", "dplyr")
+conflicted::conflict_prefer("select", "dplyr")
+conflicted::conflict_prefer("dcast", "data.table")
 
 # SET UP RELATIVE PATHS TO DIRECTORIES USING 'HERE'
 # set the Isla_MSc_Ch1 folder as the root directory 
@@ -77,8 +79,7 @@ mvs_sites <- mvs %>% distinct(ID_SITE, x, y)
 
 # blue, midnight, rainbow parrotfish; blue-striped grunt; gray snapper
 rvc_focal <- rvc %>% filter(SPECIES_CODE %in% c("SCA_COER","SCA_COEL","SCA_COES",
-                                                "SCA_GUAC","LUT_GRIS","HAE_SCIU")) %>% 
-  filter(.$NUM > 0.0) # make rvc_focal presence-only
+                                                "SCA_GUAC","LUT_GRIS","HAE_SCIU"))
 mvs_focal <- mvs %>% filter(SPECIES_CODE %in% c("SCA_COER","SCA_COEL","SCA_COES",
                                                   "SCA_GUAC","LUT_GRIS","HAE_SCIU"))
 
@@ -491,77 +492,152 @@ set.seed(123)
 # blue parrotfish
 train_index <- sample(seq_len(nrow(coer_juv_PA)), size = ceiling(0.70*nrow(coer_juv_PA))) 
 coer_juv_PO_train <- coer_juv_PA[train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y) 
+coer_juv_PA_test <- coer_juv_PA[-train_index,] %>% select(SPECIES_CODE, x, y, PRES, PRES2)
 coer_juv_PO_test <- coer_juv_PA[-train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
 train_index <- sample(seq_len(nrow(coer_sub_PA)), size = ceiling(0.70*nrow(coer_sub_PA)))  
 coer_sub_PO_train <- coer_sub_PA[train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
+coer_sub_PA_test <- coer_sub_PA[-train_index,] %>% select(SPECIES_CODE, x, y, PRES, PRES2)
 coer_sub_PO_test <- coer_sub_PA[-train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
 train_index <- sample(seq_len(nrow(coer_adt_PA)), size = ceiling(0.70*nrow(coer_adt_PA)))  
 coer_adt_PO_train <- coer_adt_PA[train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
+coer_adt_PA_test <- coer_adt_PA[-train_index,] %>% select(SPECIES_CODE, x, y, PRES, PRES2)
 coer_adt_PO_test <- coer_adt_PA[-train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
 # midnight parrotfish
 train_index <- sample(seq_len(nrow(coel_juv_PA)), size = ceiling(0.70*nrow(coel_juv_PA)))  
 coel_juv_PO_train <- coel_juv_PA[train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y) 
+coel_juv_PA_test <- coel_juv_PA[-train_index,] %>% select(SPECIES_CODE, x, y, PRES, PRES2)
 coel_juv_PO_test <- coel_juv_PA[-train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
 train_index <- sample(seq_len(nrow(coel_sub_PA)), size = ceiling(0.70*nrow(coel_sub_PA)))  
 coel_sub_PO_train <- coel_sub_PA[train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
+coel_sub_PA_test <- coel_sub_PA[-train_index,] %>% select(SPECIES_CODE, x, y, PRES, PRES2)
 coel_sub_PO_test <- coel_sub_PA[-train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
 train_index <- sample(seq_len(nrow(coel_adt_PA)), size = ceiling(0.70*nrow(coel_adt_PA)))  
 coel_adt_PO_train <- coel_adt_PA[train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
+coel_adt_PA_test <- coel_adt_PA[-train_index,] %>% select(SPECIES_CODE, x, y, PRES, PRES2)
 coel_adt_PO_test <- coel_adt_PA[-train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
 # rainbow parrotfish
 train_index <- sample(seq_len(nrow(guac_juv_PA)), size = ceiling(0.70*nrow(guac_juv_PA)))  
-guac_juv_PO_train <- guac_juv_PA[train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y) 
+guac_juv_PO_train <- guac_juv_PA[train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
+guac_juv_PA_test <- guac_juv_PA[-train_index,] %>% select(SPECIES_CODE, x, y, PRES, PRES2) 
 guac_juv_PO_test <- guac_juv_PA[-train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
 train_index <- sample(seq_len(nrow(guac_sub_PA)), size = ceiling(0.70*nrow(guac_sub_PA)))  
 guac_sub_PO_train <- guac_sub_PA[train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
+guac_sub_PA_test <- guac_sub_PA[-train_index,] %>% select(SPECIES_CODE, x, y, PRES, PRES2) 
 guac_sub_PO_test <- guac_sub_PA[-train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
 train_index <- sample(seq_len(nrow(guac_adt_PA)), size = ceiling(0.70*nrow(guac_adt_PA)))  
 guac_adt_PO_train <- guac_adt_PA[train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
+guac_adt_PA_test <- guac_adt_PA[-train_index,] %>% select(SPECIES_CODE, x, y, PRES, PRES2) 
 guac_adt_PO_test <- guac_adt_PA[-train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
 # herbivore functional group
 train_index <- sample(seq_len(nrow(herb_juv_PA)), size = ceiling(0.70*nrow(herb_juv_PA)))  
 herb_juv_PO_train <- herb_juv_PA[train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y) 
+herb_juv_PA_test <- herb_juv_PA[-train_index,] %>% select(SPECIES_CODE, x, y, PRES, PRES2)
 herb_juv_PO_test <- herb_juv_PA[-train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
 train_index <- sample(seq_len(nrow(herb_sub_PA)), size = ceiling(0.70*nrow(herb_sub_PA)))  
 herb_sub_PO_train <- herb_sub_PA[train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
+herb_sub_PA_test <- herb_sub_PA[-train_index,] %>% select(SPECIES_CODE, x, y, PRES, PRES2)
 herb_sub_PO_test <- herb_sub_PA[-train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
 train_index <- sample(seq_len(nrow(herb_adt_PA)), size = ceiling(0.70*nrow(herb_adt_PA)))  
 herb_adt_PO_train <- herb_adt_PA[train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
+herb_adt_PA_test <- herb_adt_PA[-train_index,] %>% select(SPECIES_CODE, x, y, PRES, PRES2)
 herb_adt_PO_test <- herb_adt_PA[-train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
 # gray snapper
 train_index <- sample(seq_len(nrow(gris_juv_PA)), size = ceiling(0.70*nrow(gris_juv_PA)))  
 gris_juv_PO_train <- gris_juv_PA[train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y) 
+gris_juv_PA_test <- gris_juv_PA[-train_index,] %>% select(SPECIES_CODE, x, y, PRES, PRES2)
 gris_juv_PO_test <- gris_juv_PA[-train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
 train_index <- sample(seq_len(nrow(gris_sub_PA)), size = ceiling(0.70*nrow(gris_sub_PA)))  
 gris_sub_PO_train <- gris_sub_PA[train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
+gris_sub_PA_test <- gris_sub_PA[-train_index,] %>% select(SPECIES_CODE, x, y, PRES, PRES2)
 gris_sub_PO_test <- gris_sub_PA[-train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
 train_index <- sample(seq_len(nrow(gris_adt_PA)), size = ceiling(0.70*nrow(gris_adt_PA)))  
 gris_adt_PO_train <- gris_adt_PA[train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
+gris_adt_PA_test <- gris_adt_PA[-train_index,] %>% select(SPECIES_CODE, x, y, PRES, PRES2)
 gris_adt_PO_test <- gris_adt_PA[-train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
 # bluestriped grunt
 train_index <- sample(seq_len(nrow(sciu_juv_PA)), size = ceiling(0.70*nrow(sciu_juv_PA)))  
 sciu_juv_PO_train <- sciu_juv_PA[train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y) 
+sciu_juv_PA_test <- sciu_juv_PA[-train_index,] %>% select(SPECIES_CODE, x, y, PRES, PRES2)
 sciu_juv_PO_test <- sciu_juv_PA[-train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
 train_index <- sample(seq_len(nrow(sciu_sub_PA)), size = ceiling(0.70*nrow(sciu_sub_PA)))  
 sciu_sub_PO_train <- sciu_sub_PA[train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
+sciu_sub_PA_test <- sciu_sub_PA[-train_index,] %>% select(SPECIES_CODE, x, y, PRES, PRES2)
 sciu_sub_PO_test <- sciu_sub_PA[-train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
 train_index <- sample(seq_len(nrow(sciu_adt_PA)), size = ceiling(0.70*nrow(sciu_adt_PA)))  
 sciu_adt_PO_train <- sciu_adt_PA[train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
+sciu_adt_PA_test <- sciu_adt_PA[-train_index,] %>% select(SPECIES_CODE, x, y, PRES, PRES2)
 sciu_adt_PO_test <- sciu_adt_PA[-train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
 # invertivore functional group
 train_index <- sample(seq_len(nrow(invert_juv_PA)), size = ceiling(0.70*nrow(invert_juv_PA)))  
 invert_juv_PO_train <- invert_juv_PA[train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y) 
+invert_juv_PA_test <- invert_juv_PA[-train_index,] %>% select(SPECIES_CODE, x, y, PRES, PRES2)
 invert_juv_PO_test <- invert_juv_PA[-train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
 train_index <- sample(seq_len(nrow(invert_sub_PA)), size = ceiling(0.70*nrow(invert_sub_PA)))  
 invert_sub_PO_train <- invert_sub_PA[train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
+invert_sub_PA_test <- invert_sub_PA[-train_index,] %>% select(SPECIES_CODE, x, y, PRES, PRES2)
 invert_sub_PO_test <- invert_sub_PA[-train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
 train_index <- sample(seq_len(nrow(invert_adt_PA)), size = ceiling(0.70*nrow(invert_adt_PA)))  
 invert_adt_PO_train <- invert_adt_PA[train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
+invert_adt_PA_test <- invert_adt_PA[-train_index,] %>% select(SPECIES_CODE, x, y, PRES, PRES2)
 invert_adt_PO_test <- invert_adt_PA[-train_index,] %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
 
 # clean up
 rm(train_index)
 
+
+
+# Write out PA Test Datasets ------------------------------------------------------
+
+
+# Midnight parrotfish
+write_csv(coel_juv_PA_test, here("Final_Data","Species_Occurrence","Juvenile","Testing",
+                               "MidnightParrotfish_Juvenile_PA_Test.csv"), append = F)
+write_csv(coel_sub_PA_test, here("Final_Data","Species_Occurrence","Subadult","Testing",
+                               "MidnightParrotfish_Subadult_PA_Test.csv"), append = F)
+write_csv(coel_adt_PA_test, here("Final_Data","Species_Occurrence","Adult","Testing",
+                               "MidnightParrotfish_Adult_PA_Test.csv"), append = F)
+# Blue parrotfish
+write_csv(coer_juv_PA_test, here("Final_Data","Species_Occurrence","Juvenile","Testing",
+                              "BlueParrotfish_Juvenile_PA_Test.csv"), append = F)
+write_csv(coer_sub_PA_test, here("Final_Data","Species_Occurrence","Subadult","Testing",
+                              "BlueParrotfish_Subadult_PA_Test.csv"), append = F)
+write_csv(coer_adt_PA_test, here("Final_Data","Species_Occurrence","Adult","Testing",
+                              "BlueParrotfish_Adult_PA_Test.csv"), append = F)
+# Rainbow parrotfish
+write_csv(guac_juv_PA_test, here("Final_Data","Species_Occurrence","Juvenile","Testing",
+                              "RainbowParrotfish_Juvenile_PA_Test.csv"), append = F)
+write_csv(guac_sub_PA_test, here("Final_Data","Species_Occurrence","Subadult","Testing",
+                              "RainbowParrotfish_Subadult_PA_Test.csv"), append = F)
+write_csv(guac_adt_PA_test, here("Final_Data","Species_Occurrence","Adult","Testing",
+                              "RainbowParrotfish_Adult_PA_Test.csv"), append = F)
+# Gray Snapper
+write_csv(gris_juv_PA_test, here("Final_Data","Species_Occurrence","Juvenile","Testing",
+                              "GraySnapper_Juvenile_PA_Test.csv"), append = F)
+write_csv(gris_sub_PA_test, here("Final_Data","Species_Occurrence","Subadult","Testing",
+                              "GraySnapper_Subadult_PA_Test.csv"), append = F)
+write_csv(gris_adt_PA_test, here("Final_Data","Species_Occurrence","Adult","Testing",
+                              "GraySnapper_Adult_PA_Test.csv"), append = F)
+# Bluestriped Grunt
+write_csv(sciu_juv_PA_test, here("Final_Data","Species_Occurrence","Juvenile","Testing",
+                              "BluestripedGrunt_Juvenile_PA_Test.csv"), append = F)
+write_csv(sciu_sub_PA_test, here("Final_Data","Species_Occurrence","Subadult","Testing",
+                              "BluestripedGrunt_Subadult_PA_Test.csv"), append = F)
+write_csv(sciu_adt_PA_test, here("Final_Data","Species_Occurrence","Adult","Testing",
+                              "BluestripedGrunt_Adult_PA_Test.csv"), append = F)
+# Herbivores
+write_csv(herb_juv_PA_test, here("Final_Data","Species_Occurrence","Juvenile","Testing",
+                              "Herbivore_Juvenile_PA_Test.csv"), append = F)
+write_csv(herb_sub_PA_test, here("Final_Data","Species_Occurrence","Subadult","Testing",
+                              "Herbivore_Subadult_PA_Test.csv"), append = F)
+write_csv(herb_adt_PA_test, here("Final_Data","Species_Occurrence","Adult","Testing",
+                              "Herbivore_Adult_PA_Test.csv"), append = F)
+# Invertivores
+write_csv(invert_juv_PA_test, here("Final_Data","Species_Occurrence","Juvenile","Testing",
+                              "Invertivore_Juvenile_PA_Test.csv"), append = F)
+write_csv(invert_sub_PA_test, here("Final_Data","Species_Occurrence","Subadult","Testing",
+                              "Invertivore_Subadult_PA_Test.csv"), append = F)
+write_csv(invert_adt_PA_test, here("Final_Data","Species_Occurrence","Adult","Testing",
+                              "Invertivore_Adult_PA_Test.csv"), append = F)
 
 
 # Write out PO Train/Test Datasets ------------------------------------------------------

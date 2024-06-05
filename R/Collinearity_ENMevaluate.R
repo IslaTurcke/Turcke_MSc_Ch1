@@ -35,7 +35,7 @@ install.packages("Cairo")
 # load packages
 library(easypackages)
 libraries("raster", "terra", "sf", "here", "dplyr", "usdm", "sdmpredictors", "PNWColors",
-          "corrplot", "Cairo")
+          "corrplot", "Cairo", "data.table")
 
 
 # SET UP RELATIVE PATHS TO DIRECTORIES USING 'HERE'
@@ -89,15 +89,13 @@ crs(win_do) <- new_crs
 
 # create raster stack
 pred_full <- raster::stack(x = list(habitat, mg_dist, depth, slope, curvature, 
-                                    plan_curv, prof_curv, rug_acr, rug_vrm, bpi_fine,
-                                    bpi_broad, sum_temp, sum_sal, sum_do, win_temp,
+                                    plan_curv, prof_curv, rug_acr, rug_vrm, bpi_broad,
+                                    bpi_fine, sum_temp, sum_sal, sum_do, win_temp,
                                     win_sal, win_do))
 names(pred_full) <- c("Habitat","Mangrove_Dist","Depth","Slope","Curvature","Plan_Curv",
-                      "Profile_Curv","ACR_Rugosity","Terrain_Ruggedness","BPI_Fine","BPI_Broad",
+                      "Profile_Curv","ACR_Rugosity","Terrain_Ruggedness","BPI_Broad","BPI_Fine",
                       "Sum_Temp","Sum_Sal","Sum_DO","Win_Temp","Win_Sal","Win_DO")
 
-pred_test <- raster::stack(x = list(habitat, mg_dist, depth, slope))
-names(pred_test) <- c("Habitat","Mangrove_Dist","Depth","Slope")
 
 
 # Pearson Pairwise Correlation --------------------------------------------
@@ -128,10 +126,12 @@ write.csv(ppcor_full, here("GitHub_Repositories","Turcke_MSc_Ch1","Data_SmallFil
                            "Correlation_FullPredictorSet.csv"))
 
 # clean up
-rm(CRS, new_crs, ppcor_full, pred_full)
+rm(CRS, new_crs, ppcor_full)
+
 
 
 # Variance Inflation Factors (VIF) ----------------------------------------
+
 
 # We can also use VIF to assess multicollinearity.
 # VIF measures how much the behavior (variance) of a variable is influenced
@@ -140,18 +140,21 @@ rm(CRS, new_crs, ppcor_full, pred_full)
 # We want to keep standard errors as small as possible, so we will use a 
 # standard VIF threshold of 5.
 
-# take random sample
-#cl <- snow::makeCluster(10)
-x <- raster::sampleRandom(pred_test, 10)
-# this returned fewer than 10000 because of the NAs that were removed
-# find a way to fix this
-#snow::stopCluster(cl)
+# take random sample of 10000 points
+x <- as.data.table(raster::sampleRandom(pred_full, 10000, na.rm = T))
+i <- nrow(x)
+while (i < 10000) {
+  temp <- raster::sampleRandom(pred_full, 10000-i, na.rm = T)
+  x <- rbind(x, temp)
+  i <- nrow(x)
+}
 
 # calculate vif for random sample
-vif <- vif(as.data.frame(x))
+vif <- vif(x)
 vif
 write.csv(vif, here("GitHub_Repositories","Turcke_MSc_Ch1","Data_SmallFiles",
                     "VIF_FullPredictorSet.csv"), row.names = FALSE)
+
 
 
 # Predictor Selection -----------------------------------------------------
@@ -160,53 +163,76 @@ write.csv(vif, here("GitHub_Repositories","Turcke_MSc_Ch1","Data_SmallFiles",
 # --> ppcor = |0.7|
 # --> VIF = 5
 
-#pred_select <- raster::stack(x = c(...))
+# excluding Plan Curvature, Profile Curvature, Terrain Ruggedness, and Summer Salinity
+
+pred_select <- raster::stack(x = list(habitat, mg_dist, depth, slope, curvature, 
+                                      rug_acr, bpi_broad, bpi_fine, sum_temp, 
+                                      sum_do, win_temp, win_sal, win_do))
+names(pred_select) <- c("Habitat","Mangrove_Dist","Depth","Slope","Curvature",
+                      "ACR_Rugosity","BPI_Broad","BPI_Fine","Sum_Temp","Sum_DO",
+                      "Win_Temp","Win_Sal","Win_DO")
+
+# clean up
+rm(habitat, mg_dist, depth, slope, curvature, plan_curv, prof_curv, rug_acr,
+   rug_vrm, bpi_broad, bpi_fine, sum_temp, sum_sal, sum_do, win_temp, win_sal, 
+   win_do, pred_full, i, temp)
 
 
 # Correlation - Selected Predictors ---------------------------------------
 
 # pearson correlation matrix on selected spatial predictors
-cl = snow::makeCluster(n_cores)
+cl = snow::makeCluster(10)
 ppcor_select <- pearson_correlation_matrix(pred_select)
 snow::stopCluster(cl)
 
-# plot correlation matrix 
+# plot full correlation matrix
 palette <- pnw_palette("Shuksan2", 200, type = "continuous")
 par(mar = c(0,0,0,0))
 corrplot(ppcor_select, method = "color", col = palette, type = "upper",
-         order = "AOE", addCoef.col = "black", number.cex = 0.5, 
-         number.digits = 2, tl.col = "black", tl.srt = 40, tl.cex = 0.8) # order = FPC, hclust
+         order = "original", addCoef.col = "black", number.cex = 0.6, 
+         number.digits = 2, tl.col = "black", tl.srt = 40, tl.cex = 0.7) # order = FPC, hclust
 
 # save plot as png
-Cairo(file = here("GitHub_Repositories","Turcke_MSc_Ch1","Figures","Correlation_SelectedPredictorSet.png"),
-      bg = "white", type = "png", units = "in", width = 6, height = 5, 
+Cairo(file = here("GitHub_Repositories","Turcke_MSc_Ch1","Figures","Correlation_SelectPredictorSet.png"),
+      bg = "white", type = "png", units = "in", width = 7, height = 7, 
       pointsize = 12, dpi = 600)
 par(mar = c(0,0,0,0))
-corrplot(ppcor_full, method = "color", col = palette, type = "upper",
-         order = "AOE", addCoef.col = "black", number.cex = 0.5, 
-         number.digits = 2, tl.col = "black", tl.srt = 40, tl.cex = 0.8) # order = FPC, hclust
+corrplot(ppcor_select, method = "color", col = palette, type = "upper",
+         order = "original", addCoef.col = "black", number.cex = 0.6,       # order = FPC, original
+         number.digits = 2, tl.col = "black", tl.srt = 40, tl.cex = 0.8) 
 dev.off()
 
 # save as .csv
-write.csv(ppcor_full, here("GitHub_Repositories","Turcke_MSc_Ch1","Data_SmallFiles",
-                           "Correlation_SelectedPredictorSet.csv"))
+write.csv(ppcor_select, here("GitHub_Repositories","Turcke_MSc_Ch1","Data_SmallFiles",
+                           "Correlation_SelectPredictorSet.csv"))
+
 
 
 # VIF - Selected Predictors -----------------------------------------------
 
-# take random sample
-cl <- snow::makeCluster(n_cores)
-y <- sampleRandom(pred_select, 10000, na.rm = TRUE)
-snow::stopCluster(cl)
+
+# take random sample of 10000 points
+y <- raster::sampleRandom(pred_select, 10000, na.rm = T)
+i <- nrow(y)
+j <- 1
+while (i < 10000) {
+  temp <- raster::sampleRandom(pred_select, 10000, na.rm = T)
+  y <- rbind(y, temp)
+  i <- nrow(y)
+  print(j)
+  j <- j + 1
+}
 
 # calculate vif for random sample
-vif_select <- vif(as.data.frame(y))
-vif_select
-write.csv(vif_select, here("GitHub_Repositories","Turcke_MSc_Ch1","Data_SmallFiles",
-                           "VIF_SelectedPredictorSet.csv"), row.names = FALSE)
+vif <- vif(x)
+vif
+write.csv(vif, here("GitHub_Repositories","Turcke_MSc_Ch1","Data_SmallFiles",
+                    "VIF_FullPredictorSet.csv"), row.names = FALSE)
+
 
 
 # ENM Evaluate ------------------------------------------------------------
+
 
 # Evaluate what the best settings are for MaxEnt
 

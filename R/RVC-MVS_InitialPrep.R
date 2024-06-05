@@ -103,6 +103,7 @@ mvs_2 <- mvs_IDs %>% select(ID_SURV, ID_SITE, DATE, LON, LAT, SPECIES_CODE, NO,
 
 # Unit Conversions --------------------------------------------------------
 
+
 # convert NUM (fish per 176.7 m^2) to DENSITY (fish per 100 m^2)
 rvc_3 <- rvc_2 %>% 
   mutate(DENSITY = (100 * NUM)/(3.14 * (if_else(UNDERWATER_VISIBILITY < 7.5, 
