@@ -222,12 +222,13 @@ while (i < 10000) {
   print(j)
   j <- j + 1
 }
+y <- as.data.frame(y[1:10000,])
 
 # calculate vif for random sample
-vif <- vif(x)
+vif <- vif(y)
 vif
 write.csv(vif, here("GitHub_Repositories","Turcke_MSc_Ch1","Data_SmallFiles",
-                    "VIF_FullPredictorSet.csv"), row.names = FALSE)
+                    "VIF_SelectPredictorSet.csv"), row.names = FALSE)
 
 
 

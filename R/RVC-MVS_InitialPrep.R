@@ -31,7 +31,7 @@ conflicted::conflict_prefer("filter", "dplyr")
 
 # SET UP RELATIVE PATHS TO DIRECTORIES USING 'HERE'
 # set the Isla_MSc_Ch1 folder as the root directory 
-here::i_am("GitHub_Repositories/MSc_Ch1_DataPrep/R/RVC-MVS_InitialPrep.R")
+here::i_am("GitHub_Repositories/Turcke_MSc_Ch1/R/RVC-MVS_InitialPrep.R")
 
 # DEFINE COORDINATE SYSTEMS 
 # project CRS - EPSG:6346 NAD 1983 (2011) UTM Zone 17N
@@ -72,12 +72,12 @@ rvc$SPECIES_CODE <- sub(" ", "_", rvc$SPECIES_CD)
 
 # output a list of all the unique species in each dataset
 mvs_species <- as_tibble(unique(mvs$SP))
-write.csv(mvs_species, here("GitHub_Repositories","MSc_Ch1_DataPrep","Data_SmallFiles","Fish","MVS_SpeciesList.csv"))
+write.csv(mvs_species, here("GitHub_Repositories","Turcke_MSc_Ch1","Data_SmallFiles","Fish","MVS_SpeciesList.csv"))
 rvc_species <- as_tibble(unique(rvc$SPECIES_CODE))
-write.csv(rvc_species, here("GitHub_Repositories","MSc_Ch1_DataPrep","Data_SmallFiles","Fish","RVC_SpeciesList.csv"))
+write.csv(rvc_species, here("GitHub_Repositories","Turcke_MSc_Ch1","Data_SmallFiles","Fish","RVC_SpeciesList.csv"))
 
 # read in mvs to rvc species code dictionary
-code_dict <- read_xlsx(here("GitHub_Repositories","MSc_Ch1_DataPrep","Data_SmallFiles","Fish","MVS-RVC_SpeciesCodes_Dictionary.xlsx"), col_names = T)
+code_dict <- read_xlsx(here("GitHub_Repositories","Turcke_MSc_Ch1","Data_SmallFiles","Fish","MVS-RVC_SpeciesCodes_Dictionary.xlsx"), col_names = T)
 
 # merge in new codes
 mvs_newcodes <- merge(mvs, code_dict, by.x = "SP", by.y = "OLD_MVS_CODE", 
