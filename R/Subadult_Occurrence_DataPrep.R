@@ -55,7 +55,7 @@ conflicted::conflict_prefer("dcast", "data.table")
 
 # SET UP RELATIVE PATHS TO DIRECTORIES USING 'HERE'
 # set the Isla_MSc_Ch1 folder as the root directory 
-here::i_am("GitHub_Repositories/Turcke_MSc_Ch1/R/Occurence_DataPrep.R")
+here::i_am("GitHub_Repositories/Turcke_MSc_Ch1/R/Subadult_Occurrence_DataPrep.R")
 
 # save PROJ.4 string for NEW and OLD standard projection 
 # EPSG:6346 NAD 1983 2011 UTM Zone 17N
@@ -515,3 +515,54 @@ write_csv(bg_PO_test, here("Final_Data","Species_Occurrence","Subadult","Testing
 
 # clean up
 rm(bg_PA_full, bg_PA_test, bg_PA_train, bg_PO_full, bg_PO_test, bg_PO_train)
+
+
+
+# Bias Grid ---------------------------------------------------------------
+
+
+# create sampling effort raster to parse out sampling bias: rule of thumb for
+# selecting bandwidth according to Scott (1992) and Bowman and Azzalini (1997)
+choose_bw = function(spdf) {
+  X = coordinates(spdf)
+  sigma = c(sd(X[,1]), sd(X[,2])) * (2 / (3 * nrow(X))) ^ (1/6)
+}
+
+# creating spatial pixels data frame of sampling effort
+sampling_effort <- full_join(rvc_sites, mvs_sites) %>%
+  select(x, y) %>%
+  st_as_sf(., coords = c(1, 2), crs = new_crs) %>%
+  add_column("count" = 1)
+sampling_effort_spdf <- sampling_effort %>% as(., "Spatial")
+
+# run choose bandwidth function on sampling effort spdf
+domain_bw <- choose_bw(sampling_effort_spdf)
+
+# create a template grid using the study region raster as a guide
+domain_grid <- rast(here("Final_Data","Final_Study_Region.tif"))
+
+# clean up
+rm(mvs_sites, rvc, rvc_sites, sampling_effort_spdf)
+gc()
+
+# calculate kernel density surface
+kde <- sp.kde(x = sampling_effort, bw = domain_bw, ref = domain_grid, res = 5,
+              standardize = T)
+
+# save initial bias grid because that step takes a long time
+writeRaster(kde, here("Intermediate_Data","initial_bias_grid.tif"), overwrite = T)
+kde <- terra::rast(here("Intermediate_Data","initial_bias_grid.tif"))
+
+# resample because even though I asked for 5 x 5 m it does not give that :(
+domain_kde <- terra::resample(kde, domain_grid, "bilinear", threads = T)
+
+# add small constant value because bias grid can't have 0 in MaxEnt
+domain_kde <- domain_kde + 0.0001
+
+# save bias grid to Final Data Folder
+terra::writeRaster(domain_kde, here("Final_Data","Sampling_Bias.tif"), overwrite = T)
+
+# read in using raster package to write it out as an ASCII file
+kde_raster <- raster::raster(here("Final_Data","Sampling_Bias.tif"))
+raster::writeRaster(kde_raster, here("Final_Data","Sampling_Bias.asc"),
+                    format = "ascii", overwrite = T)
