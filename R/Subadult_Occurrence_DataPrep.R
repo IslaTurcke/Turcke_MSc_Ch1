@@ -171,9 +171,10 @@ rm(bp_rvc, bp_rvc_sub, bp_mvs_sub_p, bp_mvs_sub_a, bp_mvs_sub, bp_PA)
 # Presence/Absence and Presence-Only full
 bp_PA_full <- bp_PA_w %>% mutate(SPECIES_CODE = "SCA_COER", PRES = ifelse(SCA_COER > 0.0,1,0)) %>% 
   mutate(PRES2 = ifelse(PRES == 1,"PRESENCE","ABSENCE")) %>% 
-  select(LIFE_STAGE, SPECIES_CODE, SOURCE, x, y, PRES, PRES2)
+  mutate(species = SPECIES_CODE, longitude = x, latitude = y) %>% 
+  select(LIFE_STAGE, species, SOURCE, longitude, latitude, PRES, PRES2)
 
-bp_PO_full <- bp_PA_full %>% filter(PRES == 1)
+bp_PO_full <- bp_PA_full %>% filter(PRES == 1) %>% select(species, longitude, latitude)
 
 # PA and PO training sets
 
@@ -182,10 +183,10 @@ library("ISLR")
 set.seed(123)  
 
 bp_train_index <- sample(seq_len(nrow(bp_PA_full)), size = ceiling(0.70*nrow(bp_PA_full))) 
-bp_PA_train <- bp_PA_full[bp_train_index,]%>% select(SPECIES_CODE, x, y, PRES, PRES2)
-bp_PO_train <- bp_PA_train %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y) 
-bp_PA_test <- bp_PA_full[-bp_train_index,] %>% select(SPECIES_CODE, x, y, PRES, PRES2)
-bp_PO_test <- bp_PA_test %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
+bp_PA_train <- bp_PA_full[bp_train_index,]%>% select(species, longitude, latitude, PRES, PRES2)
+bp_PO_train <- bp_PA_train %>% filter(PRES == 1) %>% select(species, longitude, latitude) 
+bp_PA_test <- bp_PA_full[-bp_train_index,] %>% select(species, longitude, latitude, PRES, PRES2)
+bp_PO_test <- bp_PA_test %>% filter(PRES == 1) %>% select(species, longitude, latitude)
 
 ### WRITE OUT DATASETS
 
@@ -249,9 +250,10 @@ rm(mp_rvc, mp_rvc_sub, mp_mvs_sub_p, mp_mvs_sub_a, mp_mvs_sub, mp_PA)
 # Presence/Absence and Presence-Only full
 mp_PA_full <- mp_PA_w %>% mutate(SPECIES_CODE = "SCA_COEL", PRES = ifelse(SCA_COEL > 0.0,1,0)) %>% 
   mutate(PRES2 = ifelse(PRES == 1,"PRESENCE","ABSENCE")) %>% 
-  select(LIFE_STAGE, SPECIES_CODE, SOURCE, x, y, PRES, PRES2)
+  mutate(species = SPECIES_CODE, longitude = x, latitude = y) %>% 
+  select(LIFE_STAGE, species, SOURCE, longitude, latitude, PRES, PRES2)
 
-mp_PO_full <- mp_PA_full %>% filter(PRES == 1)
+mp_PO_full <- mp_PA_full %>% filter(PRES == 1) %>% select(species, longitude, latitude)
 
 # PA and PO training sets
 
@@ -259,17 +261,17 @@ mp_PO_full <- mp_PA_full %>% filter(PRES == 1)
 set.seed(123)  
 
 mp_train_index <- sample(seq_len(nrow(mp_PA_full)), size = ceiling(0.70*nrow(mp_PA_full))) 
-mp_PA_train <- mp_PA_full[mp_train_index,]%>% select(SPECIES_CODE, x, y, PRES, PRES2)
-mp_PO_train <- mp_PA_train %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y) 
-mp_PA_test <- mp_PA_full[-mp_train_index,] %>% select(SPECIES_CODE, x, y, PRES, PRES2)
-mp_PO_test <- mp_PA_test %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
+mp_PA_train <- mp_PA_full[mp_train_index,]%>% select(species, longitude, latitude, PRES, PRES2)
+mp_PO_train <- mp_PA_train %>% filter(PRES == 1) %>% select(species, longitude, latitude) 
+mp_PA_test <- mp_PA_full[-mp_train_index,] %>% select(species, longitude, latitude, PRES, PRES2)
+mp_PO_test <- mp_PA_test %>% filter(PRES == 1) %>% select(species, longitude, latitude)
 
 ### WRITE OUT DATASETS
 
 # PA and PO full
 write_csv(mp_PA_full, here("Final_Data","Species_Occurrence","Subadult","Subadult_MidnightParrotfish_PA_Full.csv"), 
           append = F)
-write_csv(mp_PO_full, here("Final_Data","Species_Occurrence","Subadult","Subadult_MidnightParrotfish_PO_Full.csv"), 
+write_csv(mp_PO_full[,1:3], here("Final_Data","Species_Occurrence","Subadult","Subadult_MidnightParrotfish_PO_Full.csv"), 
           append = F)
 # PA and PO training
 write_csv(mp_PA_train, here("Final_Data","Species_Occurrence","Subadult","Training","Subadult_MidnightParrotfish_PA_Train.csv"), 
@@ -326,9 +328,10 @@ rm(rp_rvc, rp_rvc_sub, rp_mvs_sub_p, rp_mvs_sub_a, rp_mvs_sub, rp_PA)
 # Presence/Absence and Presence-Only full
 rp_PA_full <- rp_PA_w %>% mutate(SPECIES_CODE = "SCA_GUAC", PRES = ifelse(SCA_GUAC > 0.0,1,0)) %>% 
   mutate(PRES2 = ifelse(PRES == 1,"PRESENCE","ABSENCE")) %>% 
-  select(LIFE_STAGE, SPECIES_CODE, SOURCE, x, y, PRES, PRES2)
+  mutate(species = SPECIES_CODE, longitude = x, latitude = y) %>% 
+  select(LIFE_STAGE, species, SOURCE, longitude, latitude, PRES, PRES2)
 
-rp_PO_full <- rp_PA_full %>% filter(PRES == 1)
+rp_PO_full <- rp_PA_full %>% filter(PRES == 1) %>% select(species, longitude, latitude)
 
 # PA and PO training sets
 
@@ -336,10 +339,10 @@ rp_PO_full <- rp_PA_full %>% filter(PRES == 1)
 set.seed(123)  
 
 rp_train_index <- sample(seq_len(nrow(rp_PA_full)), size = ceiling(0.70*nrow(rp_PA_full))) 
-rp_PA_train <- rp_PA_full[rp_train_index,]%>% select(SPECIES_CODE, x, y, PRES, PRES2)
-rp_PO_train <- rp_PA_train %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y) 
-rp_PA_test <- rp_PA_full[-rp_train_index,] %>% select(SPECIES_CODE, x, y, PRES, PRES2)
-rp_PO_test <- rp_PA_test %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
+rp_PA_train <- rp_PA_full[rp_train_index,]%>% select(species, longitude, latitude, PRES, PRES2)
+rp_PO_train <- rp_PA_train %>% filter(PRES == 1) %>% select(species, longitude, latitude) 
+rp_PA_test <- rp_PA_full[-rp_train_index,] %>% select(species, longitude, latitude, PRES, PRES2)
+rp_PO_test <- rp_PA_test %>% filter(PRES == 1) %>% select(species, longitude, latitude)
 
 ### WRITE OUT DATASETS
 
@@ -403,9 +406,10 @@ rm(gs_rvc, gs_rvc_sub, gs_mvs_sub_p, gs_mvs_sub_a, gs_mvs_sub, gs_PA)
 # Presence/Absence and Presence-Only full
 gs_PA_full <- gs_PA_w %>% mutate(SPECIES_CODE = "LUT_GRIS", PRES = ifelse(LUT_GRIS > 0.0,1,0)) %>% 
   mutate(PRES2 = ifelse(PRES == 1,"PRESENCE","ABSENCE")) %>% 
-  select(LIFE_STAGE, SPECIES_CODE, SOURCE, x, y, PRES, PRES2)
+  mutate(species = SPECIES_CODE, longitude = x, latitude = y) %>% 
+  select(LIFE_STAGE, species, SOURCE, longitude, latitude, PRES, PRES2)
 
-gs_PO_full <- gs_PA_full %>% filter(PRES == 1)
+gs_PO_full <- gs_PA_full %>% filter(PRES == 1) %>% select(species, longitude, latitude)
 
 # PA and PO training sets
 
@@ -413,10 +417,10 @@ gs_PO_full <- gs_PA_full %>% filter(PRES == 1)
 set.seed(123)  
 
 gs_train_index <- sample(seq_len(nrow(gs_PA_full)), size = ceiling(0.70*nrow(gs_PA_full))) 
-gs_PA_train <- gs_PA_full[gs_train_index,]%>% select(SPECIES_CODE, x, y, PRES, PRES2)
-gs_PO_train <- gs_PA_train %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y) 
-gs_PA_test <- gs_PA_full[-gs_train_index,] %>% select(SPECIES_CODE, x, y, PRES, PRES2)
-gs_PO_test <- gs_PA_test %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
+gs_PA_train <- gs_PA_full[gs_train_index,]%>% select(species, longitude, latitude, PRES, PRES2)
+gs_PO_train <- gs_PA_train %>% filter(PRES == 1) %>% select(species, longitude, latitude) 
+gs_PA_test <- gs_PA_full[-gs_train_index,] %>% select(species, longitude, latitude, PRES, PRES2)
+gs_PO_test <- gs_PA_test %>% filter(PRES == 1) %>% select(species, longitude, latitude)
 
 ### WRITE OUT DATASETS
 
@@ -480,7 +484,8 @@ rm(bg_rvc, bg_rvc_sub, bg_mvs_sub_p, bg_mvs_sub_a, bg_mvs_sub, bg_PA)
 # Presence/Absence and Presence-Only full
 bg_PA_full <- bg_PA_w %>% mutate(SPECIES_CODE = "HAE_SCIU", PRES = ifelse(HAE_SCIU > 0.0,1,0)) %>% 
   mutate(PRES2 = ifelse(PRES == 1,"PRESENCE","ABSENCE")) %>% 
-  select(LIFE_STAGE, SPECIES_CODE, SOURCE, x, y, PRES, PRES2)
+  mutate(species = SPECIES_CODE, longitude = x, latitude = y) %>% 
+  select(LIFE_STAGE, species, SOURCE, longitude, latitude, PRES, PRES2)
 
 bg_PO_full <- bg_PA_full %>% filter(PRES == 1)
 
@@ -490,10 +495,10 @@ bg_PO_full <- bg_PA_full %>% filter(PRES == 1)
 set.seed(123)  
 
 bg_train_index <- sample(seq_len(nrow(bg_PA_full)), size = ceiling(0.70*nrow(bg_PA_full))) 
-bg_PA_train <- bg_PA_full[bg_train_index,]%>% select(SPECIES_CODE, x, y, PRES, PRES2)
-bg_PO_train <- bg_PA_train %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y) 
-bg_PA_test <- bg_PA_full[-bg_train_index,] %>% select(SPECIES_CODE, x, y, PRES, PRES2)
-bg_PO_test <- bg_PA_test %>% filter(PRES == 1) %>% select(SPECIES_CODE, x, y)
+bg_PA_train <- bg_PA_full[bg_train_index,]%>% select(species, longitude, latitude, PRES, PRES2)
+bg_PO_train <- bg_PA_train %>% filter(PRES == 1) %>% select(species, longitude, latitude) 
+bg_PA_test <- bg_PA_full[-bg_train_index,] %>% select(species, longitude, latitude, PRES, PRES2)
+bg_PO_test <- bg_PA_test %>% filter(PRES == 1) %>% select(species, longitude, latitude)
 
 ### WRITE OUT DATASETS
 
@@ -562,7 +567,3 @@ domain_kde <- domain_kde + 0.0001
 # save bias grid to Final Data Folder
 terra::writeRaster(domain_kde, here("Final_Data","Sampling_Bias.tif"), overwrite = T)
 
-# read in using raster package to write it out as an ASCII file
-kde_raster <- raster::raster(here("Final_Data","Sampling_Bias.tif"))
-raster::writeRaster(kde_raster, here("Final_Data","Sampling_Bias.asc"),
-                    format = "ascii", overwrite = T)

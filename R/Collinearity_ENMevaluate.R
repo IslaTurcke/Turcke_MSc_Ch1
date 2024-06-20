@@ -27,29 +27,37 @@
 
 
 # install packages
-install.packages("usdm")
-install.packages("sdmpredictors")
-install.packages("corrplot")
-install.packages("Cairo")
+# install.packages("usdm")
+# install.packages("sdmpredictors")
+# install.packages("corrplot")
+# install.packages("Cairo")
 
 # load packages
 library(easypackages)
 libraries("raster", "terra", "sf", "here", "dplyr", "usdm", "sdmpredictors", "PNWColors",
           "corrplot", "Cairo", "data.table")
 
+# set working directory
+setwd("Z:/Isla_MSc_Ch1/")
+
+# change where large temporary rasters are saved
+rasterOptions(tmpdir = "Z:/Isla_MSc_Ch1/Temp/")
+terraOptions(tempdir = "Z:/Isla_MSc_Ch1/Temp/")
 
 # SET UP RELATIVE PATHS TO DIRECTORIES USING 'HERE'
 # set the Isla_MSc_Ch1 folder as the root directory 
 here::i_am("GitHub_Repositories/Turcke_MSc_Ch1/R/Collinearity_ENMevaluate.R")
 
-# save PROJ.4 string for NEW projection 
-# EPSG:6346 NAD 1983 2011 UTM Zone 17N
-new_crs <- crs("+init=epsg:6346")
+# read in final study region raster to use its CRS and EXT
+final_region <- terra::rast(here("Final_Data","Final_Study_Region.tif"))
+CRS <- crs(final_region)
 
 
 
 # Load Predictor Rasters --------------------------------------------------
 
+
+# load from ASCII files (didn't work for ENMevaluate)
 habitat <- raster(here("Final_Data","Predictors_ASCII","Habitat_Type.asc"))
 mg_dist <- raster(here("Final_Data","Predictors_ASCII","Mangrove_Distance.asc"))
 depth <- raster(here("Final_Data","Predictors_ASCII","Depth.asc"))
@@ -68,24 +76,43 @@ win_temp <- raster(here("Final_Data","Predictors_ASCII","Winter_Temperature.asc"
 win_sal <- raster(here("Final_Data","Predictors_ASCII","Winter_Salinity.asc"))
 win_do <- raster(here("Final_Data","Predictors_ASCII","Winter_Dissolved_Oxygen.asc"))
 
+# load from aligned and NA matched GeoTIFF files
+habitat <- raster(here("Final_Data","Predictors_GeoTIFFs_Aligned_NAmatch","Habitat_Aligned_NAmatch.tif"))
+mg_dist <- raster(here("Final_Data","Predictors_GeoTIFFs_Aligned_NAmatch","Mg_Dist_Aligned_NAmatch.tif"))
+depth <- raster(here("Final_Data","Predictors_GeoTIFFs_Aligned_NAmatch","Depth_Aligned_NAmatch.tif"))
+slope <- raster(here("Final_Data","Predictors_GeoTIFFs_Aligned_NAmatch","Slope_Aligned_NAmatch.tif"))
+curvature <- raster(here("Final_Data","Predictors_GeoTIFFs_Aligned_NAmatch","Curvature_Aligned_NAmatch.tif"))
+#plan_curv <- raster(here("Final_Data","Predictors_GeoTIFFs_Aligned_NAmatch","Plan_Curv_Aligned_NAmatch.tif"))
+#prof_curv <- raster(here("Final_Data","Predictors_GeoTIFFs_Aligned_NAmatch","Profile_Curv_Aligned_NAmatch.tif"))
+rug_acr <- raster(here("Final_Data","Predictors_GeoTIFFs_Aligned_NAmatch","ACR_Rugosity_Aligned_NAmatch.tif"))
+#rug_vrm <- raster(here("Final_Data","Predictors_GeoTIFFs_Aligned_NAmatch","Terrain_Ruggedness_Aligned_NAmatch.tif"))
+bpi_fine <- raster(here("Final_Data","Predictors_GeoTIFFs_Aligned_NAmatch","BPI_Fine_Aligned_NAmatch.tif"))
+bpi_broad <- raster(here("Final_Data","Predictors_GeoTIFFs_Aligned_NAmatch","BPI_Broad_Aligned_NAmatch.tif"))
+sum_temp <- raster(here("Final_Data","Predictors_GeoTIFFs_Aligned_NAmatch","Summer_Temp_Aligned_NAmatch.tif"))
+#sum_sal <- raster(here("Final_Data","Predictors_GeoTIFFs_Aligned_NAmatch","Summer_Sal_Aligned_NAmatch.tif"))
+sum_do <- raster(here("Final_Data","Predictors_GeoTIFFs_Aligned_NAmatch","Summer_DO_Aligned_NAmatch.tif"))
+win_temp <- raster(here("Final_Data","Predictors_GeoTIFFs_Aligned_NAmatch","Winter_Temp_Aligned_NAmatch.tif"))
+win_sal <- raster(here("Final_Data","Predictors_GeoTIFFs_Aligned_NAmatch","Winter_Sal_Aligned_NAmatch.tif"))
+win_do <- raster(here("Final_Data","Predictors_GeoTIFFs_Aligned_NAmatch","Winter_DO_Aligned_NAmatch.tif"))
+
 # define crs for each raster
-crs(habitat) <- new_crs
-crs(mg_dist) <- new_crs
-crs(depth) <- new_crs
-crs(slope) <- new_crs
-crs(curvature) <- new_crs
-#crs(plan_curv) <- new_crs
-#crs(prof_curv) <- new_crs
-crs(rug_acr) <- new_crs
-#crs(rug_vrm) <- new_crs
-crs(bpi_fine) <- new_crs
-crs(bpi_broad) <- new_crs
-crs(sum_temp) <- new_crs
-#crs(sum_sal) <- new_crs
-crs(sum_do) <- new_crs
-crs(win_temp) <- new_crs
-crs(win_sal) <- new_crs
-crs(win_do) <- new_crs
+crs(habitat) <- CRS
+crs(mg_dist) <- CRS
+crs(depth) <- CRS
+crs(slope) <- CRS
+crs(curvature) <- CRS
+#crs(plan_curv) <- CRS
+#crs(prof_curv) <- CRS
+crs(rug_acr) <- CRS
+#crs(rug_vrm) <- CRS
+crs(bpi_fine) <- CRS
+crs(bpi_broad) <- CRS
+crs(sum_temp) <- CRS
+#crs(sum_sal) <- CRS
+crs(sum_do) <- CRS
+crs(win_temp) <- CRS
+crs(win_sal) <- CRS
+crs(win_do) <- CRS
 
 # create raster stack
 pred_full <- raster::stack(x = list(habitat, mg_dist, depth, slope, curvature, 
@@ -165,13 +192,12 @@ write.csv(vif, here("GitHub_Repositories","Turcke_MSc_Ch1","Data_SmallFiles",
 
 # excluding Plan Curvature, Profile Curvature, Terrain Ruggedness, and Summer Salinity
 
-pred_select <- raster::stack(x = list(habitat, mg_dist, depth))
-                                      , slope, curvature, 
+pred_select <- raster::stack(x = list(habitat, mg_dist, depth, slope, curvature, 
                                       rug_acr, bpi_broad, bpi_fine, sum_temp, 
                                       sum_do, win_temp, win_sal, win_do))
 names(pred_select) <- c("Habitat","Mangrove_Dist","Depth","Slope","Curvature",
-                      "ACR_Rugosity","BPI_Broad","BPI_Fine","Sum_Temp","Sum_DO",
-                      "Win_Temp","Win_Sal","Win_DO")
+                        "ACR_Rugosity","BPI_Broad","BPI_Fine","Sum_Temp","Sum_DO",
+                        "Win_Temp","Win_Sal","Win_DO")
 
 # clean up
 rm(habitat, mg_dist, depth, slope, curvature, plan_curv, prof_curv, rug_acr,
@@ -182,6 +208,7 @@ rm(habitat, mg_dist, depth, slope, curvature, plan_curv, prof_curv, rug_acr,
 # Correlation - Selected Predictors ---------------------------------------
 
 # pearson correlation matrix on selected spatial predictors
+set.seed(123)
 cl = snow::makeCluster(10)
 ppcor_select <- pearson_correlation_matrix(pred_select)
 snow::stopCluster(cl)
@@ -239,8 +266,8 @@ write.csv(vif, here("GitHub_Repositories","Turcke_MSc_Ch1","Data_SmallFiles",
 # Evaluate what the best settings are for MaxEnt
 
 ### FIND/INSTALL JAVA PACKAGE
-install.packages("rJava", dependencies = T)
-install.packages("ENMeval", dependencies = T)
+#install.packages("rJava", dependencies = T)
+#install.packages("ENMeval", dependencies = T)
 Sys.setenv(JAVA_HOME = "C:/Program Files/Java/jdk-22/")
 
 libraries("rJava", "ENMeval")
@@ -250,84 +277,123 @@ system.file("java", package = "dismo")
 
 # read in the survey bias file 
 # this will guide the selection of background points by MaxEnt
-bias <- raster(here("Final_Data","Sampling_Bias.asc"))
-crs(bias) <- new_crs
+# bias <- raster(here("Final_Data","Final_Sampling_Bias.tif"))
+ bias_terra <- rast(here("Final_Data","Final_Sampling_Bias.tif"))
+# crs(bias_terra)
 n_cores <- 10
 
 # study domain is very large, so select 10,000 background points 
 # (the base settings for MaxEnt)
-#bg_pts = as.data.frame(xyFromCell(bias, sample(which(!is.na(values(subset(pred_select, 1)))), 10000,
-#                                               prob = values(bias)[!is.na(values(subset(pred_select, 1)))])))
+# bg_pts <- as.data.frame(xyFromCell(bias, sample(which(!is.na(values(subset(pred_select, 1)))), 10000,
+#                                                prob = values(bias)[!is.na(values(subset(pred_select, 1)))])))
+# bg_pts <- bg_pts %>% mutate(longitude = x, latitude = y) %>% select("longitude","latitude")
 
-# save to intermediate data folder just in case
-#write.csv(bg_pts, here("Intermediate_Data","Background_Points.csv"), row.names = FALSE)
+# save to final data folder just in case
+# write.csv(bg_pts, here("Final_Data","Final_Background_Points.csv"), row.names = FALSE)
+# rm(bias)
 
-bg_pts <- read.csv(here("Intermediate_Data","Background_Points.csv"))
+bg_pts <- read.csv(here("Final_Data","Final_Background_Points.csv"))
 
-# run evaluation using 10-fold cross-validation & background points selected based
-# on bias file. Remember to specify that variable 1 in the raster stack (habitat) 
-# is categorical and use only the presence data !
+### Run evaluation using 10-fold cross-validation & background points selected based
+#   on bias file. 
+### Remember to specify that variable 1 in the raster stack (habitat) 
+#   is categorical and use only the presence data !
+
+# set directory for results
 enm_wd <- here("ENMevaluate")
 
-rm(bias)
+# set partition settings to k = 10 folds
+ps <- list(kfolds = 10)
+
+
+
+# Midnight Parrotfish ENMeval ----------------------------------------------------
+
+
+# read in presence only data with only three columns: species, longitude, latitude (in that order)
+mp_PO_full <- read.csv(here("Final_Data","Species_Occurrence","Subadult","Subadult_MidnightParrotfish_PO_Full.csv"))
+mp_PO_full <- mp_PO_full %>% mutate(species = SPECIES_CODE, longitude = x, latitude = y) %>% 
+  select("longitude", "latitude")
+
+# run model evaluation on full PO data with random-k-fold partitioning
+mp_enm_eval_full <- ENMevaluate(mp_PO_full, pred_select, bg = bg_pts,
+                                tune.args = list(fc = c("L", "LQ"), 
+                                                 rm = c(1.0, 2.0)),
+                                partitions = "randomkfold", partition.settings = ps, 
+                                algorithm = "maxent.jar", categoricals = c("Habitat"))
+
+write.csv(mp_enm_eval_full@results, paste(enm_wd, "Subadult_MidnightParrotfish_ENMeval.csv"))
+
+
+
+# Blue Parrotfish ENMeval ----------------------------------------------------
+
+
+# read in presence only data with only three columns: species, longitude, latitude (in that order)
+bp_PO_full <- read.csv(here("Final_Data","Species_Occurrence","Subadult","Subadult_BlueParrotfish_PO_Full.csv"))
+
+# run model evaluation on full PO data with random-k-fold partitioning
+bp_enm_eval_full <- ENMevaluate(bp_PO_full, pred_select, bg = bg_pts, 
+                                tune.args = list(fc = c("L", "LQ", "LQH", "LQHP"), 
+                                                 rm = c(0.50, 1.0, 2.0, 5.0, 6.0)),
+                                partitions = "randomkfold", partition.settings = ps, 
+                                algorithm = "maxent.jar", categoricals = "Habitat", 
+                                parallel = TRUE, numCores = n_cores)
+
+write.csv(bp_enm_eval_full@results, paste(enm_wd, "Subadult_BlueParrotfish_ENMeval.csv"))
+
+
+
+# Rainbow Parrotfish ENMeval ----------------------------------------------------
+
+
+# read in presence only data with only three columns: species, longitude, latitude (in that order)
+rp_PO_full <- read.csv(here("Final_Data","Species_Occurrence","Subadult","Subadult_RainbowParrotfish_PO_Full.csv"))
+
+# run model evaluation on full PO data with random-k-fold partitioning
+rp_enm_eval_full <- ENMevaluate(rp_PO_full, pred_select, bg = bg_pts, 
+                                tune.args = list(fc = c("L", "LQ", "LQH", "LQHP"), 
+                                                 rm = c(0.50, 1.0, 2.0, 5.0, 6.0)),
+                                partitions = "randomkfold", partition.settings = ps, 
+                                algorithm = "maxent.jar", categoricals = "Habitat", 
+                                parallel = TRUE, numCores = n_cores)
+
+write.csv(rp_enm_eval_full@results, paste(enm_wd, "Subadult_RainbowParrotfish_ENMeval.csv"))
+
 
 
 # Gray Snapper ENMeval ----------------------------------------------------
 
-# read in presence only data with only two columns: longitude and latitude (in that order)
-lg_PO_full = read.csv(here("Final_Data","Species_Occurrence","Subadult","Subadult_GraySnapper_PO_Full.csv"))[,c("x","y")]
-lg_PO_train = read.csv(here("Final_Data","Species_Occurrence","Subadult","Training","Subadult_GraySnapper_PO_Train.csv"))[,c("x","y")]
-lg_PO_test = read.csv(here("Final_Data","Species_Occurrence","Subadult","Testing","Subadult_GraySnapper_PO_Test.csv"))[,c("x","y")]
+
+# read in presence only data with only three columns: species, longitude, latitude (in that order)
+lg_PO_full <- read.csv(here("Final_Data","Species_Occurrence","Subadult","Subadult_GraySnapper_PO_Full.csv"))
 
 # run model evaluation on full PO data with random-k-fold partitioning
-ps <- list(kfolds = 10)
-lg_enm_eval_full = ENMevaluate(lg_PO_full, pred_select, bg = bg_pts, 
-                               tune.args = list(fc = c("L", "LQ", "LQH", "LQHP"), 
-                                                rm = c(0.25, 0.50, 1.0, 2.0, 5.0)),
-                               partitions = "randomkfold", partition.settings = ps, 
-                               algorithm = "maxent.jar", categoricals = 1, 
-                               parallel = TRUE, numCores = n_cores)
+lg_enm_eval_full <- ENMevaluate(lg_PO_full, pred_select, bg = bg_pts, 
+                                tune.args = list(fc = c("L", "LQ", "LQH", "LQHP"), 
+                                                 rm = c(0.50, 1.0, 2.0, 5.0, 6.0)),
+                                partitions = "randomkfold", partition.settings = ps, 
+                                algorithm = "maxent.jar", categoricals = "Habitat", 
+                                parallel = TRUE, numCores = n_cores)
 
-write.csv(lg_enm_eval_full@results, paste(enm_wd, "Subadult_GraySnapper_ENMeval_Partitioning.csv"))
+write.csv(lg_enm_eval_full@results, paste(enm_wd, "Subadult_GraySnapper_ENMeval.csv"))
 
-# run model evaluation on training data with fully withheld testing data
-lg_enm_eval_tt = ENMevaluate(lg_PO_train, pred_select, bg = bg_pts, 
-                             tune.args = list(fc = c("L", "LQ", "LQH", "LQHP"), 
-                                              rm = c(0.25, 0.50, 1.0, 2.0, 5.0)),
-                             partitions = "testing", occs.testing = lg_PO_test,
-                             algorithm = "maxent.jar", categoricals = 1, 
-                             parallel = TRUE, numCores = n_cores)
-
-write.csv(lg_enm_eval_tt@results, paste(enm_wd, "Subadult_GraySnapper_ENMeval_Withholding.csv"))
 
 
 # Bluestriped Grunt ENMeval -----------------------------------------------
 
-# read in presence only data with only two columns: longitude and latitude (in that order)
-hs_PO_full <- read.csv(here("Final_Data","Species_Occurrence","Subadult","Subadult_BluestripedGrunt_PO_Full.csv"))[,-1]
-hs_PO_train <- read.csv(here("Final_Data","Species_Occurrence","Subadult","Training","Subadult_BluestripedGrunt_PO_Train.csv"))[,-1]
-hs_PO_test <- read.csv(here("Final_Data","Species_Occurrence","Subadult","Testing","Subadult_BluestripedGrunt_PO_Test.csv"))[,-1]
+
+# read in presence only data with only two columns: species, longitude, latitude (in that order)
+hs_PO_full <- read.csv(here("Final_Data","Species_Occurrence","Subadult","Subadult_BluestripedGrunt_PO_Full.csv"))
 
 # run model evaluation on full PO data with random-k-fold partitioning
-hs_enm_eval_full = ENMevaluate(hs_PO_full, pred_select, bg = bg_pts, 
-                               tune.args = list(fc = c("L", "LQ", "LQH", "LQHP"), 
-                                                rm = c(0.25, 0.50, 1.0, 2.0, 5.0)),
-                               partitions = "randomkfold", kfolds = 10, algorithm = "maxent.jar",
-                               categoricals = 1, 
-                               parallel = TRUE, numCores = n_cores)
+hs_enm_eval_full <- ENMevaluate(hs_PO_full, pred_select, bg = bg_pts, 
+                                tune.args = list(fc = c("L", "LQ", "LQH", "LQHP"), 
+                                                 rm = c(0.50, 1.0, 2.0, 5.0, 6.0)),
+                                partitions = "randomkfold", partition.settings = ps, 
+                                algorithm = "maxent.jar", categoricals = "Habitat", 
+                                parallel = TRUE, numCores = n_cores)
 
-write.csv(hs_enm_eval_full@results, paste(enm_wd, "Subadult_BluestripedGrunt_ENMeval_Partitioning.csv"))
-
-# run model evaluation on training data with fully withheld testing data
-hs_enm_eval_tt = ENMevaluate(hs_PO_train, pred_select, bg = bg_pts, 
-                             tune.args = list(fc = c("L", "LQ", "LQH", "LQHP"), 
-                                              rm = c(0.25, 0.50, 1.0, 2.0, 5.0)),
-                             partitions = "testing", occs.testing = hs_PO_test,
-                             algorithm = "maxent.jar", categoricals = 1, 
-                             parallel = TRUE, numCores = n_cores)
-
-write.csv(hs_enm_eval_tt@results, paste(enm_wd, "Subadult_BluestripedGrunt_ENMeval_Withholding.csv"))
-
-
+write.csv(hs_enm_eval_full@results, paste(enm_wd, "Subadult_BluestripedGrunt_ENMeval.csv"))
 
 

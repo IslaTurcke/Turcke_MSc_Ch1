@@ -27,9 +27,12 @@
 library(easypackages)
 libraries("here", "terra", "sf", "PNWColors", "googledrive")
 
+# SET WORKING DIRECTORY
+setwd("Z:/Isla_MSc_Ch1/")
+
 # SET UP RELATIVE PATHS TO DIRECTORIES USING 'HERE'
 # set the Isla_MSc_Ch1 folder as the root directory 
-here::i_am("GitHub_Repositories/MSc_Ch1_DataPrep/R/Bathymetry_Prep.R")
+here::i_am("GitHub_Repositories/Turcke_MSc_Ch1/R/Spatial_DataPrep.R")
 
 # DEFINE COORDINATE SYSTEMS 
 # project CRS - EPSG:6346 NAD 1983 (2011) UTM Zone 17N
@@ -262,7 +265,7 @@ ClassLv1_df <- data.frame(ID = 1:length(ClassLv1_list), ClassLv1 = ClassLv1_list
 reef_map$ClassLv1_ID <- ClassLv1_df$ID[match(reef_map$ClassLv1, ClassLv1_df$ClassLv1)] 
 unique(reef_map$ClassLv1_ID)   
 # save index table for later
-write.csv(ClassLv1_df, here("Source_Data", "Unified_Reef_Map", "URM_ClassLv1_IDs.csv"), row.names = F)
+write.csv(ClassLv1_df, here("GitHub_Repositories", "Turcke_MSc_Ch1", "Data_SmallFiles", "URM_ClassLv1_IDs.csv"), row.names = F)
 
 # aggregate polygons so there is only 1 per habitat type
 reef_map_agg <- terra::aggregate(reef_map, by = "ClassLv1_ID")
@@ -278,7 +281,7 @@ pal_benthic <- pnw_palette("Bay", 14, type = "continuous")
 #plot(reef_crop, "ClassLv1", add = T)
 
 # output reef habitat shapefile for mapping
-writeVector(reef_crop, here("Intermediate_Data","reef_map.shp"), 
+writeVector(reef_crop, here("Intermediate_Data","unified_reef_map.shp"), 
             filetype = "ESRI Shapefile", overwrite = TRUE)
 
 # clean up
@@ -404,11 +407,11 @@ polys(study_poly)
 polys(parks_vect, border = "red")
 
 # save cropped datasets to Final_Data folder
-writeRaster(depth_crop, here("Final_Data","Depth.tif"), 
+writeRaster(depth_crop, here("Final_Data","Predictors_GeoTIFFs","Seafloor_Morphology","Depth.tif"), 
             overwrite = TRUE)
-writeRaster(habitat_crop, here("Final_Data","Habitat.tif"), 
+writeRaster(habitat_crop, here("Final_Data","Predictors_GeoTIFFs","Habitat.tif"), 
             overwrite = TRUE)
-writeRaster(mg_dist_crop, here("Final_Data","Mangrove_Distance.tif"), 
+writeRaster(mg_dist_crop, here("Final_Data","Predictors_GeoTIFFs","Mangrove_Distance.tif"), 
             overwrite = TRUE)
   
 # clean up - remove all variables from the environment

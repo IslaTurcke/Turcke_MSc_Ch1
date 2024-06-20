@@ -19,7 +19,7 @@ import os
 
 # Load required toolboxes
 arcpy.ImportToolbox(r"c:\program files\arcgis\pro\Resources\ArcToolbox\toolboxes\Conversion Tools.tbx")
-arcpy.ImportToolbox("Z:/Isla_MSc_Ch1/btm-3.0-final/toolbox/btm.pyt")
+arcpy.ImportToolbox("Z:/Isla_MSc_Ch1/Software/btm-3.0-final/toolbox/btm.pyt")
 
 # Create geodatabase 
 Isla_gdb = "Z:/Isla_MSc_Ch1/Geodatabases/Isla_MSc_Ch1.gdb"
@@ -35,7 +35,7 @@ arcpy.env.scratchWorkspace = "Z:/Isla_MSc_Ch1/Geodatabases/scratch.gdb"
 print(arcpy.env.scratchGDB)
 
 # Set output directories - change to where you want your .tif files and temporary files to go
-out_tif = "Z:/Isla_MSc_Ch1/Final_Data"
+out_tif = "Z:/Isla_MSc_Ch1/Final_Data/Predictors_GeoTIFFs/Seafloor_Morphology"
 scratch_gdb = "Z:\\Isla_MSc_Ch1\\Geodatabases\\scratch.gdb"
 
 # To allow overwriting outputs 

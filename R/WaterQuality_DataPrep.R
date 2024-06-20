@@ -27,15 +27,18 @@
 # load packages
 library(easypackages) 
 
-install_packages("tidyr", "rgdal", "sf", "terra", "raster", "tidyverse", 
-                 "PNWColors", "tibble", "readxl", "dplyr", "conflicted", "ncf", 
-                 "spdep", "maptools")
+#install_packages("tidyr", "rgdal", "sf", "terra", "raster", "tidyverse", 
+#                 "PNWColors", "tibble", "readxl", "dplyr", "conflicted", "ncf", 
+#                 "spdep", "maptools")
 libraries("here", "tidyr", "rgdal", "sf", "terra", "raster", "tidyverse", 
           "PNWColors", "tibble", "readxl", "dplyr", "conflicted", "ncf", 
           "spdep", "maptools") 
 conflict_prefer("select", "dplyr")
 conflict_prefer("filter", "dplyr")
 conflicted::conflict_prefer("xlim", "spex")
+
+# SET WORKING DIRECTORY
+setwd("Z:/Isla_MSc_Ch1/")
 
 # SET UP RELATIVE PATHS TO DIRECTORIES USING 'HERE'
 # set the Isla_MSc_Ch1 folder as the root directory 
