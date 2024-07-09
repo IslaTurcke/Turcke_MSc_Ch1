@@ -46,19 +46,19 @@ win_do <- rast(here("Final_Data","Predictors_GeoTIFFs","Water_Quality","Winter_D
 
 
 # find smallest extent
-xmin <- max(ext(habitat)[1],ext(mg_dist)[1],ext(depth)[1],ext(slope)[1],ext(curv)[1],
+xmin <- max(ext(habitat)[1],ext(mg_dist)[1],ext(slope)[1],ext(curv)[1],
             ext(plan_curv)[1],ext(prof_curv)[1],ext(rug_acr)[1],ext(rug_vrm)[1],
             ext(bpi_b)[1],ext(bpi_f)[1],ext(sum_temp)[1],ext(sum_sal)[1],ext(sum_do)[1],
             ext(win_temp)[1],ext(win_sal)[1],ext(win_do)[1])
-xmax <- min(ext(habitat)[2],ext(mg_dist)[2],ext(depth)[2],ext(slope)[2],ext(curv)[2],
+xmax <- min(ext(habitat)[2],ext(mg_dist)[2],ext(slope)[2],ext(curv)[2],
             ext(plan_curv)[2],ext(prof_curv)[2],ext(rug_acr)[2],ext(rug_vrm)[2],
             ext(bpi_b)[2],ext(bpi_f)[2],ext(sum_temp)[2],ext(sum_sal)[2],ext(sum_do)[2],
             ext(win_temp)[2],ext(win_sal)[2],ext(win_do)[2])
-ymin <- max(ext(habitat)[3],ext(mg_dist)[3],ext(depth)[3],ext(slope)[3],ext(curv)[3],
+ymin <- max(ext(habitat)[3],ext(mg_dist)[3],ext(slope)[3],ext(curv)[3],
             ext(plan_curv)[3],ext(prof_curv)[3],ext(rug_acr)[3],ext(rug_vrm)[3],
             ext(bpi_b)[3],ext(bpi_f)[3],ext(sum_temp)[3],ext(sum_sal)[3],ext(sum_do)[3],
             ext(win_temp)[3],ext(win_sal)[3],ext(win_do)[3])
-ymax <- min(ext(habitat)[4],ext(mg_dist)[4],ext(depth)[4],ext(slope)[4],ext(curv)[4],
+ymax <- min(ext(habitat)[4],ext(mg_dist)[4],ext(slope)[4],ext(curv)[4],
             ext(plan_curv)[4],ext(prof_curv)[4],ext(rug_acr)[4],ext(rug_vrm)[4],
             ext(bpi_b)[4],ext(bpi_f)[4],ext(sum_temp)[4],ext(sum_sal)[4],ext(sum_do)[4],
             ext(win_temp)[4],ext(win_sal)[4],ext(win_do)[4])
@@ -103,3 +103,44 @@ res(bias_crop)
 
 # save bias file as ASCII
 writeRaster(bias_crop, here("Final_Data","Final_Sampling_Bias.tif"))
+final_bias <- rast(here("Final_Data","Final_Sampling_Bias.asc"))
+final_bias
+minmax(final_bias)
+final_bias
+terra::plot(final_bias)
+
+
+
+# Fixing BPI Data ---------------------------------------------------------
+
+
+bpi_b_align <- rast(here("Final_Data","Predictors_GeoTIFFs_Aligned","BPI_Broad_Aligned.tif"))
+bpi_f_align <- rast(here("Final_Data","Predictors_GeoTIFFs_Aligned","BPI_Fine_Aligned.tif"))
+# these both have the blown up max values :(
+
+bpi_b_crop <- rast(here("Final_Data","Predictors_GeoTIFFs_Cropped","BPI_Broad_Cropped.tif"))
+bpi_f_crop <- rast(here("Final_Data","Predictors_GeoTIFFs_Cropped","BPI_Broad_Cropped.tif"))
+# these both have correct max values :)
+# so start from here
+
+depth <- rast(here("Final_Data","Predictors_GeoTIFFs","Seafloor_Morphology","Depth.tif"))
+depth_align <- rast(here("Final_Data","Predictors_GeoTIFFs_Aligned","Depth_Aligned.tif"))
+
+# project OG bpi to depth
+bpi_b_proj <- terra::project(bpi_b, depth, method = "near", align = T) 
+bpi_f_proj <- terra::project(bpi_f, depth, method = "near", align = T)
+# fack, it changed the max value (by like 6 orders of magnitude)
+
+# project OG bpi to depth_align (which == depth_crop)
+bpi_b_proj <- terra::project(bpi_b, depth_align, method = "near", align = T) 
+bpi_f_proj <- terra::project(bpi_f, depth_align, method = "near", align = T)
+# fack, this also changed the max value
+
+# project cropped bpi to depth
+bpi_b_proj <- terra::project(bpi_b_crop, depth, method = "near", align = T) 
+bpi_f_proj <- terra::project(bpi_f_crop, depth, method = "near", align = T)
+# YAYAYAYAYAYA This one works!!!
+
+# project cropped bpi to depth_align (which == depth_crop)
+bpi_b_proj <- terra::project(bpi_b_crop, depth_align, method = "near", align = T) 
+bpi_f_proj <- terra::project(bpi_f_crop, depth_align, method = "near", align = T)

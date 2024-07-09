@@ -218,7 +218,7 @@ writeRaster(cudem_5x5, here("Intermediate_Data","cudem_full_5x5.tif"),
             overwrite = TRUE, filetype = "GTiff")
 
 # clean up storage
-rm(cudem_full_m)
+#rm(cudem_full_m)
 
 
 
@@ -231,7 +231,7 @@ depth_5x5 <- mosaic(cudem_5x5, lidar_5x5)
 
 # crop the raster to fall within the extent of the parks boundary
 depth <- terra::crop(depth_5x5, ext(parks_vect))
-plot(depth)
+#plot(depth)
 
 # Save the combined raster to a new file
 writeRaster(depth, here("Intermediate_Data","depth_5x5.tif"), 
@@ -396,6 +396,8 @@ writeVector(study_poly, here("Final_Data","Study_Region.shp"),
 # Final Cropping for Spatial Datasets -------------------------------------
 
 
+study_rast <- rast(here("Final_Data","Study_Region.tif"))
+
 # cropping depth, habitat type, and distance to mangrove to final study region
 depth_crop <- depth * study_rast
 habitat_crop <- reef_mg * study_rast
@@ -406,8 +408,14 @@ plot(mg_dist_crop)
 polys(study_poly)
 polys(parks_vect, border = "red")
 
+# set all depth cells > 1 m to NA
+library(raster)
+#depth_raster <- raster::raster(depth_crop)
+depth_b1m <- depth_crop
+depth_b1m[depth_b1m > 1] = NA
+
 # save cropped datasets to Final_Data folder
-writeRaster(depth_crop, here("Final_Data","Predictors_GeoTIFFs","Seafloor_Morphology","Depth.tif"), 
+terra::writeRaster(depth_b1m, here("Final_Data","Predictors_GeoTIFFs","Seafloor_Morphology","Depth.tif"), 
             overwrite = TRUE)
 writeRaster(habitat_crop, here("Final_Data","Predictors_GeoTIFFs","Habitat.tif"), 
             overwrite = TRUE)

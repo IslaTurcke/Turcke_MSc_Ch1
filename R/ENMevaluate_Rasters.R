@@ -25,8 +25,6 @@
 # install packages
 # install.packages("usdm")
 # install.packages("sdmpredictors")
-# install.packages("corrplot")
-# install.packages("Cairo")
 
 # load packages
 library(ENMeval)
@@ -44,7 +42,7 @@ print(tempdir())
 
 # SET UP RELATIVE PATHS TO DIRECTORIES USING 'HERE'
 # set the Isla_MSc_Ch1 folder as the root directory 
-here::i_am("GitHub_Repositories/Turcke_MSc_Ch1/R/Collinearity_ENMevaluate.R")
+here::i_am("GitHub_Repositories/Turcke_MSc_Ch1/R/ENMevaluate_Rasters.R")
 
 # set random seed to reproduce results
 set.seed(123)
@@ -55,30 +53,32 @@ set.seed(123)
 
 
 # load from ASCII files (didn't work for ENMevaluate)
-# habitat <- raster(here("Final_Data","Predictors_ASCII","Habitat_Type.asc"))
-# mg_dist <- raster(here("Final_Data","Predictors_ASCII","Mangrove_Distance.asc"))
-# depth <- raster(here("Final_Data","Predictors_ASCII","Depth.asc"))
-# slope <- raster(here("Final_Data","Predictors_ASCII","Slope.asc"))
-# curvature <- raster(here("Final_Data","Predictors_ASCII","Curvature.asc"))
-# rug_acr <- raster(here("Final_Data","Predictors_ASCII","Rugosity_ACR.asc"))
-# bpi_fine <- raster(here("Final_Data","Predictors_ASCII","BPI_Fine.asc"))
-# bpi_broad <- raster(here("Final_Data","Predictors_ASCII","BPI_Broad.asc"))
-# sum_temp <- raster(here("Final_Data","Predictors_ASCII","Summer_Temperature.asc"))
-# sum_do <- raster(here("Final_Data","Predictors_ASCII","Summer_Dissolved_Oxygen.asc"))
-# win_temp <- raster(here("Final_Data","Predictors_ASCII","Winter_Temperature.asc"))
-# win_sal <- raster(here("Final_Data","Predictors_ASCII","Winter_Salinity.asc"))
-# win_do <- raster(here("Final_Data","Predictors_ASCII","Winter_Dissolved_Oxygen.asc"))
+habitat <- raster(here("Final_Data","Predictors_ASCII","Habitat_Type.asc"))
+mg_dist <- raster(here("Final_Data","Predictors_ASCII","Mangrove_Distance.asc"))
+depth <- raster(here("Final_Data","Predictors_ASCII","Depth.asc"))
+slope <- raster(here("Final_Data","Predictors_ASCII","Slope.asc"))
+curv <- raster(here("Final_Data","Predictors_ASCII","Curvature.asc"))
+rug_acr <- raster(here("Final_Data","Predictors_ASCII","Rugosity_ACR.asc"))
+bpi_fine <- raster(here("Final_Data","Predictors_ASCII","BPI_Fine.asc"))
+bpi_broad <- raster(here("Final_Data","Predictors_ASCII","BPI_Broad.asc"))
+sum_temp <- raster(here("Final_Data","Predictors_ASCII","Summer_Temperature.asc"))
+sum_do <- raster(here("Final_Data","Predictors_ASCII","Summer_Dissolved_Oxygen.asc"))
+win_temp <- raster(here("Final_Data","Predictors_ASCII","Winter_Temperature.asc"))
+win_sal <- raster(here("Final_Data","Predictors_ASCII","Winter_Salinity.asc"))
+win_do <- raster(here("Final_Data","Predictors_ASCII","Winter_Dissolved_Oxygen.asc"))
 
-envs.files <- list.files(path = here("Final_Data","Predictors_GRD"), pattern = "grd", full.names = TRUE)
+envs <- raster::stack(x = list(habitat, mg_dist, depth, slope, curv, rug_acr, bpi_broad, bpi_fine,
+                               sum_temp, sum_do, win_temp, win_sal, win_do))
 
-envs <- raster::stack(envs.files)
+# envs.files <- list.files(path = here("Final_Data","Predictors_ASCII"), pattern = "asc", full.names = TRUE)
+# envs <- raster::stack(envs.files)
 
 # declare habitat as a categorical variable (factor)
-envs$lyr.1.5 <- raster::as.factor(envs$lyr.1.5)
+# envs$lyr.1.5 <- raster::as.factor(envs$lyr.1.5)
 
-names(envs) <- c("Habitat","Mangrove_Dist","Depth","Slope","Curvature",
-                        "ACR_Rugosity","BPI_Broad","BPI_Fine","Sum_Temp","Sum_DO",
-                        "Win_Temp","Win_Sal","Win_DO")
+# names(envs) <- c("BPI_Broad","BPI_Fine","Curvature","Depth","Habitat","Mangrove_Dist","Slope",
+                        #"ACR_Rugosity","Sum_Temp","Sum_DO",
+                        #"Win_Temp","Win_Sal","Win_DO")
 
 
 
@@ -92,7 +92,7 @@ names(envs) <- c("Habitat","Mangrove_Dist","Depth","Slope","Curvature",
 #install.packages("ENMeval", dependencies = T)
 Sys.setenv(JAVA_HOME = "C:/Program Files/Java/jdk-22/")
 
-libraries("rJava")
+library("rJava")
 
 # need rJava first, find the dismo directory and move the maxent.jar file there (manually)
 system.file("java", package = "dismo")
@@ -120,7 +120,6 @@ ps <- list(kfolds = 10)
 # rm(bias)
 
 bg_pts <- read.csv(here("Final_Data","Final_Background_Points.csv"))
-bg.z <- cbind(bg_pts, raster::extract(envs, bg_pts))
 
 
 
@@ -130,11 +129,8 @@ bg.z <- cbind(bg_pts, raster::extract(envs, bg_pts))
 # read in presence only data with only three columns: species, longitude, latitude (in that order)
 mp_PO_full <- read.csv(here("Final_Data","Species_Occurrence","Subadult","Subadult_MidnightParrotfish_PO_Full.csv"))[,-1]
 
-# set up occurrence data frame
-mp_occs.z <- cbind(mp_PO_full, raster::extract(envs, mp_PO_full))
-
 # run model evaluation on full PO data with random-k-fold partitioning
-mp_enm_eval_full <- ENMevaluate(mp_occs.z, bg = bg.z, algorithm = "maxnet",
+mp_enm_eval_full <- ENMevaluate(mp_PO_full, envs, bg = bg_pts, algorithm = "maxent.jar",
                                 tune.args = list(fc = c("L","LQ"), 
                                                  rm = 1:2),
                                 partitions = "randomkfold", partition.settings = ps)

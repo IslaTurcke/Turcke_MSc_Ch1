@@ -35,6 +35,7 @@ setwd("Z:/Isla_MSc_Ch1/")
 # change where large temporary rasters are stored
 terraOptions(tempdir = "Z:/Isla_MSc_Ch1/Temp/")
 rasterOptions(tmpdir = "Z:/Isla_MSc_Ch1/Temp/")
+tempdir()
 
 # Set up for relative paths
 here::i_am("GitHub_Repositories/Turcke_MSc_Ch1/R/Convert_to_ASCII.R")
@@ -43,7 +44,7 @@ here::i_am("GitHub_Repositories/Turcke_MSc_Ch1/R/Convert_to_ASCII.R")
 # EPSG:6346 NAD 1983 2011 UTM Zone 17N
 new_crs <- crs("+init=epsg:6346")
 
-# read in initial study region and sampling bias file
+# read in initial study region
 study_region <- rast(here("Final_Data","Study_Region.tif"))
 
 # read in all predictor data sets
@@ -67,7 +68,7 @@ win_do <- rast(here("Final_Data","Predictors_GeoTIFFs","Water_Quality","Winter_D
 
 
 
-# Aligning NA Cells -------------------------------------------------------
+# Smallest Extent -----------------------------------------------------------
 
 
 # find smallest extent
@@ -90,119 +91,120 @@ ymax <- min(ext(habitat)[4],ext(mg_dist)[4],ext(depth)[4],ext(slope)[4],ext(curv
 EXT <- ext(xmin, xmax, ymin, ymax)
 rm(xmin, xmax, ymin, ymax)
 
+
+
+# Crop to match EXT -------------------------------------------------------
+
+
 # crop initial study region to smallest extent
 study_crop <- terra::crop(study_region, EXT)
-CRS <- crs(study_crop)
-
-# # project to match CRS, resolution, and origin 
-# habitat <- terra::project(habitat, study_crop, method = "near", align = T)
-# mg_dist <- terra::project(mg_dist, study_crop, method = "near", align = T)
-# depth <- terra::project(depth, study_crop, method = "near", align = T)
-# slope <- terra::project(slope, study_crop, method = "near", align = T)
-# curv <- terra::project(curv, study_crop, method = "near", align = T)
-# plan_curv <- terra::project(plan_curv, study_crop, method = "near", align = T)
-# prof_curv <- terra::project(prof_curv, study_crop, method = "near", align = T)
-# rug_acr <- terra::project(rug_acr, study_crop, method = "near", align = T)
-# rug_vrm <- terra::project(rug_vrm, study_crop, method = "near", align = T)
-# bpi_b <- terra::project(bpi_b, study_crop, method = "near", align = T)
-# bpi_f <- terra::project(bpi_f, study_crop, method = "near", align = T)
-# sum_temp <- terra::project(sum_temp, study_crop, method = "near", align = T)
-# sum_sal <- terra::project(sum_sal, study_crop, method = "near", align = T)
-# sum_do <- terra::project(sum_do, study_crop, method = "near", align = T)
-# win_temp <- terra::project(win_temp, study_crop, method = "near", align = T)
-# win_sal <- terra::project(win_sal, study_crop, method = "near", align = T)
-# win_do <- terra::project(win_do, study_crop, method = "near", align = T)
 
 # crop rasters to match extent of study_crop
-habitat <- terra::crop(habitat, study_crop)
-mg_dist <- terra::crop(mg_dist, study_crop)
-depth <- terra::crop(depth, study_crop)
-slope <- terra::crop(slope, study_crop)
-curv <- terra::crop(curv, study_crop)
-plan_curv <- terra::crop(plan_curv, study_crop)
-prof_curv <- terra::crop(prof_curv, study_crop)
-rug_acr <- terra::crop(rug_acr, study_crop)
-rug_vrm <- terra::crop(rug_vrm, study_crop)
-bpi_b <- terra::crop(bpi_b, study_crop)
-bpi_f <- terra::crop(bpi_f, study_crop)
-sum_temp <- terra::crop(sum_temp, study_crop)
-sum_sal <- terra::crop(sum_sal, study_crop)
-sum_do <- terra::crop(sum_do, study_crop)
-win_temp <- terra::crop(win_temp, study_crop)
-win_sal <- terra::crop(win_sal, study_crop)
-win_do <- terra::crop(win_do, study_crop)
+habitat_crop <- terra::crop(habitat, study_crop)
+mg_dist_crop <- terra::crop(mg_dist, study_crop)
+depth_crop <- terra::crop(depth, study_crop)
+slope_crop <- terra::crop(slope, study_crop)
+curv_crop <- terra::crop(curv, study_crop)
+plan_curv_crop <- terra::crop(plan_curv, study_crop)
+prof_curv_crop <- terra::crop(prof_curv, study_crop)
+rug_acr_crop <- terra::crop(rug_acr, study_crop)
+rug_vrm_crop <- terra::crop(rug_vrm, study_crop)
+bpi_b_crop <- terra::crop(bpi_b, study_crop)
+bpi_f_crop <- terra::crop(bpi_f, study_crop)
+sum_temp_crop <- terra::crop(sum_temp, study_crop)
+sum_sal_crop <- terra::crop(sum_sal, study_crop)
+sum_do_crop <- terra::crop(sum_do, study_crop)
+win_temp_crop <- terra::crop(win_temp, study_crop)
+win_sal_crop <- terra::crop(win_sal, study_crop)
+win_do_crop <- terra::crop(win_do, study_crop)
 
-crs(habitat) == CRS
-crs(mg_dist) == CRS
-crs(depth) == CRS
-crs(slope) == CRS
-crs(curv) == CRS
-crs(plan_curv) == CRS
-crs(prof_curv) == CRS
-crs(rug_acr) == CRS
-crs(rug_vrm) == CRS
-crs(bpi_b) == CRS
-crs(bpi_f) == CRS
-crs(sum_temp) == CRS
-crs(sum_sal) == CRS
-crs(sum_do) == CRS
-crs(win_temp) == CRS
-crs(win_sal) == CRS
-crs(win_do) == CRS
+
+
+# Project to match CRS ----------------------------------------------------
+
+
+# project to match CRS, resolution, and origin
+habitat_proj <- terra::project(habitat_crop, depth_crop, method = "near", align = T)
+mg_dist_proj <- terra::project(mg_dist_crop, depth_crop, method = "near", align = T)
+slope_proj <- terra::project(slope_crop, depth_crop, method = "near", align = T)
+curv_proj <- terra::project(curv_crop, depth_crop, method = "near", align = T)
+plan_curv_proj <- terra::project(plan_curv_crop, depth_crop, method = "near", align = T)
+prof_curv_proj <- terra::project(prof_curv_crop, depth_crop, method = "near", align = T)
+rug_acr_proj <- terra::project(rug_acr_crop, depth_crop, method = "near", align = T)
+rug_vrm_proj <- terra::project(rug_vrm_crop, depth_crop, method = "near", align = T)
+bpi_b_proj <- terra::project(bpi_b_crop, depth_crop, method = "near", align = T) 
+bpi_f_proj <- terra::project(bpi_f_crop, depth_crop, method = "near", align = T) 
+sum_temp_proj <- terra::project(sum_temp_crop, depth_crop, method = "near", align = T)
+sum_sal_proj <- terra::project(sum_sal_crop, depth_crop, method = "near", align = T)
+sum_do_proj <- terra::project(sum_do_crop, depth_crop, method = "near", align = T)
+win_temp_proj <- terra::project(win_temp_crop, depth_crop, method = "near", align = T)
+win_sal_proj <- terra::project(win_sal_crop, depth_crop, method = "near", align = T)
+win_do_proj <- terra::project(win_do_crop, depth_crop, method = "near", align = T)
 
 
 # free unused R memory
+rm(habitat, mg_dist, depth, slope, curv, plan_curv, prof_curv, rug_acr, rug_vrm, 
+   bpi_b, bpi_f, sum_temp, sum_sal, sum_do, win_temp, win_sal, win_do)
 gc()
 
-# ### WRITING OUT AND READING BACK IN AS A SCRIPT SHORTCUT ###
-# terra::writeRaster(habitat, here("Final_Data", "Predictors_GeoTIFFs_Aligned","Habitat_Aligned.tif"))
-# terra::writeRaster(mg_dist, here("Final_Data", "Predictors_GeoTIFFs_Aligned","Mg_Dist_Aligned.tif"))
-# terra::writeRaster(depth, here("Final_Data", "Predictors_GeoTIFFs_Aligned","Depth_Aligned.tif"))
-# terra::writeRaster(slope, here("Final_Data", "Predictors_GeoTIFFs_Aligned","Slope_Aligned.tif"))
-# terra::writeRaster(curv, here("Final_Data", "Predictors_GeoTIFFs_Aligned","Curvature_Aligned.tif"))
-# terra::writeRaster(plan_curv, here("Final_Data", "Predictors_GeoTIFFs_Aligned","Plan_Curv_Aligned.tif"))
-# terra::writeRaster(prof_curv, here("Final_Data", "Predictors_GeoTIFFs_Aligned","Profile_Curv_Aligned.tif"))
-# terra::writeRaster(rug_acr, here("Final_Data", "Predictors_GeoTIFFs_Aligned","ACR_Rugosity_Aligned.tif"))
-# terra::writeRaster(rug_vrm, here("Final_Data", "Predictors_GeoTIFFs_Aligned","Terrain_Ruggedness_Aligned.tif"))
-# terra::writeRaster(bpi_b, here("Final_Data", "Predictors_GeoTIFFs_Aligned","BPI_Broad_Aligned.tif"))
-# terra::writeRaster(bpi_f, here("Final_Data", "Predictors_GeoTIFFs_Aligned","BPI_Fine_Aligned.tif"))
-# terra::writeRaster(sum_temp, here("Final_Data", "Predictors_GeoTIFFs_Aligned","Summer_Temp_Aligned.tif"))
-# terra::writeRaster(sum_sal, here("Final_Data", "Predictors_GeoTIFFs_Aligned","Summer_Sal_Aligned.tif"))
-# terra::writeRaster(sum_do, here("Final_Data", "Predictors_GeoTIFFs_Aligned","Summer_DO_Aligned.tif"))
-# terra::writeRaster(win_temp, here("Final_Data", "Predictors_GeoTIFFs_Aligned","Winter_Temp_Aligned.tif"))
-# terra::writeRaster(win_sal, here("Final_Data", "Predictors_GeoTIFFs_Aligned","Winter_Sal_Aligned.tif"))
-# terra::writeRaster(win_do, here("Final_Data", "Predictors_GeoTIFFs_Aligned","Winter_DO_Aligned.tif"))
-# 
-# habitat <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned","Habitat_Aligned.tif"))
-# mg_dist <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned","Mg_Dist_Aligned.tif"))
-# depth <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned","Depth_Aligned.tif"))
-# slope <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned","Slope_Aligned.tif"))
-# curv <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned","Curvature_Aligned.tif"))
-# plan_curv <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned","Plan_Curv_Aligned.tif"))
-# prof_curv <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned","Profile_Curv_Aligned.tif"))
-# rug_acr <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned","ACR_Rugosity_Aligned.tif"))
-# rug_vrm <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned","Terrain_Ruggedness_Aligned.tif"))
-# bpi_b <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned","BPI_Broad_Aligned.tif"))
-# bpi_f <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned","BPI_Fine_Aligned.tif"))
-# sum_temp <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned","Summer_Temp_Aligned.tif"))
-# sum_sal <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned","Summer_Sal_Aligned.tif"))
-# sum_do <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned","Summer_DO_Aligned.tif"))
-# win_temp <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned","Winter_Temp_Aligned.tif"))
-# win_sal <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned","Winter_Sal_Aligned.tif"))
-# win_do <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned","Winter_DO_Aligned.tif"))
+### WRITING OUT AND READING BACK IN AS A SCRIPT SHORTCUT ###
+terra::writeRaster(habitat_proj, here("Final_Data", "Predictors_GeoTIFFs_Aligned","Habitat_Aligned.tif"), overwrite = TRUE)
+terra::writeRaster(mg_dist_proj, here("Final_Data", "Predictors_GeoTIFFs_Aligned","Mg_Dist_Aligned.tif"), overwrite = TRUE)
+terra::writeRaster(depth_crop, here("Final_Data", "Predictors_GeoTIFFs_Aligned","Depth_Aligned.tif"), overwrite = TRUE)
+terra::writeRaster(slope_proj, here("Final_Data", "Predictors_GeoTIFFs_Aligned","Slope_Aligned.tif"), overwrite = TRUE)
+terra::writeRaster(curv_proj, here("Final_Data", "Predictors_GeoTIFFs_Aligned","Curvature_Aligned.tif"), overwrite = TRUE)
+terra::writeRaster(plan_curv_proj, here("Final_Data", "Predictors_GeoTIFFs_Aligned","Plan_Curv_Aligned.tif"), overwrite = TRUE)
+terra::writeRaster(prof_curv_proj, here("Final_Data", "Predictors_GeoTIFFs_Aligned","Profile_Curv_Aligned.tif"), overwrite = TRUE)
+terra::writeRaster(rug_acr_proj, here("Final_Data", "Predictors_GeoTIFFs_Aligned","ACR_Rugosity_Aligned.tif"), overwrite = TRUE)
+terra::writeRaster(rug_vrm_proj, here("Final_Data", "Predictors_GeoTIFFs_Aligned","Terrain_Ruggedness_Aligned.tif"), overwrite = TRUE)
+terra::writeRaster(bpi_b_proj, here("Final_Data", "Predictors_GeoTIFFs_Aligned","BPI_Broad_Aligned.tif"), overwrite = TRUE)
+terra::writeRaster(bpi_f_proj, here("Final_Data", "Predictors_GeoTIFFs_Aligned","BPI_Fine_Aligned.tif"), overwrite = TRUE)
+terra::writeRaster(sum_temp_proj, here("Final_Data", "Predictors_GeoTIFFs_Aligned","Summer_Temp_Aligned.tif"), overwrite = TRUE)
+terra::writeRaster(sum_sal_proj, here("Final_Data", "Predictors_GeoTIFFs_Aligned","Summer_Sal_Aligned.tif"), overwrite = TRUE)
+terra::writeRaster(sum_do_proj, here("Final_Data", "Predictors_GeoTIFFs_Aligned","Summer_DO_Aligned.tif"), overwrite = TRUE)
+terra::writeRaster(win_temp_proj, here("Final_Data", "Predictors_GeoTIFFs_Aligned","Winter_Temp_Aligned.tif"), overwrite = TRUE)
+terra::writeRaster(win_sal_proj, here("Final_Data", "Predictors_GeoTIFFs_Aligned","Winter_Sal_Aligned.tif"), overwrite = TRUE)
+terra::writeRaster(win_do_proj, here("Final_Data", "Predictors_GeoTIFFs_Aligned","Winter_DO_Aligned.tif"), overwrite = TRUE)
+
+rm(habitat_crop, habitat_proj, mg_dist_crop, mg_dist_proj, depth_crop, slope_crop, slope_proj, curv_crop, curv_proj, plan_curv_crop, plan_curv_proj,
+   rug_acr_crop, rug_acr_proj, rug_vrm_crop, rug_vrm_proj, bpi_b_crop, bpi_b_proj, bpi_f_crop, bpi_f_proj, sum_temp_crop, sum_temp_proj, sum_sal_crop, sum_sal_proj,
+   sum_do_crop, sum_do_proj, win_temp_crop, win_temp_proj, win_sal_crop, win_sal_crop, win_do_crop, win_do_proj)
+
+habitat <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned","Habitat_Aligned.tif"))
+mg_dist <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned","Mg_Dist_Aligned.tif"))
+depth <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned","Depth_Aligned.tif"))
+slope <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned","Slope_Aligned.tif"))
+curv <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned","Curvature_Aligned.tif"))
+plan_curv <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned","Plan_Curv_Aligned.tif"))
+prof_curv <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned","Profile_Curv_Aligned.tif"))
+rug_acr <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned","ACR_Rugosity_Aligned.tif"))
+rug_vrm <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned","Terrain_Ruggedness_Aligned.tif"))
+bpi_b <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned","BPI_Broad_Aligned.tif"))
+bpi_f <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned","BPI_Fine_Aligned.tif"))
+sum_temp <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned","Summer_Temp_Aligned.tif"))
+sum_sal <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned","Summer_Sal_Aligned.tif"))
+sum_do <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned","Summer_DO_Aligned.tif"))
+win_temp <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned","Winter_Temp_Aligned.tif"))
+win_sal <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned","Winter_Sal_Aligned.tif"))
+win_do <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned","Winter_DO_Aligned.tif"))
+
+
+
+# Stack to make mask ------------------------------------------------------
+
 
 # create a stack of all spatial layers that we need to match exactly
-stack <- c(habitat, mg_dist, depth, slope, curv, plan_curv, prof_curv, rug_acr,
+stack <- c(habitat, mg_dist, depth, slope, curv, plan_curv, prof_curv, rug_acr, 
            rug_vrm, bpi_b, bpi_f, sum_temp, sum_sal, sum_do, win_temp, win_sal, win_do)
 
-rm(habitat, mg_dist, depth, slope, curv, plan_curv, prof_curv, rug_acr, rug_vrm,
-   bpi_b, bpi_f, sum_temp, sum_sal, sum_do, win_temp, win_sal, win_do, study_region)
+rm(habitat, mg_dist, depth, slope, curv, plan_curv, prof_curv, rug_acr, rug_vrm, bpi_b, 
+   bpi_f, sum_temp, sum_sal, sum_do, win_temp, win_sal, win_do, study_region)
 gc()
 
 # create a mask layer that has an NA in each cell where ANY layer has NA
 #my_mask <- any(is.na(stack))
 my_mask <- terra::app(stack, fun = sum)
-terra::writeRaster(my_mask, here("Final_Data","NA_Predictor_Mask.tif"))
+terra::writeRaster(my_mask, here("Final_Data","NA_Predictor_Mask.tif"), overwrite = TRUE)
 
 # mask each layer in the stack so all NA cells align
 stack_masked <- mask(stack, my_mask)
@@ -210,28 +212,34 @@ stack_masked <- mask(stack, my_mask)
 global(stack_masked, fun = "isNA")
 rm(stack)
 
+############################## temp
+my_mask <- rast(here("Final_Data","NA_Predictor_Mask.tif"))
+
+bpi_b_mask <- mask(bpi_b, my_mask)
+bpi_f_mask <- mask(bpi_f, my_mask)
+
 
 
 # Final GeoTIFFs ----------------------------------------------------------
 
 
-terra::writeRaster(stack_masked[[1]], here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","Habitat_Aligned_NAmatch.tif"))
-terra::writeRaster(stack_masked[[2]], here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","Mg_Dist_Aligned_NAmatch.tif"))
-terra::writeRaster(stack_masked[[3]], here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","Depth_Aligned_NAmatch.tif"))
-terra::writeRaster(stack_masked[[4]], here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","Slope_Aligned_NAmatch.tif"))
-terra::writeRaster(stack_masked[[5]], here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","Curvature_Aligned_NAmatch.tif"))
-terra::writeRaster(stack_masked[[6]], here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","Plan_Curv_Aligned_NAmatch.tif"))
-terra::writeRaster(stack_masked[[7]], here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","Profile_Curv_Aligned_NAmatch.tif"))
-terra::writeRaster(stack_masked[[8]], here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","ACR_Rugosity_Aligned_NAmatch.tif"))
-terra::writeRaster(stack_masked[[9]], here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","Terrain_Ruggedness_Aligned_NAmatch.tif"))
-terra::writeRaster(stack_masked[[10]], here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","BPI_Broad_Aligned_NAmatch.tif"))
-terra::writeRaster(stack_masked[[11]], here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","BPI_Fine_Aligned_NAmatch.tif"))
-terra::writeRaster(stack_masked[[12]], here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","Summer_Temp_Aligned_NAmatch.tif"))
-terra::writeRaster(stack_masked[[13]], here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","Summer_Sal_Aligned_NAmatch.tif"))
-terra::writeRaster(stack_masked[[14]], here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","Summer_DO_Aligned_NAmatch.tif"))
-terra::writeRaster(stack_masked[[15]], here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","Winter_Temp_Aligned_NAmatch.tif"))
-terra::writeRaster(stack_masked[[16]], here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","Winter_Sal_Aligned_NAmatch.tif"))
-terra::writeRaster(stack_masked[[17]], here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","Winter_DO_Aligned_NAmatch.tif"))
+terra::writeRaster(stack_masked[[1]], here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","Habitat_Aligned_NAmatch.tif"), overwrite = TRUE)
+terra::writeRaster(stack_masked[[2]], here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","Mg_Dist_Aligned_NAmatch.tif"), overwrite = TRUE)
+terra::writeRaster(stack_masked[[3]], here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","Depth_Aligned_NAmatch.tif"), overwrite = TRUE)
+terra::writeRaster(stack_masked[[4]], here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","Slope_Aligned_NAmatch.tif"), overwrite = TRUE)
+terra::writeRaster(stack_masked[[5]], here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","Curvature_Aligned_NAmatch.tif"), overwrite = TRUE)
+terra::writeRaster(stack_masked[[6]], here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","Plan_Curv_Aligned_NAmatch.tif"), overwrite = TRUE)
+terra::writeRaster(stack_masked[[7]], here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","Profile_Curv_Aligned_NAmatch.tif"), overwrite = TRUE)
+terra::writeRaster(stack_masked[[8]], here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","ACR_Rugosity_Aligned_NAmatch.tif"), overwrite = TRUE)
+terra::writeRaster(stack_masked[[9]], here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","Terrain_Ruggedness_Aligned_NAmatch.tif"), overwrite = TRUE)
+terra::writeRaster(stack_masked[[10]], here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","BPI_Broad_Aligned_NAmatch.tif"), overwrite = TRUE)
+terra::writeRaster(stack_masked[[11]], here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","BPI_Fine_Aligned_NAmatch.tif"), overwrite = TRUE)
+terra::writeRaster(stack_masked[[12]], here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","Summer_Temp_Aligned_NAmatch.tif"), overwrite = TRUE)
+terra::writeRaster(stack_masked[[13]], here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","Summer_Sal_Aligned_NAmatch.tif"), overwrite = TRUE)
+terra::writeRaster(stack_masked[[14]], here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","Summer_DO_Aligned_NAmatch.tif"), overwrite = TRUE)
+terra::writeRaster(stack_masked[[15]], here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","Winter_Temp_Aligned_NAmatch.tif"), overwrite = TRUE)
+terra::writeRaster(stack_masked[[16]], here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","Winter_Sal_Aligned_NAmatch.tif"), overwrite = TRUE)
+terra::writeRaster(stack_masked[[17]], here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","Winter_DO_Aligned_NAmatch.tif"), overwrite = TRUE)
 
 
 
@@ -243,9 +251,6 @@ ext(my_mask) == ext(study_crop)
 final_region <- mask(study_crop, my_mask)
 rm(study_crop)
 
-crs(final_region) == CRS
-ext(final_region) == EXT
-
 # save final study region
 terra::writeRaster(final_region, here("Final_Data","Final_Study_Region.tif"),
             overwrite = T)
@@ -255,6 +260,30 @@ rm(final_region, my_mask)
 
 # Save as ASCII -----------------------------------------------------------
 
+
+habitat <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","Habitat_Aligned_NAmatch.tif"))
+mg_dist <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","Mg_Dist_Aligned_NAmatch.tif"))
+depth <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","Depth_Aligned_NAmatch.tif"))
+slope <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","Slope_Aligned_NAmatch.tif"))
+curv <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","Curvature_Aligned_NAmatch.tif"))
+plan_curv <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","Plan_Curv_Aligned_NAmatch.tif"))
+prof_curv <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","Profile_Curv_Aligned_NAmatch.tif"))
+rug_acr <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","ACR_Rugosity_Aligned_NAmatch.tif"))
+rug_vrm <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","Terrain_Ruggedness_Aligned_NAmatch.tif"))
+bpi_b <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","BPI_Broad_Aligned_NAmatch.tif"))
+bpi_f <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","BPI_Fine_Aligned_NAmatch.tif"))
+sum_temp <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","Summer_Temp_Aligned_NAmatch.tif"))
+sum_sal <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","Summer_Sal_Aligned_NAmatch.tif"))
+sum_do <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","Summer_DO_Aligned_NAmatch.tif"))
+win_temp <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","Winter_Temp_Aligned_NAmatch.tif"))
+win_sal <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","Winter_Sal_Aligned_NAmatch.tif"))
+win_do <- terra::rast(here("Final_Data", "Predictors_GeoTIFFs_Aligned_NAmatch","Winter_DO_Aligned_NAmatch.tif"))
+
+stack_masked <- c(habitat, mg_dist, depth, slope, curv, plan_curv, prof_curv, rug_acr, 
+           rug_vrm, bpi_b, bpi_f, sum_temp, sum_sal, sum_do, win_temp, win_sal, win_do)
+
+rm(habitat, mg_dist, depth, slope, curv, plan_curv, prof_curv, rug_acr, rug_vrm, bpi_b, 
+   bpi_f, sum_temp, sum_sal, sum_do, win_temp, win_sal, win_do, study_region)
 
 # extract each layer from the stack and save as ASCII file
 HABITAT <- raster::raster(stack_masked[[1]])
@@ -319,17 +348,17 @@ bias <- rast(here("Final_Data","Sampling_Bias.tif"))
 # project to correct crs
 crs(bias)
 bias_project <- terra::project(bias, final_region, method = "near", align = T)
-crs(bias_project) == CRS
+crs(bias_project) == crs(final_region)
 
 # crop to match extents
 bias_crop <- terra::crop(bias_project, final_region)
-ext(bias) == EXT
+ext(bias_crop) == EXT
 
 # check resolution
 res(bias_crop)
 
 # save bias file
-writeRaster(bias, here("Final_Data","Final_Sampling_Bias.tif"))
+writeRaster(bias_crop, here("Final_Data","Final_Sampling_Bias.tif"), overwrite = TRUE)
 
 # convert to ASCII
 bias <- raster(here("Final_Data","Final_Sampling_Bias.tif"))

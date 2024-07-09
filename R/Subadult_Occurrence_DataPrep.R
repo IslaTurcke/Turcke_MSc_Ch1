@@ -487,7 +487,7 @@ bg_PA_full <- bg_PA_w %>% mutate(SPECIES_CODE = "HAE_SCIU", PRES = ifelse(HAE_SC
   mutate(species = SPECIES_CODE, longitude = x, latitude = y) %>% 
   select(LIFE_STAGE, species, SOURCE, longitude, latitude, PRES, PRES2)
 
-bg_PO_full <- bg_PA_full %>% filter(PRES == 1)
+bg_PO_full <- bg_PA_full %>% filter(PRES == 1) %>% select(species, longitude, latitude)
 
 # PA and PO training sets
 
