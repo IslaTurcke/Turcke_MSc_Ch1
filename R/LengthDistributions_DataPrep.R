@@ -79,7 +79,13 @@ mvs_sites <- mvs %>% distinct(ID_SURV, x, y)
 
 # filter for our focal species
 mvs_focal <- mvs %>% filter(SPECIES_CODE %in% c("SCA_COER","SCA_COEL","SCA_COES",
-                                                "SCA_GUAC","LUT_GRIS","HAE_SCIU"))
+                                                "SCA_GUAC","LUT_GRIS","HAE_SCIU")) %>% 
+  mutate(AVE_LEN = ifelse(is.na(AVE_LEN)==TRUE, MIN_LEN+1, AVE_LEN)) %>% 
+  mutate(MAX_LEN = ifelse(is.na(MAX_LEN)==TRUE, AVE_LEN+1, MAX_LEN)) %>% 
+  mutate(AVE_LEN = ifelse(NO > 3 & MIN_LEN == AVE_LEN, MIN_LEN+1, AVE_LEN)) %>% 
+  mutate(MAX_LEN = ifelse(NO > 3 & AVE_LEN == MAX_LEN, AVE_LEN+1, MAX_LEN))
+
+# Note: above steps are because the following code can't handle when MIN == AVE == MAX or when there are NAs
 
 # set percentile of minimum length value
 p <- 0.10
