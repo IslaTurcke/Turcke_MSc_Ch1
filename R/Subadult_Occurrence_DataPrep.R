@@ -145,7 +145,7 @@ bp_rvc_sub <- bp_rvc %>% mutate(N = ifelse(TOT_LEN < 23.59 | TOT_LEN > 35.3, 0, 
 ### MVS PREP NEXT
 
 # presence sites for subadult blue parrotfish
-bp_mvs_sub_p <- mvs_expanded %>% filter(SPECIES_CODE == "SCA_COER") %>% 
+bp_mvs_sub_p <- mvs_expanded %>% filter(SPECIES_CODE == "SCA_COER") %>%  
   mutate(N = ifelse(LEN < 23.59 | LEN > 35.3, 0, NO)) %>% mutate(LIFE_STAGE = "SUBADULT") %>% 
   select(SOURCE, ID_SURV, x, y, LIFE_STAGE, SPECIES_CODE, N) %>% filter(N != 0)
 
