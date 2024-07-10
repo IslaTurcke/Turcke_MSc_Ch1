@@ -305,3 +305,34 @@ bg_PA <- rbind(bg_rvc, bg_mvs)
 # PA long form - with length values for each fish
 write_csv(bg_PA, here("GitHub_Repositories","Turcke_MSc_Ch1","Data_SmallFiles","Fish","BluestripedGrunt_PA_Full_Long.csv"))
 
+
+
+# RVC with Habitat Type ---------------------------------------------------
+
+
+# start from beginning, do same modifications as in "RVC-MVS_InitialPrep.R"
+# but keep habitat type
+devtools::install_github('jeremiaheb/rvc')
+library(rvc)
+
+# load rvc data for Florida Keys in years 2014, 2016, 2018. 
+# Other data accessible with: getStratumData, getBenthicData, getTaxonomicData
+rvc <- as_tibble(getSampleData(years = c(2014, 2016, 2018, 2022), regions = "FLA KEYS"))
+
+# edit rvc species codes
+rvc$SPECIES_CODE <- sub(" ", "_", rvc$SPECIES_CD)
+
+# adding columns for unique survey ID and unique site ID
+rvc_IDs <- rvc %>% 
+  unite("ID_SURV", c(PRIMARY_SAMPLE_UNIT,STATION_NR,YEAR), sep = "_", remove = FALSE) %>% 
+  unite("ID_SITE", c(PRIMARY_SAMPLE_UNIT,STATION_NR), sep = "_", remove = TRUE) %>% 
+  unite("DATE", c(YEAR, MONTH), sep = "-", remove = TRUE)
+
+# keep only necessary columns
+rvc_2 <- rvc_IDs %>% select(ID_SURV, ID_SITE, DATE, LON_DEGREES, LAT_DEGREES, 
+                            HABITAT_CD, SPECIES_CODE, NUM, LEN)
+
+### WRITE OUT DATASET
+
+# PA with habitat type
+write_csv(rvc_2, here("GitHub_Repositories","Turcke_MSc_Ch1","Data_SmallFiles","Fish","RVC_myYears_withHabitat.csv"))
