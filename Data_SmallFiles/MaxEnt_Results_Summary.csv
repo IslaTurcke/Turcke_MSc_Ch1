@@ -1,6 +1,0 @@
-Species,Name,LifeStage,Prevalence_In,Prevalence_Out,N_Samples_Train,RM,Features,AUC_Train,AUC_Test,MaxSSS_cloglog_Train,MaxSSS_cloglog_Test,Entropy,BPI_Broad_PI,BPI_Fine_PI,Curvature_PI,Depth_PI,Habitat_Type_PI,Mangrove_Distance_PI,Rugosity_PI,Slope_PI,Summer_Dissolved_Oxygen_PI,Summer_Temperature_PI,Winter_Dissolved_Oxygen_PI,Winter_Salinity_PI,Winter_Temperature_PI
-Scarus coeruleus,Blue Parrotfish,Subadult,0.0779,0.1995,243,2,LQH,0.9453,0.9393,0.4832,0.4846,8.1916,4.2451,0.0829,0.0006,4.9961,37.9497,7.2827,7.9755,22.9939,12.7624,0,0.8283,0.6954,0.1875
-Scarus coelestinus,Midnight Parrotfish,Subadult,0.0535,0.2275,166.5,2,LQ,0.9468,0.935,0.6393,0.6982,8.2888,0.8303,0.0049,0.0399,0,61.8162,0,0.0633,12.3756,18.908,0.3612,0.0775,5.5215,0.0015
-Scarus guacamaia,Rainbow Parrotfish,Subadult,0.0937,0.1629,289.8,1,LQHP,0.9084,0.8953,0.373,0.3592,7.9433,2.444,0.2641,0.0514,0.6499,34.4804,16.5696,7.7291,24.1747,9.2845,0.5761,1.2564,2.4185,0.1014
-Lutjanus griseus,Gray Snapper,Subadult,0.3007,0.2892,902.7,1,LQHP,0.8872,0.8821,0.477,0.4994,8.5966,5.0578,0,0.0329,11.0454,32.2814,18.0712,7.9401,23.7129,0.4965,0,0,1.3432,0.0187
-Haemulon sciurus,Bluestriped Grunt,Subadult,0.3409,0.3357,1043.1,2,LQHP,0.8626,0.8583,0.4841,0.4935,8.7422,0.9825,0,0.0013,1.0067,34.5985,7.2507,11.8323,42.92,0.4035,0,0.8017,0.176,0.0268

@@ -1,8 +1,8 @@
-# # WELCOME # #
+### WELCOME ###
 
 # This is script __ of __ in Isla's data prep pipeline.
 
-# This script is used to look for statistically significant differences between
+# This script is used to summarize the results of the MaxEnt HSMs and look for statistically significant differences between
 # habitat suitability models (HSMs) for five focal species for Isla Turcke's first 
 # MSc chapter in the lab of Dr. S.J. Green at the University of Alberta (2022-2025). 
 # Data are specific to southern Florida and habitat suitability was modeled in MaxEnt.
@@ -21,21 +21,59 @@
 # install ENMTools, sf, and terra, if necessary
 # install.packages(c("devtools", "sf", "terra")); library(devtools); devtools::install_github("danlwarren/ENMTools", force = TRUE)
 
+# set memory available to the java virtual machine
+options(java.parameters = "-Xmx128000m")
+
 # load packages
-library(ENMTools); library(sf); library(terra); library(here); library(tidyverse)
+library(easypackages)
+libraries("ENMTools","sf","terra","here","tidyverse","dplyr","rJava")
 
 # set working directory
 setwd("Z:/Isla_MSc_Ch1/")
 
 # SET UP RELATIVE PATHS TO DIRECTORIES USING 'HERE'
 # set the Isla_MSc_Ch1 folder as the root directory 
-here::i_am("GitHub_Repositories/Turcke_MSc_Ch1/R/Collinearity_ENMevaluate.R")
+here::i_am("GitHub_Repositories/Turcke_MSc_Ch1/R/enmtools.R")
 
 # change where large temporary rasters are saved
 terraOptions(tempdir = "Z:/Isla_MSc_Ch1/Temp/")
 
-# Create a directory for the ENMTools results
-dir.create("Permutation_Analysis/ENM_Results")
+
+
+# Summarize Results -------------------------------------------------------
+
+
+# import results csv files
+bp_hsm <- read.csv(here("HSMs","Subadult_BlueParrotfish","maxentResults.csv"))
+mp_hsm <- read.csv(here("HSMs","Subadult_MidnightParrotfish","maxentResults.csv"))
+rp_hsm <- read.csv(here("HSMs","Subadult_RainbowParrotfish","maxentResults.csv"))
+gs_hsm <- read.csv(here("HSMs","Subadult_GraySnapper","maxentResults.csv"))
+bg_hsm <- read.csv(here("HSMs","Subadult_BluestripedGrunt","maxentResults.csv"))
+
+# combine average values for each species into one data table
+# select desired columns
+hsm_results <- rbind(bp_hsm[1:10,],mp_hsm[1:10,],rp_hsm[1:10,],gs_hsm[1:10,],bg_hsm[1:10,]) %>% 
+  mutate(Samples_Train = X.Training.samples, AUC_Train = Training.AUC, AUC_Test = Test.AUC, 
+         MaxSSS_cloglog_Train = Maximum.training.sensitivity.plus.specificity.Cloglog.threshold,
+         MaxSSS_cloglog_Test = Maximum.test.sensitivity.plus.specificity.Cloglog.threshold) %>% 
+  select("Species","Samples_Train","AUC_Train","AUC_Test","Entropy","MaxSSS_cloglog_Train","MaxSSS_cloglog_Test",25:37) %>% 
+  separate(Species, into = c("Species","Run"), sep = "_(?=[^_]+$)")
+
+# calculate mean and standard error for each value
+# keep only predictors that were in the top 6 (based on importance)
+hsm_summary <- hsm_results %>% group_by(Species) %>% 
+  summarize(across(c(3:20), list(mean = ~ mean(.), 
+                                 lower = ~ mean(.) - (qt(0.975, n()-1) * sd(.) / sqrt(n())),
+                                 upper = ~ mean(.) + (qt(0.975, n()-1) * sd(.) / sqrt(n()))),
+                   .names = "{col}_{fn}"))
+
+# write out dataset to GitHub repository
+write.csv(hsm_summary, here("GitHub_Repositories","Turcke_MSc_Ch1","Data_SmallFiles","MaxEnt_Summary_Subadult.csv"))
+
+
+
+# ENMTools Identity Test --------------------------------------------------
+
 
 # Import raster layers
 habitat <- rast(here("Final_Data","Predictors_ASCII","Habitat_Type.asc"))
@@ -53,12 +91,11 @@ win_sal <- rast(here("Final_Data","Predictors_ASCII","Winter_Salinity.asc"))
 win_do <- rast(here("Final_Data","Predictors_ASCII","Winter_Dissolved_Oxygen.asc"))
 
 # Combine raster layers
-env <- c(habitat, mg_dist)
+env <- c(habitat, depth)
 #, depth, slope, curvature, rug_acr, bpi_broad, bpi_fine, 
 #         sum_temp, sum_do, win_temp, win_sal, win_do)
-#rm(habitat, mg_dist, 
-rm(depth, slope, curvature, rug_acr, bpi_broad, bpi_fine, 
-   sum_temp, sum_do, win_temp, win_sal, win_do)
+#rm(habitat, mg_dist, depth, slope, curvature, rug_acr, bpi_broad, bpi_fine, 
+   #sum_temp, sum_do, win_temp, win_sal, win_do)
 
 # Import species occurrence points for two species (see formatting!)
 bp <- read.csv(here("Final_Data","Species_Occurrence","Subadult","Subadult_BlueParrotfish_PO_Full.csv"))
@@ -88,9 +125,11 @@ rp_path <- "Permutation_Analysis/RainbowParrotfish_Subadult.csv"
 gs_path <- "Permutation_Analysis/GraySnapper_Subadult.csv"
 bg_path <- "Permutation_Analysis/BluestripedGrunt_Subadult.csv"
 
-# Import background points
+# Import background points and convert to SpatVector
 back_pts <- read.csv(here("Final_Data","Final_Background_Points.csv")) 
-back_pts <- back_pts[1:100,] %>% st_as_sf(., coords = c(1,2)) %>% terra::vect(.)
+colnames(back_pts) <- c("x","y")
+back_vect <- terra::vect(back_pts, geom = c("x","y"))
+back_vect_100 <- terra::vect(back_pts[1:100,], geom = c("x","y"))
 
 # clean up
 rm(bp, mp, rp, gs, bg)
@@ -101,12 +140,25 @@ rm(bp, mp, rp, gs, bg)
 
 
 # Import the two species occurrences and convert to enmtools.species objects
-bp_csv <- read.csv(bp_path); bp_sf <- st_as_sf(bp_csv, coords = c(1,2)); bp_spatvector <- terra::vect(bp_sf)
-bp_enm <- enmtools.species(species.name = "bp", presence.points = bp_spatvector)
-bp_enm$background.points = back_pts
-mp_csv <- read.csv(mp_path); mp_sf <- st_as_sf(mp_csv, coords = c(1,2)); mp_spatvector <- terra::vect(mp_sf)
-mp_enm <- enmtools.species(species.name = "mp", presence.points = mp_spatvector)
-mp_enm$background.points = back_pts
+bp_csv <- read.csv(bp_path) 
+colnames(bp_csv) <- c("x","y")
+bp_enm <- enmtools.species(species.name = "Blue Parrotfish", 
+                           presence.points = vect(bp_csv, geom = c("x","y")),
+                           range = env[[1]],
+                           background.points = back_vect_100)
+crs(bp_enm$presence.points) <- crs(env)
+bp_enm <- check.species(bp_enm)
+
+mp_csv <- read.csv(mp_path) 
+colnames(mp_csv) <- c("x","y")
+mp_enm <- enmtools.species(species.name = "Midnight Parrotfish", 
+                           presence.points = vect(mp_csv, geom = c("x","y")),
+                           range = env[[1]],
+                           background.points = back_vect_100)
+crs(mp_enm$presence.points) <- crs(env)
+mp_enm <- check.species(mp_enm)
+
+rm(bp_csv, mp_csv)
 
 # Set the number of replicate runs of the identity.test() function
 reps <- 10 # should normally be 100
@@ -116,10 +168,9 @@ back <- 100 # should normally be 10000
 
 # Perform the identity test
 idtest_bp_mp <- identity.test(bp_enm, mp_enm, env, type = 'mx', f = NULL,
-  nreps = reps, nback = back, bg.source = "points",
+  nreps = reps, bg.source = "points",
   low.memory = TRUE, rep.dir = "Permutation_Analysis/temp",
-  verbose = TRUE, clamp = TRUE
-)
+  verbose = TRUE)
 
 # Write the raw results to a file
 write.csv(idtest$reps.overlap, "Permutation_Analysis/ENM_Results/BP_MP/reps_overlap.csv")
