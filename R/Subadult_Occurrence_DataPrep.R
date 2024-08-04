@@ -571,5 +571,7 @@ domain_kde <- terra::resample(kde, domain_grid, "bilinear", threads = T)
 domain_kde <- domain_kde + 0.0001
 
 # save bias grid to Final Data Folder
-terra::writeRaster(domain_kde, here("Final_Data","Sampling_Bias.tif"), overwrite = T)
+terra::writeRaster(domain_kde, here("Final_Data","Final_Sampling_Bias.tif"), overwrite = T)
+
+
 
