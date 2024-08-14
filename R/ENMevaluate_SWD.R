@@ -52,7 +52,7 @@ set.seed(123)
 # Load Predictor Rasters --------------------------------------------------
 
 
-# load from ASCII files (didn't work for ENMevaluate)
+# load from ASCII files
 habitat <- raster(here("Final_Data","Predictors_ASCII","Habitat_Type.asc"))
 mg_dist <- raster(here("Final_Data","Predictors_ASCII","Mangrove_Distance.asc"))
 depth <- raster(here("Final_Data","Predictors_ASCII","Depth.asc"))

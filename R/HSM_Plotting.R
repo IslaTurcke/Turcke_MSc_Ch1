@@ -29,6 +29,9 @@ here::i_am("GitHub_Repositories/Turcke_MSc_Ch1/R/HSM_Plotting.R")
 # change where large temporary rasters are saved
 terraOptions(tempdir = "Z:/Isla_MSc_Ch1/Temp/")
 
+# make colour palette
+my_cols <- c("#EAC211","#470C2F","#00BDAA","#0A7EC2","#0E323A")
+
 # read in summary stats for HSM results
 hsm_summary <- read.csv(here("GitHub_Repositories","Turcke_MSc_Ch1","Data_SmallFiles","MaxEnt_Summary_Subadult.csv"))
 
@@ -53,19 +56,22 @@ hsm_long <- hsm_summary %>% pivot_longer(cols = -Species, names_to =c("Predictor
                                          names_pattern = "(.*)_(.*)" ) 
 
 # Create the plot 
-ggplot(hsm_long, aes(x = Predictor, y = mean, fill = Species)) + 
+vpi_by_env <- ggplot(hsm_long, aes(x = Predictor, y = mean, fill = Species)) + 
   geom_bar(position = position_dodge(), stat = "identity") + 
   geom_errorbar(aes(ymin = lower, ymax = upper), position = position_dodge(.9), width = 0.25) + 
   labs(x = "Environmental Predictor", y = "Average Permutation Importance") + 
   theme_minimal() + 
   theme(axis.text.x =element_text(angle = 45, hjust = 1))
 
-ggplot(hsm_long, aes(x = Species, y = mean, fill = Predictor)) + 
+vpi_by_spe <- ggplot(hsm_long, aes(x = Species, y = mean, fill = Predictor)) + 
   geom_bar(position = position_dodge(), stat = "identity") + 
   geom_errorbar(aes(ymin = lower, ymax = upper), position = position_dodge(.9), width = 0.25) + 
   labs(x = "Species", y = "Average Permutation Importance") + 
   theme_minimal() + 
   theme(axis.text.x =element_text(angle = 45, hjust = 1))
+
+vpi_by_env
+vpi_by_spe
 
 
 
