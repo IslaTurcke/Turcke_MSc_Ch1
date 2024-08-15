@@ -163,7 +163,9 @@ bg <- read.csv(here("Final_Data","Species_Occurrence","Subadult","Subadult_Blues
 
 # Import dataframe of 10,000 background points (chosen according to bias file)
 # convert to spatVect
-back_vect <- terra::vect(read.csv(here("Final_Data","Final_Background_Points.csv")), geom = c("longitude","latitude"))
+back_pts <- read.csv(here("Final_Data","Final_Background_Points.csv"))
+back_pts <- back_pts[sample(nrow(back_pts), size = 100),]
+back_vect <- terra::vect(back_pts, geom = c("longitude","latitude"))
 
 ### Create enmtools.species objects
 
@@ -208,7 +210,7 @@ crs(bg_enm$background.points) <- my_crs
 bg_enm <- check.species(bg_enm)
 
 # clean up
-rm(bp, mp, rp, gs, bg, back_vect)
+rm(bp, mp, rp, gs, bg, back_pts, back_vect)
 
 
 
@@ -258,6 +260,7 @@ win_do <- rast(here("Final_Data","Predictors_ASCII","Winter_Dissolved_Oxygen.asc
 # Combine raster layers
 env <- c(habitat, mg_dist, depth, slope, curvature, rug_acr, bpi_broad, bpi_fine, 
          sum_temp, sum_do, win_temp, win_sal, win_do)
+env <- check.env(env = env, verbose = TRUE)
 
 rm(habitat, mg_dist, depth, slope, curvature, rug_acr, bpi_broad, bpi_fine, 
    sum_temp, sum_do, win_temp, win_sal, win_do)

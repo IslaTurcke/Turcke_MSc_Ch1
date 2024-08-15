@@ -122,7 +122,7 @@ my.identity.test <- function(species.1, species.2, suitability.1, suitability.2,
   
   # calculate empirical overlap
   message("\nCalculating empirical overlap...\n")
-  empirical.overlap <- unlist(my.raster.overlap(suitability.1, suitability.2))
+  empirical.overlap <- unlist(my.raster.overlap(suitability.1, suitability.2, verbose = TRUE))
   
   # store overlap values
   reps.overlap <- empirical.overlap
@@ -154,7 +154,7 @@ my.identity.test <- function(species.1, species.2, suitability.1, suitability.2,
     
     # calculate replicate overlap
     message("\nCalculating rep overlap...\n")
-    reps.overlap <- rbind(reps.overlap, unlist(my.raster.overlap(rep.species.1.model, rep.species.2.model)))
+    reps.overlap <- rbind(reps.overlap, unlist(my.raster.overlap(rep.species.1.model, rep.species.2.model, verbose = TRUE)))
   }
   
   rownames(reps.overlap) <- c("empirical", paste("rep", 1:nreps))
