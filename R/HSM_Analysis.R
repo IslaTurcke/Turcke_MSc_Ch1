@@ -260,19 +260,28 @@ win_do <- rast(here("Final_Data","Predictors_ASCII","Winter_Dissolved_Oxygen.asc
 # Combine raster layers
 env <- c(habitat, mg_dist, depth, slope, curvature, rug_acr, bpi_broad, bpi_fine, 
          sum_temp, sum_do, win_temp, win_sal, win_do)
-env <- check.env(env = env, verbose = TRUE)
+#env <- check.env(env = env, verbose = TRUE)
 
 rm(habitat, mg_dist, depth, slope, curvature, rug_acr, bpi_broad, bpi_fine, 
    sum_temp, sum_do, win_temp, win_sal, win_do)
 
+# set crs
+terra::crs(env) <- my_crs
+predictor_names <- names(env)
 
-# Set the number of replicate runs for the identity.test() function
-reps <- 10 # should normally be 100
+# make sure min and max are set for each layer
+for (i in 1:nlyr(env)){
+  #if (hasMinMax(env[[i]]) == FALSE) {
+  #  setMinMax(env[[i]])
+  #}
+  #print(paste("MinMax set for layer", i))
+  writeRaster(env[[i]], paste0("Final_Data/Predictors_setMinMax/",predictor_names[i],"_setMinMax.tif"))
+}
 
 # Perform my version of the ENMTools identity test
 idtest_bp_mp <- my.identity.test(species.1 = bp_enm, species.2 = mp_enm, 
                                  suitability.1 = bp_suit, suitability.2 = mp_suit,
-                                 env, nreps = reps, clamp = TRUE, verbose = TRUE)
+                                 env, nreps = 3, clamp = FALSE, verbose = TRUE)
 
 # Write the raw results to a file
 write.csv(idtest$reps.overlap, "Permutation_Analysis/ENM_Results/BP_MP/reps_overlap.csv")
