@@ -1,0 +1,143 @@
+
+R version 4.4.1 (2024-06-14 ucrt) -- "Race for Your Life"
+Copyright (C) 2024 The R Foundation for Statistical Computing
+Platform: x86_64-w64-mingw32/x64
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> ### Calculating Overlap Metrics for HSM Rasters ###
+> 
+> 
+> # Set Up ------------------------------------------------------------------
+> 
+> 
+> # install ENMTools, sf, and terra, if necessary
+> # install.packages(c("devtools", "sf", "terra")); library(devtools); devtools::install_github("danlwarren/ENMTools", force = TRUE)
+> 
+> # set memory available to the java virtual machine
+> options(java.parameters = "-Xmx128000m")
+> 
+> # load packages
+> library(easypackages)
+> libraries("ENMTools","sf","terra","here","tidyverse","dplyr","rJava")
+Loading required package: ENMTools
+Loading required package: dismo
+Loading required package: raster
+Loading required package: sp
+Loading required package: sf
+Linking to GEOS 3.12.1, GDAL 3.8.4, PROJ 9.3.1; sf_use_s2() is TRUE
+Loading required package: terra
+terra 1.7.71
+Loading required package: here
+here() starts at C:/Users/islat
+Loading required package: tidyverse
+── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+✔ dplyr     1.1.4     ✔ readr     2.1.5
+✔ forcats   1.0.0     ✔ stringr   1.5.1
+✔ ggplot2   3.5.1     ✔ tibble    3.2.1
+✔ lubridate 1.9.3     ✔ tidyr     1.3.1
+✔ purrr     1.0.2     
+── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ tidyr::extract() masks terra::extract(), raster::extract()
+✖ dplyr::filter()  masks stats::filter()
+✖ dplyr::lag()     masks stats::lag()
+✖ dplyr::select()  masks raster::select()
+ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
+Loading required package: rJava
+All packages loaded successfully
+> ENMTools::install.extras()
+> 
+> # set working directory
+> setwd("Z:/Isla_MSc_Ch1/")
+> 
+> # set the Isla_MSc_Ch1 folder as the root directory for relative paths
+> here::i_am("GitHub_Repositories/Turcke_MSc_Ch1/R/HSM_Analysis.R")
+here() starts at Z:/Isla_MSc_Ch1
+> 
+> # call on my script of functions based on the ENMTools 
+> source(here::here("GitHub_Repositories","Turcke_MSc_Ch1","R","My_ENMTools_Functions.R"))
+> 
+> # change where large temporary rasters are saved
+> terraOptions(tempdir = "Z:/Isla_MSc_Ch1/Temp/")
+> 
+> # set crs
+> my_crs <- "epsg:6346"
+> 
+> # read in suitability rasters
+> bp_suit <- rast(here("HSM_Results","Subadult_BlueParrotfish","SCA_COER_avg.asc"))
+> mp_suit <- rast(here("HSM_Results","Subadult_MidnightParrotfish","SCA_COEL_avg.asc"))
+> #rp_suit <- rast(here("HSM_Results","Subadult_RainbowParrotfish","SCA_GUAC_avg.asc"))
+> #gs_suit <- rast(here("HSM_Results","Subadult_GraySnapper","LUT_GRIS_avg.asc"))
+> #bg_suit <- rast(here("HSM_Results","Subadult_BluestripedGrunt","HAE_SCIU_avg.asc"))
+> 
+> # set crs
+> terra::crs(bp_suit) <- my_crs
+> terra::crs(mp_suit) <- my_crs
+> #terra::crs(rp_suit) <- my_crs
+> #terra::crs(gs_suit) <- my_crs
+> #terra::crs(bg_suit) <- my_crs
+> 
+> # make sure min and max are available
+> if (hasMinMax(bp_suit) == FALSE) {
++   setMinMax(bp_suit)
++ }
+> if (hasMinMax(mp_suit) == FALSE) {
++   setMinMax(mp_suit)
++ }
+> # if (hasMinMax(rp_suit) == FALSE) {
+> #   setMinMax(rp_suit)
+> # }
+> # if (hasMinMax(gs_suit) == FALSE) {
+> #   setMinMax(gs_suit)
+> # }
+> # if (hasMinMax(bg_suit) == FALSE) {
+> #   setMinMax(bg_suit)
+> # }
+> 
+> 
+> 
+> # Calculate Raster Overlap ------------------------------------------------
+> 
+> 
+> bp.mp <- my.raster.overlap(bp_suit, mp_suit)
+[1] "Calculating D at:  2024-09-21 17:51:48.986591"
+[1] "Calculating I at:  2024-09-21 17:52:58.180874"
+[1] "Calculating rho at:  2024-09-21 17:55:19.818075"
+[1] "complete.cases: last one!"
+[1] "Overlap calculations complete!"
+> # bp.rp <- my.raster.overlap(bp_suit, rp_suit)
+> # bp.gs <- my.raster.overlap(bp_suit, gs_suit)
+> # bp.bg <- my.raster.overlap(bp_suit, bg_suit)
+> # 
+> # mp.rp <- my.raster.overlap(mp_suit, rp_suit)
+> # mp.gs <- my.raster.overlap(mp_suit, gs_suit)
+> # mp.bg <- my.raster.overlap(mp_suit, bg_suit)
+> # 
+> # rp.gs <- my.raster.overlap(rp_suit, gs_suit)
+> # rp.bg <- my.raster.overlap(rp_suit, bg_suit)
+> # 
+> # gs.bg <- my.raster.overlap(gs_suit, bg_suit)
+> 
+> 
+> 
+> # Save Results ----------------------------------------------------------
+> 
+> 
+> write.csv(bp.mp, here("HSM_Analysis","Suitability_Overlap","BP_MP_RasterOverlap.csv"), row.names = F)
+> 
+> 
+> proc.time()
+    user   system  elapsed 
+ 7172.40  3191.84 10446.18 

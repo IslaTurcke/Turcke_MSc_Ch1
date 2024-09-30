@@ -108,7 +108,7 @@ my.raster.overlap <- function(x, y, verbose=FALSE){
 
 # identity.test function, adapted to use my.raster.overlap()
 
-my.identity.test <- function(species.1, species.2, suitability.1, suitability.2, env, nreps = 99, betamultiplier = 1.0, clamp = TRUE, verbose = FALSE){
+my.identity.test <- function(species.1, species.2, suitability.1, suitability.2, env, nreps = 99, clamp = TRUE, verbose = FALSE){
   
   # combine presence points for random permutations
   combined.presence.points <- rbind(species.1$presence.points, species.2$presence.points)
@@ -126,8 +126,9 @@ my.identity.test <- function(species.1, species.2, suitability.1, suitability.2,
   }
   
   # calculate empirical overlap
-  message("\nCalculating empirical overlap...\n")
-  empirical.overlap <- c(unlist(my.raster.overlap(suitability.1, suitability.2, verbose = TRUE)))
+  #message("\nCalculating empirical overlap...\n")
+  #empirical.overlap <- c(unlist(my.raster.overlap(suitability.1, suitability.2, verbose = TRUE)))
+  empirical.overlap <- c(unlist(list(D = 3, I = 7, rho = 37)))
 
   # store overlap values
   reps.overlap <- empirical.overlap
@@ -155,23 +156,23 @@ my.identity.test <- function(species.1, species.2, suitability.1, suitability.2,
     
     # build model for rep i
     message(paste("\nBuilding rep", i, "models...\n"))
-    rep.species.1.suitability <- my.maxent(rep.species.1, env, factors = "Habitat_Type", betamultiplier = betamultiplier, clamp = FALSE, verbose = TRUE)
-    rep.species.2.suitability <- my.maxent(rep.species.2, env, factors = "Habitat_Type", betamultiplier = betamultiplier, clamp = FALSE, verbose = TRUE)
+    rep.species.1.suitability <- my.maxent(rep.species.1, env, factors = "Habitat_Type", clamp = FALSE, verbose = TRUE)
+    rep.species.2.suitability <- my.maxent(rep.species.2, env, factors = "Habitat_Type", clamp = FALSE, verbose = TRUE)
     
     # calculate replicate overlap
-    message("\nCalculating rep", i, "overlap...\n")
-    reps.overlap <- rbind(reps.overlap, c(unlist(my.raster.overlap(rep.species.1.model, rep.species.2.model, verbose = TRUE))))
+    message(paste("\nCalculating rep", i, "overlap...\n"))
+    reps.overlap <- rbind(reps.overlap, c(unlist(my.raster.overlap(rep.species.1.suitability, rep.species.2.suitability, verbose = TRUE))))
   }
   
   rownames(reps.overlap) <- c("empirical", paste("rep", 1:nreps))
   
-  message("Calculating p-values...")
+  message(paste("Calculating p-values at: ", Sys.time()))
   p.values <- apply(reps.overlap, 2, function(x) rank(x)[1]/length(x))
   
   reps.overlap <- as.data.frame(reps.overlap)
   
   # plots for D, I, rank.cor (rho)
-  message("Making plots for D, I, and rho...")
+  message("Making plots for D, I, and rho at...")
   d.plot <- ggplot(reps.overlap[2:nrow(reps.overlap),], aes(x = .data$D, fill = "density", alpha = 0.5)) +
     geom_histogram(binwidth = 0.05) +
     geom_vline(xintercept = reps.overlap[1,"D"], linetype = "longdash") +
@@ -190,12 +191,13 @@ my.identity.test <- function(species.1, species.2, suitability.1, suitability.2,
     xlim(-1.05,1.05) + guides(fill = "none", alpha = "none") + xlab("Rank Correlation") +
     theme(plot.title = element_text(hjust = 0.5))
   
-  output <- list(description = paste("\n\nIdentity test:", species.1$species.name, "vs.", species.2$species.name),
+  output <- list(description = paste("Identity test:", species.1$species.name, "vs.", species.2$species.name),
                  reps.overlap = reps.overlap,
                  p.values = p.values,
                  d.plot = d.plot,
                  i.plot = i.plot,
                  cor.plot = cor.plot)
+  message(paste("All done Identity Test at: ", Sys.time()))
   
   return(output)
   
@@ -208,7 +210,7 @@ my.identity.test <- function(species.1, species.2, suitability.1, suitability.2,
 
 # maxent function, but with ONLY the steps I need for building my replicate models in my.identity.test()
 
-my.maxent <- function(species, env, factors, betamultiplier, clamp = FALSE, verbose = FALSE){
+my.maxent <- function(species, env, factors, clamp = FALSE, verbose = FALSE){
   
   message("\nStarting MaxEnt!\n")
   print(paste("\nMaxEnt - checking env at:", Sys.time()))
@@ -229,12 +231,12 @@ my.maxent <- function(species, env, factors, betamultiplier, clamp = FALSE, verb
   message(paste("\nStarting MaxEnt model at:", Sys.time()))
   
   if(verbose){
-    this.mx <- dismo::maxent(raster::stack(env), p = p.df, a = a.df, factors = factors, args = c(betamultiplier = betamultiplier))
+    this.mx <- dismo::maxent(raster::stack(env), p = p.df, a = a.df, factors = factors)
     print("\nModel built! Starting suitability prediction...")
-    suitability <- terra::predict(env, this.mx, type = "response", na.rm = TRUE)
+    suitability <- terra::predict(env, this.mx, type = "response", na.rm = TRUE, cores = 5)
   } else {
-    invisible(capture.output(this.mx <- dismo::maxent(raster::stack(env), p = p.df, a = a.df, factors = factors, args = c(betamultiplier = betamultiplier))))
-    invisible(capture.output(suitability <- terra::predict(env, this.mx, type = "response", na.rm = TRUE)))
+    invisible(capture.output(this.mx <- dismo::maxent(raster::stack(env), p = p.df, a = a.df, factors = factors)))
+    invisible(capture.output(suitability <- terra::predict(env, this.mx, type = "response", na.rm = TRUE, cores = 5)))
   }
   
   return(suitability)

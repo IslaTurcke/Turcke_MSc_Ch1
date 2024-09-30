@@ -31,16 +31,13 @@ library(easypackages)
 libraries("raster", "terra", "sf", "here", "dplyr", "usdm", "sdmpredictors", "PNWColors",
           "corrplot", "Cairo", "data.table")
 
-# set working directory
-setwd("Z:/Isla_MSc_Ch1/")
-
 # change where large temporary rasters are saved
 rasterOptions(tmpdir = "Z:/Isla_MSc_Ch1/Temp/")
 terraOptions(tempdir = "Z:/Isla_MSc_Ch1/Temp/")
 
 # SET UP RELATIVE PATHS TO DIRECTORIES USING 'HERE'
 # set the Isla_MSc_Ch1 folder as the root directory 
-here::i_am("GitHub_Repositories/Turcke_MSc_Ch1/R/Collinearity_ENMevaluate.R")
+here::i_am("GitHub_Repositories/Turcke_MSc_Ch1/R/Collinearity_Tests.R")
 
 # read in final study region raster to use its CRS and EXT
 final_region <- terra::rast(here("Final_Data","Final_Study_Region.tif"))
@@ -57,14 +54,14 @@ mg_dist <- raster(here("Final_Data","Predictors_ASCII","Mangrove_Distance.asc"))
 depth <- raster(here("Final_Data","Predictors_ASCII","Depth.asc"))
 slope <- raster(here("Final_Data","Predictors_ASCII","Slope.asc"))
 curvature <- raster(here("Final_Data","Predictors_ASCII","Curvature.asc"))
-#plan_curv <- raster(here("Final_Data","Predictors_ASCII","Plan_Curvature.asc"))
-#prof_curv <- raster(here("Final_Data","Predictors_ASCII","Profile_Curvature.asc"))
+plan_curv <- raster(here("Final_Data","Predictors_ASCII","Plan_Curvature.asc"))
+prof_curv <- raster(here("Final_Data","Predictors_ASCII","Profile_Curvature.asc"))
 rug_acr <- raster(here("Final_Data","Predictors_ASCII","Rugosity_ACR.asc"))
-#rug_vrm <- raster(here("Final_Data","Predictors_ASCII","Rugosity_VRM.asc"))
+rug_vrm <- raster(here("Final_Data","Predictors_ASCII","Terrain_Ruggedness.asc"))
 bpi_fine <- raster(here("Final_Data","Predictors_ASCII","BPI_Fine.asc"))
 bpi_broad <- raster(here("Final_Data","Predictors_ASCII","BPI_Broad.asc"))
 sum_temp <- raster(here("Final_Data","Predictors_ASCII","Summer_Temperature.asc"))
-#sum_sal <- raster(here("Final_Data","Predictors_ASCII","Summer_Salinity.asc"))
+sum_sal <- raster(here("Final_Data","Predictors_ASCII","Summer_Salinity.asc"))
 sum_do <- raster(here("Final_Data","Predictors_ASCII","Summer_Dissolved_Oxygen.asc"))
 win_temp <- raster(here("Final_Data","Predictors_ASCII","Winter_Temperature.asc"))
 win_sal <- raster(here("Final_Data","Predictors_ASCII","Winter_Salinity.asc"))
@@ -95,14 +92,14 @@ crs(mg_dist) <- CRS
 crs(depth) <- CRS
 crs(slope) <- CRS
 crs(curvature) <- CRS
-#crs(plan_curv) <- CRS
-#crs(prof_curv) <- CRS
+crs(plan_curv) <- CRS
+crs(prof_curv) <- CRS
 crs(rug_acr) <- CRS
-#crs(rug_vrm) <- CRS
+crs(rug_vrm) <- CRS
 crs(bpi_fine) <- CRS
 crs(bpi_broad) <- CRS
 crs(sum_temp) <- CRS
-#crs(sum_sal) <- CRS
+crs(sum_sal) <- CRS
 crs(sum_do) <- CRS
 crs(win_temp) <- CRS
 crs(win_sal) <- CRS
@@ -113,9 +110,9 @@ pred_full <- raster::stack(x = list(habitat, mg_dist, depth, slope, curvature,
                                     plan_curv, prof_curv, rug_acr, rug_vrm, bpi_broad,
                                     bpi_fine, sum_temp, sum_sal, sum_do, win_temp,
                                     win_sal, win_do))
-names(pred_full) <- c("Habitat","Mangrove_Dist","Depth","Slope","Curvature","Plan_Curv",
-                      "Profile_Curv","ACR_Rugosity","Terrain_Ruggedness","BPI_Broad","BPI_Fine",
-                      "Sum_Temp","Sum_Sal","Sum_DO","Win_Temp","Win_Sal","Win_DO")
+names(pred_full) <- c("Habitat Type","Mangrove Distance","Depth","Slope","Curvature","Plan Curvature",
+                      "Profile Curvature","ACR Rugosity","Terrain Ruggedness","BPI Broad","BPI Fine",
+                      "Summer Temperature","Summer Salinity","Summer DO","Winter Temperature","Winter Salinity","Winter DO")
 
 
 
@@ -124,6 +121,10 @@ names(pred_full) <- c("Habitat","Mangrove_Dist","Depth","Slope","Curvature","Pla
 
 # full pearson correlation matrix on all spatial predictors
 ppcor_full <- pearson_correlation_matrix(pred_full)
+
+# the above function takes a while, so I saved the output in a .csv file
+#ppcor_full <- read.csv(here("GitHub_Repositories","Turcke_MSc_Ch1","Data_SmallFiles","Correlation_FullPredictorSet.csv"))
+#ppcor_full <- ppcor_full[,-1]
 
 # plot full correlation matrix
 palette <- pnw_palette("Shuksan2", 200, type = "continuous")

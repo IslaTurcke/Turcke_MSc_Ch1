@@ -56,8 +56,9 @@ pairwise_results <- data.frame(Pair = c("BP-MP","BP-RP","BP-GS","BP-BG",
                                               "Within","Between","Between",
                                               "Between","Between","Within"),
                                PresencePoint_Overlap = numeric(10),
-                               Suitability_Overlap = numeric(10),
-                               Environmental_Overlap = numeric(10))
+                               D = numeric(10),
+                               I = numeric(10),
+                               rho = numeric(10))
 
 
 
@@ -240,6 +241,11 @@ pairwise_results$PresencePoint_Overlap <- c(bp_mp_pp_overlap, bp_rp_pp_overlap, 
                                             rp_gs_pp_overlap, rp_bg_pp_overlap, gs_bg_pp_overlap)
 
 
+## Suitability Overlap -----------------------------------------------------
+
+bp.mp <- my.raster.overlap(bp_suit, mp_suit)
+
+
 ## Identity Test --------------------------------------------------
 
 # Import raster layers
@@ -281,7 +287,7 @@ for (i in 1:nlyr(env)){
 # Perform my version of the ENMTools identity test
 idtest_bp_mp <- my.identity.test(species.1 = bp_enm, species.2 = mp_enm, 
                                  suitability.1 = bp_suit, suitability.2 = mp_suit,
-                                 env, nreps = 3, clamp = FALSE, verbose = TRUE)
+                                 env, nreps = 1, clamp = FALSE, verbose = TRUE)
 
 # Write the raw results to a file
 write.csv(idtest$reps.overlap, "Permutation_Analysis/ENM_Results/BP_MP/reps_overlap.csv")

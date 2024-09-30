@@ -17,7 +17,7 @@
 
 # load packages
 library(easypackages)
-libraries("sf","terra","here","tidyverse","dplyr","ggplot2","ggmap","gridExtra")
+libraries("sf","terra","here","tidyverse","dplyr","ggplot2","ggmap","gridExtra","viridis","svglite")
 
 # set working directory
 setwd("Z:/Isla_MSc_Ch1/")
@@ -30,7 +30,7 @@ here::i_am("GitHub_Repositories/Turcke_MSc_Ch1/R/HSM_Plotting.R")
 terraOptions(tempdir = "Z:/Isla_MSc_Ch1/Temp/")
 
 # make colour palette
-my_cols <- c("#EAC211","#470C2F","#00BDAA","#0A7EC2","#0E323A")
+cols_sp <- c("#EAC211","#470C2F","#00BDAA","#0A7EC2","#0E323A")
 
 # read in summary stats for HSM results
 hsm_summary <- read.csv(here("GitHub_Repositories","Turcke_MSc_Ch1","Data_SmallFiles","MaxEnt_Summary_Subadult.csv"))
@@ -40,38 +40,132 @@ hsm_summary <- read.csv(here("GitHub_Repositories","Turcke_MSc_Ch1","Data_SmallF
 # Variable Importance -----------------------------------------------------
 
 
-# remove predictors that are not in the top 6 (based on importance) of any species
-# remove model statistics unrelated to variable importance
-hsm_summary <- hsm_summary %>% select(-c(3:17)) %>% 
-  select(-c(BPI_Fine.permutation.importance_mean, BPI_Fine.permutation.importance_lower, BPI_Fine.permutation.importance_upper,
-                                         Curvature.permutation.importance_mean, Curvature.permutation.importance_lower, Curvature.permutation.importance_upper,
-                                         Summer_Temperature.permutation.importance_mean, Summer_Temperature.permutation.importance_lower, Summer_Temperature.permutation.importance_upper,
-                                         Winter_Dissolved_Oxygen.permutation.importance_mean, Winter_Dissolved_Oxygen.permutation.importance_lower, Winter_Dissolved_Oxygen.permutation.importance_upper,
-                                         Winter_Salinity.permutation.importance_mean, Winter_Salinity.permutation.importance_lower, Winter_Salinity.permutation.importance_upper,
-                                         Winter_Temperature.permutation.importance_mean, Winter_Temperature.permutation.importance_lower, Winter_Temperature.permutation.importance_upper,
-                                         X))
+# keep only columns of permutation importance values
+pi_data <- hsm_summary %>% select(c("Species", contains("permutation.importance")))
 
-# Reshape the data to long format for ggplot2 
-hsm_long <- hsm_summary %>% pivot_longer(cols = -Species, names_to =c("Predictor", ".value"), 
-                                         names_pattern = "(.*)_(.*)" ) 
+# change column names
+colnames(pi_data) <- gsub("permutation.importance_", "", colnames(pi_data))
 
-# Create the plot 
-vpi_by_env <- ggplot(hsm_long, aes(x = Predictor, y = mean, fill = Species)) + 
-  geom_bar(position = position_dodge(), stat = "identity") + 
-  geom_errorbar(aes(ymin = lower, ymax = upper), position = position_dodge(.9), width = 0.25) + 
-  labs(x = "Environmental Predictor", y = "Average Permutation Importance") + 
-  theme_minimal() + 
-  theme(axis.text.x =element_text(angle = 45, hjust = 1))
+# Reshape the data
+pi_long <- pi_data %>%
+  pivot_longer(
+    cols = -Species,
+    names_to = c("Predictor", ".value"),
+    names_pattern = "(.*).(mean|upper|lower)"
+  ) %>% select(-c("upper","lower"))
 
-vpi_by_spe <- ggplot(hsm_long, aes(x = Species, y = mean, fill = Predictor)) + 
-  geom_bar(position = position_dodge(), stat = "identity") + 
-  geom_errorbar(aes(ymin = lower, ymax = upper), position = position_dodge(.9), width = 0.25) + 
-  labs(x = "Species", y = "Average Permutation Importance") + 
-  theme_minimal() + 
-  theme(axis.text.x =element_text(angle = 45, hjust = 1))
+# removing _ from predictor names
+pi_long$Predictor <- gsub("_", " ", pi_long$Predictor)
 
-vpi_by_env
-vpi_by_spe
+# make rows for bottom 5 predictors that are not being included ("others")
+sca_coel_others <- pi_long %>% filter(Species == "SCA_COEL", Predictor %in% c("Winter Dissolved Oxygen","Summer Temperature","BPI Fine","Winter Temperature","Curvature"))
+sca_coel_others <- sum(sca_coel_others[,"mean"])
+sca_coer_others <- pi_long %>% filter(Species == "SCA_COER", Predictor %in% c("Winter Dissolved Oxygen","Summer Temperature","BPI Fine","Winter Temperature","Curvature"))
+sca_coer_others <- sum(sca_coer_others[,"mean"])
+sca_guac_others <- pi_long %>% filter(Species == "SCA_GUAC", Predictor %in% c("Winter Dissolved Oxygen","Summer Temperature","BPI Fine","Winter Temperature","Curvature"))
+sca_guac_others <- sum(sca_guac_others[,"mean"])
+lut_gris_others <- pi_long %>% filter(Species == "LUT_GRIS", Predictor %in% c("Winter Dissolved Oxygen","Summer Temperature","BPI Fine","Winter Temperature","Curvature"))
+lut_gris_others <- sum(lut_gris_others[,"mean"])
+hae_sciu_others <- pi_long %>% filter(Species == "HAE_SCIU", Predictor %in% c("Winter Dissolved Oxygen","Summer Temperature","BPI Fine","Winter Temperature","Curvature"))
+hae_sciu_others <- sum(hae_sciu_others[,"mean"])
+
+others <- data.frame(Species = c("SCA_COEL","SCA_COER","SCA_GUAC","LUT_GRIS","HAE_SCIU"),
+                     Predictor = c("Others", "Others", "Others", "Others", "Others"),
+                     mean = c(sca_coel_others, sca_coer_others, sca_guac_others, lut_gris_others, hae_sciu_others))
+
+pi_long <- rbind(pi_long, others)
+
+# change capitalization of predictor names
+pi_long$Predictor <- gsub("Habitat Type", "Habitat type", pi_long$Predictor)
+pi_long$Predictor <- gsub("Mangrove Distance", "Distance to mangrove", pi_long$Predictor)
+pi_long$Predictor <- gsub("Summer Dissolved Oxygen", "Summer dissolved oxygen", pi_long$Predictor)
+pi_long$Predictor <- gsub("BPI Broad", "Broad scale BPI", pi_long$Predictor)
+pi_long$Predictor <- gsub("Rugosity ACR", "ACR rugosity", pi_long$Predictor)
+pi_long$Predictor <- gsub("Winter Salinity", "Winter salinity", pi_long$Predictor)
+
+# keep only rows for top 8 predictors and "others"
+pi_long <- pi_long %>% filter(Predictor %in% c("Habitat type","Slope","Distance to mangrove","Summer dissolved oxygen",
+                                               "ACR rugosity","Depth","Broad scale BPI","Winter salinity", "Others"))
+
+# change species names to look nice
+pi_long$Species <- gsub("SCA_COEL", "S. coelestinus", pi_long$Species)
+pi_long$Species <- gsub("SCA_COER", "S. coeruleus", pi_long$Species)
+pi_long$Species <- gsub("SCA_GUAC", "S. guacamaia", pi_long$Species)
+pi_long$Species <- gsub("LUT_GRIS", "L. griseus", pi_long$Species)
+pi_long$Species <- gsub("HAE_SCIU", "H. sciurus", pi_long$Species)
+
+# Order of stacking
+pi_long$Species <- factor(pi_long$Species, levels = c("S. coelestinus","S. coeruleus","S. guacamaia","L. griseus","H. sciurus"))
+
+pi_long$Predictor <- factor(pi_long$Predictor, levels = c("Others","Winter salinity","Broad scale BPI","Depth","ACR rugosity","Summer dissolved oxygen",
+                                                          "Distance to mangrove","Slope","Habitat type"))
+
+# Define custom colors
+species_colors <- c("HAE_SCIU" = "#EAC211", "LUT_GRIS" = "#470C2F", "SCA_GUAC" = "#00BDAA", "SCA_COER" = "#0A7EC2", "SCA_COEL" = "#0E323A")
+#p_col <- RColorBrewer::brewer.pal(7, "Dark2")#viridis(7, direction = -1)
+#predictor_colors <- c(p_col[7],p_col[6],p_col[5],p_col[4],p_col[3],p_col[2],p_col[1])
+predictor_colors <- c("grey", viridis(8, direction = -1))
+
+# Create the plot
+p1 <- ggplot(pi_long, aes(x = Species, y = mean, fill = Predictor)) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_fill_manual(values = predictor_colors, guide = guide_legend(reverse = TRUE)) +  # Apply custom colors
+  coord_flip() +
+  theme_classic() +
+  labs(x = "Species", y = "Permutation importance") +
+  theme(axis.text.y = element_text(face = "italic"), legend.position = "right")
+p1
+
+
+## Predictor Importance Variation ------------------------------------------
+
+# edit dataset
+data_pi <- data %>% select(contains("permutation.importance_mean"))
+colnames(data_pi) <- gsub(".permutation.importance_mean", "", colnames(data_pi))
+colnames(data_pi) <- gsub("_", " ", colnames(data_pi))
+
+# Function to calculate mean and 95% CI
+calculate_mean_ci <- function(column) {
+  mean_val <- mean(column)
+  ci <- qt(0.975, df = length(column) - 1) * sd(column) / sqrt(length(column))
+  return(c(mean = mean_val, ci = ci))
+}
+
+# Apply the function to each column and create a new data frame
+perm_import <- data_pi %>%
+  summarise(across(everything(), calculate_mean_ci)) %>%
+  pivot_longer(cols = everything(), names_to = "variable", values_to = "value") %>%
+  mutate(statistic = rep(c("mean", "ci"), times = 13)) %>%
+  pivot_wider(names_from = statistic, values_from = value)
+
+# set order for plotting
+perm_import <- perm_import %>% arrange(desc(mean)) %>%
+  mutate(variable = factor(variable, levels = variable))
+
+# add colours
+perm_import$color <- c(rev(predictor_colors), "grey","grey","grey","grey")
+
+# plot
+p2 <- ggplot(perm_import, aes(x = variable, y = mean)) +
+  geom_point(aes(fill = color), shape = 21, size = 4, color = "black", stroke = 0.5) +  # Customize dots
+  geom_errorbar(aes(ymin = mean - ci, ymax = mean + ci), width = 0.2) +  # Add error bars
+  scale_fill_identity() +  # Use the fill colors from the 'color' column directly
+  theme_bw() +
+  coord_flip() +
+  labs(x = "Predictor", y = "Mean permutation importance ± 95% CI") +
+  scale_x_discrete(limits = rev(levels(perm_import$variable)))  # Reverse x-axis order
+p2
+
+legend <- get_legend(p1)
+p1_nl <- p1 + theme(legend.position = "none")
+
+horiz <- plot_grid(p2, legend, rel_widths = c(2.5, 1), axis = "t")
+
+var_import_top <- plot_grid(p1_nl, horiz, ncol = 1)
+var_import_top
+
+library(svglite)
+ggsave("VariableImportance.svg", var_import_top, width = 8, height = 5, units = "in", dpi = 500)
 
 
 
@@ -90,30 +184,106 @@ read_dat_file <- function(file) {
 }
 
 # read in data
-bp_files <- list.files(here("HSMs","Subadult_BlueParrotfish","Plots"), pattern = "^[^0-9]*_only.dat", full.names = TRUE)
+bp_files <- list.files(here("HSM_Results","Subadult_BlueParrotfish","Plots"), pattern = "^[^0-9]*_only.dat", full.names = TRUE)
 bp_resp <- lapply(bp_files, read_dat_file) 
 
-mp_files <- list.files(here("HSMs","Subadult_MidnightParrotfish","Plots"), pattern = "^[^0-9]*_only.dat", full.names = TRUE)
+mp_files <- list.files(here("HSM_Results","Subadult_MidnightParrotfish","Plots"), pattern = "^[^0-9]*_only.dat", full.names = TRUE)
 mp_resp <- lapply(mp_files, read_dat_file) 
 
-rp_files <- list.files(here("HSMs","Subadult_RainbowParrotfish","Plots"), pattern = "^[^0-9]*_only.dat", full.names = TRUE)
+rp_files <- list.files(here("HSM_Results","Subadult_RainbowParrotfish","Plots"), pattern = "^[^0-9]*_only.dat", full.names = TRUE)
 rp_resp <- lapply(rp_files, read_dat_file) 
 
-gs_files <- list.files(here("HSMs","Subadult_GraySnapper","Plots"), pattern = "^[^0-9]*_only.dat", full.names = TRUE)
+gs_files <- list.files(here("HSM_Results","Subadult_GraySnapper","Plots"), pattern = "^[^0-9]*_only.dat", full.names = TRUE)
 gs_resp <- lapply(gs_files, read_dat_file) 
 
-bg_files <- list.files(here("HSMs","Subadult_BluestripedGrunt","Plots"), pattern = "^[^0-9]*_only.dat", full.names = TRUE)
+bg_files <- list.files(here("HSM_Results","Subadult_BluestripedGrunt","Plots"), pattern = "^[^0-9]*_only.dat", full.names = TRUE)
 bg_resp <- lapply(bg_files, read_dat_file) 
 
 rm(bp_files, mp_files, rp_files, gs_files, bg_files)
 
-# combine all into one data frame
-resp_curvs <- rbind(bind_rows(bp_resp), bind_rows(mp_resp), bind_rows(rp_resp), bind_rows(gs_resp), bind_rows(bg_resp))
+
+## Habitat Type ------------------------------------------------------------
+
+# get only habitat type response data
+habitat_resp <- rbind(bg_resp[[5]], gs_resp[[5]], rp_resp[[5]], bp_resp[[5]], mp_resp[[5]]) %>% 
+  filter(habitat_resp$x != 13)
+
+# change species names to look nice
+habitat_resp$Species <- gsub("SCA_COEL", "S. coelestinus", habitat_resp$Species)
+habitat_resp$Species <- gsub("SCA_COER", "S. coeruleus", habitat_resp$Species)
+habitat_resp$Species <- gsub("SCA_GUAC", "S. guacamaia", habitat_resp$Species)
+habitat_resp$Species <- gsub("LUT_GRIS", "L. griseus", habitat_resp$Species)
+habitat_resp$Species <- gsub("HAE_SCIU", "H. sciurus", habitat_resp$Species)
+
+# set order for plotting 
+habitat_resp$Species <- factor(habitat_resp$Species, levels = c("H. sciurus","L. griseus","S. guacamaia","S. coeruleus","S. coelestinus"))
+
+# change habitat type ID back to the name
+habitat_resp$x <- gsub("10", "Reef rubble", habitat_resp$x)
+habitat_resp$x <- gsub("11", "Mangrove", habitat_resp$x)
+habitat_resp$x <- gsub("12", "Artificial", habitat_resp$x)
+habitat_resp$x <- gsub("14", "Ridge", habitat_resp$x)
+habitat_resp$x <- gsub("1", "Patch reef", habitat_resp$x)
+habitat_resp$x <- gsub("2", "Scattered coral/rock", habitat_resp$x)
+habitat_resp$x <- gsub("3", "Seagrass (continuous)", habitat_resp$x)
+habitat_resp$x <- gsub("4", "Seagrass (discontinuous)", habitat_resp$x)
+habitat_resp$x <- gsub("5", "Unconsolidated sediment", habitat_resp$x)
+habitat_resp$x <- gsub("6", "Aggregate Reef", habitat_resp$x)
+habitat_resp$x <- gsub("8", "Pavement", habitat_resp$x)
 
 # create the plot
-ggplot(resp_curvs, aes(x = x, y = y, colour = Species, group = Species)) +
+habitat_response <- ggplot(habitat_resp, aes(x = x, y = y, fill = Species)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  scale_fill_manual(values = my_cols) +  # Apply custom colors
+  theme_classic() +
+  labs(x = "Habitat Type", y = "Relative Suitability")
+habitat_response
+
+
+## Slope ------------------------------------------------------------
+
+# get only slope response data
+slope_resp <- rbind(bg_resp[[8]], gs_resp[[8]], rp_resp[[8]], bp_resp[[8]], mp_resp[[8]])
+
+# change species names to look nice
+slope_resp$Species <- gsub("SCA_COEL", "S. coelestinus", slope_resp$Species)
+slope_resp$Species <- gsub("SCA_COER", "S. coeruleus", slope_resp$Species)
+slope_resp$Species <- gsub("SCA_GUAC", "S. guacamaia", slope_resp$Species)
+slope_resp$Species <- gsub("LUT_GRIS", "L. griseus", slope_resp$Species)
+slope_resp$Species <- gsub("HAE_SCIU", "H. sciurus", slope_resp$Species)
+
+# set order for plotting 
+slope_resp$Species <- factor(slope_resp$Species, levels = c("H. sciurus","L. griseus","S. guacamaia","S. coeruleus","S. coelestinus"))
+
+# create the plot
+slope_response <- ggplot(slope_resp, aes(x = x, y = y, colour = Species)) +
   geom_line() +
-  facet_wrap(~ resp_curvs$variable, scales = "free") +
-  labs(y = "Habitat Suitability") +
-  theme_minimal()
+  scale_color_manual(values = my_cols) +  # Apply custom colors
+  theme_classic() +
+  labs(x = "Slope (degrees)", y = "Relative Suitability")
+slope_response
+
+
+## Mangrove Dist ------------------------------------------------------------
+
+# get only mangrove distance response data
+mgdist_resp <- rbind(bg_resp[[6]], gs_resp[[6]], rp_resp[[6]], bp_resp[[6]], mp_resp[[6]])
+
+# change species names to look nice
+mgdist_resp$Species <- gsub("SCA_COEL", "S. coelestinus", mgdist_resp$Species)
+mgdist_resp$Species <- gsub("SCA_COER", "S. coeruleus", mgdist_resp$Species)
+mgdist_resp$Species <- gsub("SCA_GUAC", "S. guacamaia", mgdist_resp$Species)
+mgdist_resp$Species <- gsub("LUT_GRIS", "L. griseus", mgdist_resp$Species)
+mgdist_resp$Species <- gsub("HAE_SCIU", "H. sciurus", mgdist_resp$Species)
+
+# set order for plotting 
+mgdist_resp$Species <- factor(mgdist_resp$Species, levels = c("H. sciurus","L. griseus","S. guacamaia","S. coeruleus","S. coelestinus"))
+
+# create the plot
+mgdist_response <- ggplot(mgdist_resp, aes(x = x, y = y, colour = Species)) +
+  geom_line() +
+  scale_color_manual(values = my_cols) +  # Apply custom colors
+  theme_classic() +
+  labs(x = "Distance to Mangrove (m)", y = "Relative Suitability")
+mgdist_response
 
