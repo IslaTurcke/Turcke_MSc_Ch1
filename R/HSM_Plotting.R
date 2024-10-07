@@ -30,7 +30,7 @@ here::i_am("GitHub_Repositories/Turcke_MSc_Ch1/R/HSM_Plotting.R")
 terraOptions(tempdir = "Z:/Isla_MSc_Ch1/Temp/")
 
 # make colour palette
-cols_sp <- c("#EAC211","#470C2F","#00BDAA","#0A7EC2","#0E323A")
+cols_sp <- c("#EAC211","#770C3E","#00BDAA","#0A7EC2","#0E323A")
 
 # read in summary stats for HSM results
 hsm_summary <- read.csv(here("GitHub_Repositories","Turcke_MSc_Ch1","Data_SmallFiles","MaxEnt_Summary_Subadult.csv"))
@@ -205,8 +205,8 @@ rm(bp_files, mp_files, rp_files, gs_files, bg_files)
 ## Habitat Type ------------------------------------------------------------
 
 # get only habitat type response data
-habitat_resp <- rbind(bg_resp[[5]], gs_resp[[5]], rp_resp[[5]], bp_resp[[5]], mp_resp[[5]]) %>% 
-  filter(habitat_resp$x != 13)
+habitat_resp <- rbind(bg_resp[[5]], gs_resp[[5]], rp_resp[[5]], bp_resp[[5]], mp_resp[[5]])
+habitat_resp <- habitat_resp %>% filter(habitat_resp$x != 13)
 
 # change species names to look nice
 habitat_resp$Species <- gsub("SCA_COEL", "S. coelestinus", habitat_resp$Species)
@@ -228,15 +228,20 @@ habitat_resp$x <- gsub("2", "Scattered coral/rock", habitat_resp$x)
 habitat_resp$x <- gsub("3", "Seagrass (continuous)", habitat_resp$x)
 habitat_resp$x <- gsub("4", "Seagrass (discontinuous)", habitat_resp$x)
 habitat_resp$x <- gsub("5", "Unconsolidated sediment", habitat_resp$x)
-habitat_resp$x <- gsub("6", "Aggregate Reef", habitat_resp$x)
+habitat_resp$x <- gsub("6", "Aggregate reef", habitat_resp$x)
 habitat_resp$x <- gsub("8", "Pavement", habitat_resp$x)
+
+# set order for plotting based on suitability values
+habitat_resp$x <- factor(habitat_resp$x, levels = c("Patch reef","Aggregate reef","Scattered coral/rock","Pavement",
+                                                    "Reef rubble","Ridge","Artificial","Mangrove","Seagrass (continuous)",
+                                                    "Unconsolidated sediment","Seagrass (discontinuous)"))
 
 # create the plot
 habitat_response <- ggplot(habitat_resp, aes(x = x, y = y, fill = Species)) +
   geom_bar(stat = "identity", position = "dodge") +
-  scale_fill_manual(values = my_cols) +  # Apply custom colors
+  scale_fill_manual(values = cols_sp) +  # Apply custom colors
   theme_classic() +
-  labs(x = "Habitat Type", y = "Relative Suitability")
+  labs(x = "Habitat type", y = "Relative suitability")
 habitat_response
 
 
@@ -257,10 +262,10 @@ slope_resp$Species <- factor(slope_resp$Species, levels = c("H. sciurus","L. gri
 
 # create the plot
 slope_response <- ggplot(slope_resp, aes(x = x, y = y, colour = Species)) +
-  geom_line() +
-  scale_color_manual(values = my_cols) +  # Apply custom colors
+  geom_line(linewidth = 1) +
+  scale_color_manual(values = cols_sp) +  # Apply custom colors
   theme_classic() +
-  labs(x = "Slope (degrees)", y = "Relative Suitability")
+  labs(x = "Slope (degrees)", y = "Relative suitability")
 slope_response
 
 
@@ -281,9 +286,135 @@ mgdist_resp$Species <- factor(mgdist_resp$Species, levels = c("H. sciurus","L. g
 
 # create the plot
 mgdist_response <- ggplot(mgdist_resp, aes(x = x, y = y, colour = Species)) +
-  geom_line() +
-  scale_color_manual(values = my_cols) +  # Apply custom colors
+  geom_line(linewidth = 1) +
+  scale_color_manual(values = cols_sp) +  # Apply custom colors
   theme_classic() +
-  labs(x = "Distance to Mangrove (m)", y = "Relative Suitability")
+  labs(x = "Distance to mangrove (m)", y = "Relative suitability")
 mgdist_response
+
+
+## Summer Dissolved Oxygen ------------------------------------------------------------
+
+# get only summer DO response data
+summerDO_resp <- rbind(bg_resp[[9]], gs_resp[[9]], rp_resp[[9]], bp_resp[[9]], mp_resp[[9]])
+
+# change species names to look nice
+summerDO_resp$Species <- gsub("SCA_COEL", "S. coelestinus", summerDO_resp$Species)
+summerDO_resp$Species <- gsub("SCA_COER", "S. coeruleus", summerDO_resp$Species)
+summerDO_resp$Species <- gsub("SCA_GUAC", "S. guacamaia", summerDO_resp$Species)
+summerDO_resp$Species <- gsub("LUT_GRIS", "L. griseus", summerDO_resp$Species)
+summerDO_resp$Species <- gsub("HAE_SCIU", "H. sciurus", summerDO_resp$Species)
+
+# set order for plotting 
+summerDO_resp$Species <- factor(summerDO_resp$Species, levels = c("H. sciurus","L. griseus","S. guacamaia","S. coeruleus","S. coelestinus"))
+
+# create the plot
+summerDO_response <- ggplot(summerDO_resp, aes(x = x, y = y, colour = Species)) +
+  geom_line(linewidth = 1) +
+  scale_color_manual(values = cols_sp) +  # Apply custom colors
+  theme_classic() +
+  labs(x = "Summer dissolved oxygen", y = "Relative suitability")
+summerDO_response
+
+
+## ACR Rugosity ------------------------------------------------------------
+
+# get only ACR rugosity response data
+rugosity_resp <- rbind(bg_resp[[7]], gs_resp[[7]], rp_resp[[7]], bp_resp[[7]], mp_resp[[7]])
+
+# change species names to look nice
+rugosity_resp$Species <- gsub("SCA_COEL", "S. coelestinus", rugosity_resp$Species)
+rugosity_resp$Species <- gsub("SCA_COER", "S. coeruleus", rugosity_resp$Species)
+rugosity_resp$Species <- gsub("SCA_GUAC", "S. guacamaia", rugosity_resp$Species)
+rugosity_resp$Species <- gsub("LUT_GRIS", "L. griseus", rugosity_resp$Species)
+rugosity_resp$Species <- gsub("HAE_SCIU", "H. sciurus", rugosity_resp$Species)
+
+# set order for plotting 
+rugosity_resp$Species <- factor(rugosity_resp$Species, levels = c("H. sciurus","L. griseus","S. guacamaia","S. coeruleus","S. coelestinus"))
+
+# create the plot
+rugosity_response <- ggplot(rugosity_resp, aes(x = x, y = y, colour = Species)) +
+  geom_line(linewidth = 1) +
+  scale_color_manual(values = cols_sp) +  # Apply custom colors
+  theme_classic() +
+  labs(x = "ACR rugosity", y = "Relative suitability")
+rugosity_response
+
+
+## Depth ------------------------------------------------------------
+
+# get only depth response data
+depth_resp <- rbind(bg_resp[[4]], gs_resp[[4]], rp_resp[[4]], bp_resp[[4]], mp_resp[[4]])
+
+# change species names to look nice
+depth_resp$Species <- gsub("SCA_COEL", "S. coelestinus", depth_resp$Species)
+depth_resp$Species <- gsub("SCA_COER", "S. coeruleus", depth_resp$Species)
+depth_resp$Species <- gsub("SCA_GUAC", "S. guacamaia", depth_resp$Species)
+depth_resp$Species <- gsub("LUT_GRIS", "L. griseus", depth_resp$Species)
+depth_resp$Species <- gsub("HAE_SCIU", "H. sciurus", depth_resp$Species)
+
+# set order for plotting 
+depth_resp$Species <- factor(depth_resp$Species, levels = c("H. sciurus","L. griseus","S. guacamaia","S. coeruleus","S. coelestinus"))
+
+# create the plot
+depth_response <- ggplot(depth_resp, aes(x = x, y = y, colour = Species)) +
+  geom_line(linewidth = 1) +
+  scale_color_manual(values = cols_sp) +  # Apply custom colors
+  theme_classic() +
+  labs(x = "Depth (m)", y = "Relative suitability")
+depth_response
+
+
+## Broad Scale BPI ------------------------------------------------------------
+
+# get only broad scale BPI response data
+bbpi_resp <- rbind(bg_resp[[1]], gs_resp[[1]], rp_resp[[1]], bp_resp[[1]], mp_resp[[1]])
+
+# change species names to look nice
+bbpi_resp$Species <- gsub("SCA_COEL", "S. coelestinus", bbpi_resp$Species)
+bbpi_resp$Species <- gsub("SCA_COER", "S. coeruleus", bbpi_resp$Species)
+bbpi_resp$Species <- gsub("SCA_GUAC", "S. guacamaia", bbpi_resp$Species)
+bbpi_resp$Species <- gsub("LUT_GRIS", "L. griseus", bbpi_resp$Species)
+bbpi_resp$Species <- gsub("HAE_SCIU", "H. sciurus", bbpi_resp$Species)
+
+# set order for plotting 
+bbpi_resp$Species <- factor(bbpi_resp$Species, levels = c("H. sciurus","L. griseus","S. guacamaia","S. coeruleus","S. coelestinus"))
+
+# create the plot
+bbpi_response <- ggplot(bbpi_resp, aes(x = x, y = y, colour = Species)) +
+  geom_line(linewidth = 1) +
+  scale_color_manual(values = cols_sp) +  # Apply custom colors
+  theme_classic() +
+  labs(x = "Broad scale BPI", y = "Relative suitability")
+bbpi_response
+
+
+## Winter Salinity ------------------------------------------------------------
+
+# get only winter salinity response data
+wintersal_resp <- rbind(bg_resp[[12]], gs_resp[[12]], rp_resp[[12]], bp_resp[[12]], mp_resp[[12]])
+
+# change species names to look nice
+wintersal_resp$Species <- gsub("SCA_COEL", "S. coelestinus", wintersal_resp$Species)
+wintersal_resp$Species <- gsub("SCA_COER", "S. coeruleus", wintersal_resp$Species)
+wintersal_resp$Species <- gsub("SCA_GUAC", "S. guacamaia", wintersal_resp$Species)
+wintersal_resp$Species <- gsub("LUT_GRIS", "L. griseus", wintersal_resp$Species)
+wintersal_resp$Species <- gsub("HAE_SCIU", "H. sciurus", wintersal_resp$Species)
+
+# set order for plotting 
+wintersal_resp$Species <- factor(wintersal_resp$Species, levels = c("H. sciurus","L. griseus","S. guacamaia","S. coeruleus","S. coelestinus"))
+
+# create the plot
+wintersal_response <- ggplot(wintersal_resp, aes(x = x, y = y, colour = Species)) +
+  geom_line(linewidth = 1) +
+  scale_color_manual(values = cols_sp) +  # Apply custom colors
+  theme_classic() +
+  labs(x = "Winter salinity", y = "Relative suitability")
+wintersal_response
+
+
+
+
+
+
 
