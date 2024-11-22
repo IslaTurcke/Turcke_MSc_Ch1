@@ -17,7 +17,7 @@
 
 # load packages
 library(easypackages)
-libraries("sf","terra","here","tidyverse","dplyr","ggplot2","gridExtra","viridis","svglite")
+libraries("sf","terra","here","tidyverse","dplyr","ggplot2","ggmap","gridExtra","viridis","svglite")
 
 # set working directory
 setwd("Z:/Isla_MSc_Ch1/")
@@ -26,9 +26,6 @@ setwd("Z:/Isla_MSc_Ch1/")
 # set the Isla_MSc_Ch1 folder as the root directory 
 here::i_am("GitHub_Repositories/Turcke_MSc_Ch1/R/HSM_Plotting.R")
 
-# set path to Figures folder in GitHub directory
-figures_path <- here("GitHub_Repositories/Turcke_MSc_Ch1/Figures")
-
 # change where large temporary rasters are saved
 terraOptions(tempdir = "Z:/Isla_MSc_Ch1/Temp/")
 
@@ -36,8 +33,7 @@ terraOptions(tempdir = "Z:/Isla_MSc_Ch1/Temp/")
 cols_sp <- c("#EAC211","#770C3E","#00BDAA","#0A7EC2","#0E323A")
 
 # read in summary stats for HSM results
-hsm_summary <- read.csv(here("GitHub_Repositories","Turcke_MSc_Ch1","Data_SmallFiles","MaxEnt_Summary_Subadult.csv")) %>% 
-  select(-"X")
+hsm_summary <- read.csv(here("GitHub_Repositories","Turcke_MSc_Ch1","Data_SmallFiles","MaxEnt_Summary_Subadult.csv"))
 
 
 
@@ -82,13 +78,13 @@ pi_long <- rbind(pi_long, others)
 # change capitalization of predictor names
 pi_long$Predictor <- gsub("Habitat Type", "Habitat type", pi_long$Predictor)
 pi_long$Predictor <- gsub("Mangrove Distance", "Distance to mangrove", pi_long$Predictor)
-pi_long$Predictor <- gsub("Summer Dissolved Oxygen", "Summer DO", pi_long$Predictor)
+pi_long$Predictor <- gsub("Summer Dissolved Oxygen", "Summer dissolved oxygen", pi_long$Predictor)
 pi_long$Predictor <- gsub("BPI Broad", "Broad scale BPI", pi_long$Predictor)
 pi_long$Predictor <- gsub("Rugosity ACR", "ACR rugosity", pi_long$Predictor)
 pi_long$Predictor <- gsub("Winter Salinity", "Winter salinity", pi_long$Predictor)
 
 # keep only rows for top 8 predictors and "others"
-pi_long <- pi_long %>% filter(Predictor %in% c("Habitat type","Slope","Distance to mangrove","Summer DO",
+pi_long <- pi_long %>% filter(Predictor %in% c("Habitat type","Slope","Distance to mangrove","Summer dissolved oxygen",
                                                "ACR rugosity","Depth","Broad scale BPI","Winter salinity", "Others"))
 
 # change species names to look nice
@@ -101,11 +97,13 @@ pi_long$Species <- gsub("HAE_SCIU", "H. sciurus", pi_long$Species)
 # Order of stacking
 pi_long$Species <- factor(pi_long$Species, levels = c("S. coelestinus","S. coeruleus","S. guacamaia","L. griseus","H. sciurus"))
 
-pi_long$Predictor <- factor(pi_long$Predictor, levels = c("Others","Winter salinity","Broad scale BPI","Depth","ACR rugosity","Summer DO",
+pi_long$Predictor <- factor(pi_long$Predictor, levels = c("Others","Winter salinity","Broad scale BPI","Depth","ACR rugosity","Summer dissolved oxygen",
                                                           "Distance to mangrove","Slope","Habitat type"))
 
 # Define custom colors
 species_colors <- c("HAE_SCIU" = "#EAC211", "LUT_GRIS" = "#470C2F", "SCA_GUAC" = "#00BDAA", "SCA_COER" = "#0A7EC2", "SCA_COEL" = "#0E323A")
+#p_col <- RColorBrewer::brewer.pal(7, "Dark2")#viridis(7, direction = -1)
+#predictor_colors <- c(p_col[7],p_col[6],p_col[5],p_col[4],p_col[3],p_col[2],p_col[1])
 predictor_colors <- c("grey", viridis(8, direction = -1))
 
 # Create the plot
@@ -121,8 +119,8 @@ p1
 
 ## Predictor Importance Variation ------------------------------------------
 
-# edit dataset 
-data_pi <- hsm_summary[, grep("permutation.importance_mean", names(hsm_summary))]
+# edit dataset
+data_pi <- pi_data %>% select(contains("permutation.importance_mean"))
 colnames(data_pi) <- gsub(".permutation.importance_mean", "", colnames(data_pi))
 colnames(data_pi) <- gsub("_", " ", colnames(data_pi))
 
@@ -137,20 +135,8 @@ calculate_mean_ci <- function(column) {
 perm_import <- data_pi %>%
   summarise(across(everything(), calculate_mean_ci)) %>%
   pivot_longer(cols = everything(), names_to = "variable", values_to = "value") %>%
-  mutate(statistic = rep(c("mean", "ci"), times = 13)) %>% 
+  mutate(statistic = rep(c("mean", "ci"), times = 13)) %>%
   pivot_wider(names_from = statistic, values_from = value)
-
-# change capitalization of predictor names
-perm_import$variable <- gsub("Habitat Type", "Habitat type", perm_import$variable) 
-perm_import$variable <- gsub("Mangrove Distance", "Distance to mangrove", perm_import$variable)
-perm_import$variable <- gsub("Summer Dissolved Oxygen", "Summer DO", perm_import$variable)
-perm_import$variable <- gsub("BPI Broad", "Broad scale BPI", perm_import$variable) 
-perm_import$variable <- gsub("Rugosity ACR", "ACR rugosity", perm_import$variable)
-perm_import$variable <- gsub("Winter Salinity", "Winter salinity", perm_import$variable)
-perm_import$variable <- gsub("Winter Dissolved Oxygen", "Winter DO", perm_import$variable)
-perm_import$variable <- gsub("Summer Temperature", "Summer temperature", perm_import$variable)
-perm_import$variable <- gsub("BPI Fine", "Fine scale BPI", perm_import$variable)
-perm_import$variable <- gsub("Winter Temperature", "Winter temperature", perm_import$variable)
 
 # set order for plotting
 perm_import <- perm_import %>% arrange(desc(mean)) %>%
@@ -168,19 +154,18 @@ p2 <- ggplot(perm_import, aes(x = variable, y = mean)) +
   coord_flip() +
   labs(x = "Predictor", y = "Mean permutation importance ± 95% CI") +
   scale_x_discrete(limits = rev(levels(perm_import$variable)))  # Reverse x-axis order
-
 p2
 
 legend <- get_legend(p1)
 p1_nl <- p1 + theme(legend.position = "none")
 
-horiz <- plot_grid(p2, legend, rel_widths = c(3, 1), axis = "t")
-horiz
+horiz <- plot_grid(p2, legend, rel_widths = c(2.5, 1), axis = "t")
 
 var_import_top <- plot_grid(p1_nl, horiz, ncol = 1)
 var_import_top
 
-ggsave("VariableImportance.png", var_import_top, path = figures_path, width = 8, height = 5, units = "in", dpi = 600, bg = "white")
+library(svglite)
+ggsave("VariableImportance.svg", var_import_top, width = 8, height = 5, units = "in", dpi = 500)
 
 
 
