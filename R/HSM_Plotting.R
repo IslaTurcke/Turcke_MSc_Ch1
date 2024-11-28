@@ -17,7 +17,7 @@
 
 # load packages
 library(easypackages)
-libraries("sf","terra","here","tidyverse","dplyr","ggplot2","gridExtra","viridis","svglite")
+libraries("sf","terra","here","tidyverse","dplyr","ggplot2","gridExtra","cowplot","viridis","svglite")
 
 # set working directory
 setwd("Z:/Isla_MSc_Ch1/")
@@ -256,13 +256,16 @@ habitat_response <- ggplot(habitat_resp, aes(x = x, y = y, fill = Species)) +
   geom_bar(stat = "identity", position = "dodge", width = 0.75) +
   scale_fill_manual(values = cols_sp) +  # Apply custom colors
   theme_classic() +
-  theme(legend.position = "none") +
+  theme(legend.position = "right") +
   labs(x = "Habitat type", y = "Relative suitability") +
-  scale_x_discrete(expand = expansion(mult = c(0.05, 0.05)))
+  scale_x_discrete(labels = label_wrap_gen(10, multi_line = T)) +  #expand = expansion(mult = c(0.05, 0.05))
+  guides(fill = guide_legend(theme = theme(
+    legend.text = element_text(size = 10, face = "italic"))))
+
 habitat_response
 
 # save the plot
-ggsave("Habitat_Type.png", width = 6.5, height = 3, units = "in", dpi = 500)
+#ggsave("Habitat_Type.png", width = 6.5, height = 3, units = "in", dpi = 500)
 
 
 ## Slope ------------------------------------------------------------
@@ -285,11 +288,12 @@ slope_response <- ggplot(slope_resp, aes(x = x, y = y, colour = Species)) +
   geom_line(linewidth = 1) +
   scale_color_manual(values = cols_sp) +  # Apply custom colors
   theme_classic() +
+  theme(legend.position = "none") +
   labs(x = "Slope (degrees)", y = "Relative suitability")
 slope_response
 
 # save the plot
-ggsave("Slope.png", width = 5.5, height = 3, units = "in", dpi = 500)
+#ggsave("Slope.png", width = 5.5, height = 3, units = "in", dpi = 500)
 
 
 ## Mangrove Dist ------------------------------------------------------------
@@ -308,100 +312,16 @@ mgdist_resp$Species <- gsub("HAE_SCIU", "H. sciurus", mgdist_resp$Species)
 mgdist_resp$Species <- factor(mgdist_resp$Species, levels = c("H. sciurus","L. griseus","S. guacamaia","S. coeruleus","S. coelestinus"))
 
 # create the plot
-mgdist_response <- ggplot(mgdist_resp, aes(x = x, y = y, colour = Species)) +
+mgdist_response <- ggplot(mgdist_resp, aes(x = x/1000, y = y, colour = Species)) +
   geom_line(linewidth = 1) +
   scale_color_manual(values = cols_sp) +  # Apply custom colors
   theme_classic() +
   theme(legend.position = "none") +
-  labs(x = "Distance to mangrove (m)", y = "Relative suitability")
+  labs(x = "Distance to mangrove (km)", y = element_blank())
 mgdist_response
 
 # save the plot
-ggsave("Mangrove_Distance.png", width = 4, height = 3, units = "in", dpi = 500)
-
-
-## Summer Dissolved Oxygen ------------------------------------------------------------
-
-# get only summer DO response data
-summerDO_resp <- rbind(bg_resp[[9]], gs_resp[[9]], rp_resp[[9]], bp_resp[[9]], mp_resp[[9]])
-
-# change species names to look nice
-summerDO_resp$Species <- gsub("SCA_COEL", "S. coelestinus", summerDO_resp$Species)
-summerDO_resp$Species <- gsub("SCA_COER", "S. coeruleus", summerDO_resp$Species)
-summerDO_resp$Species <- gsub("SCA_GUAC", "S. guacamaia", summerDO_resp$Species)
-summerDO_resp$Species <- gsub("LUT_GRIS", "L. griseus", summerDO_resp$Species)
-summerDO_resp$Species <- gsub("HAE_SCIU", "H. sciurus", summerDO_resp$Species)
-
-# set order for plotting 
-summerDO_resp$Species <- factor(summerDO_resp$Species, levels = c("H. sciurus","L. griseus","S. guacamaia","S. coeruleus","S. coelestinus"))
-
-# create the plot
-summerDO_response <- ggplot(summerDO_resp, aes(x = x, y = y, colour = Species)) +
-  geom_line(linewidth = 1) +
-  scale_color_manual(values = cols_sp) +  # Apply custom colors
-  theme_classic() +
-  theme(legend.position = "none") +
-  labs(x = "Summer dissolved oxygen", y = "Relative suitability")
-summerDO_response
-
-# save the plot
-ggsave("Summer_DO.png", width = 4, height = 3, units = "in", dpi = 500)
-
-
-## ACR Rugosity ------------------------------------------------------------
-
-# get only ACR rugosity response data
-rugosity_resp <- rbind(bg_resp[[7]], gs_resp[[7]], rp_resp[[7]], bp_resp[[7]], mp_resp[[7]])
-
-# change species names to look nice
-rugosity_resp$Species <- gsub("SCA_COEL", "S. coelestinus", rugosity_resp$Species)
-rugosity_resp$Species <- gsub("SCA_COER", "S. coeruleus", rugosity_resp$Species)
-rugosity_resp$Species <- gsub("SCA_GUAC", "S. guacamaia", rugosity_resp$Species)
-rugosity_resp$Species <- gsub("LUT_GRIS", "L. griseus", rugosity_resp$Species)
-rugosity_resp$Species <- gsub("HAE_SCIU", "H. sciurus", rugosity_resp$Species)
-
-# set order for plotting 
-rugosity_resp$Species <- factor(rugosity_resp$Species, levels = c("H. sciurus","L. griseus","S. guacamaia","S. coeruleus","S. coelestinus"))
-
-# create the plot
-rugosity_response <- ggplot(rugosity_resp, aes(x = x, y = y, colour = Species)) +
-  geom_line(linewidth = 1) +
-  scale_color_manual(values = cols_sp) +  # Apply custom colors
-  theme_classic() +
-  theme(legend.position = "none") +
-  labs(x = "ACR rugosity", y = "Relative suitability")
-rugosity_response
-
-# save the plot
-ggsave("Rugosity.png", width = 4, height = 3, units = "in", dpi = 500)
-
-
-## Depth ------------------------------------------------------------
-
-# get only depth response data
-depth_resp <- rbind(bg_resp[[4]], gs_resp[[4]], rp_resp[[4]], bp_resp[[4]], mp_resp[[4]])
-
-# change species names to look nice
-depth_resp$Species <- gsub("SCA_COEL", "S. coelestinus", depth_resp$Species)
-depth_resp$Species <- gsub("SCA_COER", "S. coeruleus", depth_resp$Species)
-depth_resp$Species <- gsub("SCA_GUAC", "S. guacamaia", depth_resp$Species)
-depth_resp$Species <- gsub("LUT_GRIS", "L. griseus", depth_resp$Species)
-depth_resp$Species <- gsub("HAE_SCIU", "H. sciurus", depth_resp$Species)
-
-# set order for plotting 
-depth_resp$Species <- factor(depth_resp$Species, levels = c("H. sciurus","L. griseus","S. guacamaia","S. coeruleus","S. coelestinus"))
-
-# create the plot
-depth_response <- ggplot(depth_resp, aes(x = x, y = y, colour = Species)) +
-  geom_line(linewidth = 1) +
-  scale_color_manual(values = cols_sp) +  # Apply custom colors
-  theme_classic() +
-  theme(legend.position = "none") +
-  labs(x = "Depth (m)", y = "Relative suitability")
-depth_response
-
-# save the plot
-ggsave("Depth.png", width = 4, height = 3, units = "in", dpi = 500)
+#ggsave("Mangrove_Distance.png", width = 4, height = 3, units = "in", dpi = 500)
 
 
 ## Broad Scale BPI ------------------------------------------------------------
@@ -425,11 +345,11 @@ bbpi_response <- ggplot(bbpi_resp, aes(x = x, y = y, colour = Species)) +
   scale_color_manual(values = cols_sp) +  # Apply custom colors
   theme_classic() +
   theme(legend.position = "none") +
-  labs(x = "Broad scale BPI", y = "Relative suitability")
+  labs(x = "Broad scale BPI", y = element_blank())
 bbpi_response
 
 # save the plot
-ggsave("Broad_BPI.png", width = 4, height = 3, units = "in", dpi = 500)
+#ggsave("Broad_BPI.png", width = 4, height = 3, units = "in", dpi = 500)
 
 
 ## Winter Salinity ------------------------------------------------------------
@@ -453,15 +373,102 @@ wintersal_response <- ggplot(wintersal_resp, aes(x = x, y = y, colour = Species)
   scale_color_manual(values = cols_sp) +  # Apply custom colors
   theme_classic() +
   theme(legend.position = "none") +
-  labs(x = "Winter salinity", y = "Relative suitability")
+  labs(x = "Winter salinity (psu)", y = element_blank())
 wintersal_response
 
 # save the plot
-ggsave("Winter_Salinity.png", width = 4, height = 3, units = "in", dpi = 500)
+#ggsave("Winter_Salinity.png", width = 4, height = 3, units = "in", dpi = 500)
+
+
+## Combining Response Curves -----------------------------------------------
+
+bottom_respcurvs <- plot_grid(slope_response, mgdist_response, bbpi_response, wintersal_response, 
+                              ncol = 4, rel_widths = c(1,1,1,1), axis = "t")
+
+response_curves <- plot_grid(habitat_response, bottom_respcurvs, 
+                             ncol = 1)
+response_curves
+
+ggsave("Response_Curves.png", path = figures_path, width = 10, height = 5, units = "in", dpi = 600)
 
 
 
+# Suitability Overlap Metrics ---------------------------------------------
 
 
+# import suitability overlap metric dataset
+suit_overlap <- read.csv(here("GitHub_Repositories/Turcke_MSc_Ch1/Data_SmallFiles/SuitabilityOverlapMetrics.csv"))
 
+# set order for plotting 
+suit_overlap$Species_Pair <- factor(suit_overlap$Species_Pair, 
+                                    levels = c("BG-GS","BP-MP","MP-RP","RP-BP","BG-BP","BG-MP","BG-RP","GS-BP","GS-MP","GS-RP"))
+suit_overlap$Comparison_Type <- factor(suit_overlap$Comparison_Type,
+                                       levels = c("Intra-functional group","Inter-functional group"))
+
+# calculate means for intra- and inter-functional group comparisons
+IntraInter_means <- suit_overlap %>% 
+  group_by(Comparison_Type) %>% 
+  summarize(Mean_D = mean(D), Mean_I = mean(I), Mean_Rho = mean(Rho))
+
+intra_D <- as.numeric(IntraInter_means[IntraInter_means$Comparison_Type == "Intra-functional group", "Mean_D"])
+intra_D <- as.numeric(IntraInter_means[IntraInter_means$Comparison_Type == "Intra-functional group", "Mean_D"])
+intra_D <- as.numeric(IntraInter_means[IntraInter_means$Comparison_Type == "Intra-functional group", "Mean_D"])
+intra_I <- as.numeric(IntraInter_means[IntraInter_means$Comparison_Type == "Intra-functional group", "Mean_I"])
+intra_I <- as.numeric(IntraInter_means[IntraInter_means$Comparison_Type == "Intra-functional group", "Mean_I"])
+intra_I <- as.numeric(IntraInter_means[IntraInter_means$Comparison_Type == "Intra-functional group", "Mean_I"])
+intra_R <- as.numeric(IntraInter_means[IntraInter_means$Comparison_Type == "Intra-functional group", "Mean_Rho"])
+intra_R <- as.numeric(IntraInter_means[IntraInter_means$Comparison_Type == "Intra-functional group", "Mean_Rho"])
+intra_R <- as.numeric(IntraInter_means[IntraInter_means$Comparison_Type == "Intra-functional group", "Mean_Rho"])
+
+inter_D <- as.numeric(IntraInter_means[IntraInter_means$Comparison_Type == "Inter-functional group", "Mean_D"])
+inter_D <- as.numeric(IntraInter_means[IntraInter_means$Comparison_Type == "Inter-functional group", "Mean_D"])
+inter_D <- as.numeric(IntraInter_means[IntraInter_means$Comparison_Type == "Inter-functional group", "Mean_D"])
+inter_I <- as.numeric(IntraInter_means[IntraInter_means$Comparison_Type == "Inter-functional group", "Mean_I"])
+inter_I <- as.numeric(IntraInter_means[IntraInter_means$Comparison_Type == "Inter-functional group", "Mean_I"])
+inter_I <- as.numeric(IntraInter_means[IntraInter_means$Comparison_Type == "Inter-functional group", "Mean_I"])
+inter_R <- as.numeric(IntraInter_means[IntraInter_means$Comparison_Type == "Inter-functional group", "Mean_Rho"])
+inter_R <- as.numeric(IntraInter_means[IntraInter_means$Comparison_Type == "Inter-functional group", "Mean_Rho"])
+inter_R <- as.numeric(IntraInter_means[IntraInter_means$Comparison_Type == "Inter-functional group", "Mean_Rho"])
+
+
+# plot D
+D_plot <- ggplot(suit_overlap, aes(x = Species_Pair, y = D, fill = Comparison_Type)) +
+  geom_bar(stat = "identity", position = "dodge", width = 0.75) +
+  scale_fill_manual(values = c("#769772","#867A90")) +  
+  theme_classic() +
+  theme(legend.position = "top") +
+  labs(x = element_blank(), y = "D") +
+  geom_segment(aes(x = "BG-GS", xend = "RP-BP", y = intra_D, yend = intra_D), color = "#475E45", linetype = "dashed", linewidth = 0.7) +
+  geom_segment(aes(x = "BG-BP", xend = "GS-RP", y = inter_D, yend = inter_D), color = "#52495A", linetype = "dashed", linewidth = 0.7) +
+  guides(fill = guide_legend(theme = theme(
+    legend.title = element_blank())))
+D_plot
+
+# plot I
+I_plot <- ggplot(suit_overlap, aes(x = Species_Pair, y = I, fill = Comparison_Type)) +
+  geom_bar(stat = "identity", position = "dodge", width = 0.75) +
+  scale_fill_manual(values = c("#769772","#867A90")) +  
+  theme_classic() +
+  theme(legend.position = "none") +
+  labs(x = element_blank(), y = "I") +
+  geom_segment(aes(x = "BG-GS", xend = "RP-BP", y = intra_I, yend = intra_I), color = "#475E45", linetype = "dashed", linewidth = 0.7) +
+  geom_segment(aes(x = "BG-BP", xend = "GS-RP", y = inter_I, yend = inter_I), color = "#52495A", linetype = "dashed", linewidth = 0.7)
+I_plot
+
+# plot Rho
+R_plot <- ggplot(suit_overlap, aes(x = Species_Pair, y = Rho, fill = Comparison_Type)) +
+  geom_bar(stat = "identity", position = "dodge", width = 0.75) +
+  scale_fill_manual(values = c("#769772","#867A90")) +  
+  theme_classic() +
+  theme(legend.position = "none") +
+  labs(x = "Species Comparison", y = "Rho") +
+  geom_segment(aes(x = "BG-GS", xend = "RP-BP", y = intra_R, yend = intra_R), color = "#475E45", linetype = "dashed", linewidth = 0.7) +
+  geom_segment(aes(x = "BG-BP", xend = "GS-RP", y = inter_R, yend = inter_R), color = "#52495A", linetype = "dashed", linewidth = 0.7)
+R_plot
+
+# combine into one figure
+suit_overlap_fig <- plot_grid(D_plot, I_plot, R_plot, ncol = 1)
+suit_overlap_fig
+
+ggsave("Suitability_Overlap_Metrics.png", path = figures_path, width = 5, height = 6, units = "in", dpi = 600)
 

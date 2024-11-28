@@ -129,7 +129,7 @@ ppcor_full <- pearson_correlation_matrix(pred_full)
 # plot full correlation matrix
 palette <- pnw_palette("Shuksan2", 200, type = "continuous")
 par(mar = c(0,0,0,0))
-corrplot(ppcor_full, method = "color", col = palette, type = "upper",
+corrplot(ppcor_full, method = "color", type = "upper",
          order = "original", addCoef.col = "black", number.cex = 0.6, 
          number.digits = 2, tl.col = "black", tl.srt = 40, tl.cex = 0.7) # order = FPC, hclust
 
