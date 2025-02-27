@@ -128,7 +128,7 @@ my.identity.test <- function(species.1, species.2, suitability.1, suitability.2,
   # calculate empirical overlap
   #message("\nCalculating empirical overlap...\n")
   #empirical.overlap <- c(unlist(my.raster.overlap(suitability.1, suitability.2, verbose = TRUE)))
-  empirical.overlap <- c(unlist(list(D = 3, I = 7, rho = 37)))
+  empirical.overlap <- c(unlist(list(D = 0.5, I = 0.5, rho = 0.5)))
 
   # store overlap values
   reps.overlap <- empirical.overlap
@@ -154,7 +154,7 @@ my.identity.test <- function(species.1, species.2, suitability.1, suitability.2,
     rep.species.1$presence.points <- combined.presence.points[1:nrow(species.1$presence.points),]
     rep.species.2$presence.points <- combined.presence.points[(nrow(species.1$presence.points) + 1):nrow(combined.presence.points),]
     
-    # build model for rep i
+    # build models for rep i
     message(paste("\nBuilding rep", i, "models...\n"))
     rep.species.1.suitability <- my.maxent(rep.species.1, env, factors = "Habitat_Type", clamp = FALSE, verbose = TRUE)
     rep.species.2.suitability <- my.maxent(rep.species.2, env, factors = "Habitat_Type", clamp = FALSE, verbose = TRUE)
@@ -172,7 +172,7 @@ my.identity.test <- function(species.1, species.2, suitability.1, suitability.2,
   reps.overlap <- as.data.frame(reps.overlap)
   
   # plots for D, I, rank.cor (rho)
-  message("Making plots for D, I, and rho at...")
+  message(paste("Making plots for D, I, and rho at: ", Sys.time()))
   d.plot <- ggplot(reps.overlap[2:nrow(reps.overlap),], aes(x = .data$D, fill = "density", alpha = 0.5)) +
     geom_histogram(binwidth = 0.05) +
     geom_vline(xintercept = reps.overlap[1,"D"], linetype = "longdash") +
