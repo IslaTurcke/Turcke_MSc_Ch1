@@ -122,7 +122,7 @@ back_vect <- terra::vect(back_pts, geom = c("longitude","latitude"))
 
 # blue parrotfish
 SP1_enm <- enmtools.species(species.name = "Blue Parrotfish", 
-                           presence.points = vect(bp, geom = c("longitude","latitude")),
+                           presence.points = vect(SP1_occ, geom = c("longitude","latitude")),
                            background.points = back_vect)
 crs(SP1_enm$presence.points) <- my_crs
 crs(SP1_enm$background.points) <- my_crs
@@ -130,7 +130,7 @@ SP1_enm <- check.species(SP1_enm)
 
 # midnight parrotfish
 SP2_enm <- enmtools.species(species.name = "Midnight Parrotfish", 
-                           presence.points = vect(mp, geom = c("longitude","latitude")),
+                           presence.points = vect(SP2_occ, geom = c("longitude","latitude")),
                            background.points = back_vect)
 crs(SP2_enm$presence.points) <- my_crs
 crs(SP2_enm$background.points) <- my_crs

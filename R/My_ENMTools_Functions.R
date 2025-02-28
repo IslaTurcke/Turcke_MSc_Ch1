@@ -213,10 +213,10 @@ my.identity.test <- function(species.1, species.2, suitability.1, suitability.2,
 my.maxent <- function(species, env, factors, clamp = FALSE, verbose = FALSE){
   
   message("\nStarting MaxEnt!\n")
-  print(paste("\nMaxEnt - checking env at:", Sys.time()))
+  print(paste("MaxEnt - checking env at:", Sys.time()))
   #env <- check.raster(env, "env")
   
-  print(paste("\nMaking presence and background point data frames..."))
+  print(paste("Making presence and background point data frames..."))
   p.df <- terra::as.data.frame(species$presence.points, geom = "XY")
   a.df <- terra::as.data.frame(species$background.points, geom = "XY")
   
@@ -232,7 +232,7 @@ my.maxent <- function(species, env, factors, clamp = FALSE, verbose = FALSE){
   
   if(verbose){
     this.mx <- dismo::maxent(raster::stack(env), p = p.df, a = a.df, factors = factors)
-    print("\nModel built! Starting suitability prediction...")
+    print("Model built! Starting suitability prediction...")
     suitability <- terra::predict(env, this.mx, type = "response", na.rm = TRUE, cores = 5)
   } else {
     invisible(capture.output(this.mx <- dismo::maxent(raster::stack(env), p = p.df, a = a.df, factors = factors)))
