@@ -26,9 +26,6 @@
 library(easypackages)
 libraries("here","tidyverse")
 
-# set working directory (CLUSTER EDIT)
-setwd("C:/Users/islat/Desktop/IdentityTest_BP_MP")
-
 # set the Isla_MSc_Ch1 folder as the root directory for relative paths (CLUSTER EDIT)
 here::i_am("Occurrence_Permutations.R")
 
