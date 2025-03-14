@@ -103,7 +103,7 @@ my.raster.overlap <- function(x, y, verbose=FALSE){
 
 
 
-# identity.test (PERMUTES THE OCCURRENCE DATA TO DO n REPS) -----------------------------------------------------------
+# identity.test -----------------------------------------------------------
 
 
 # identity.test function, adapted to use my.raster.overlap()
@@ -200,45 +200,6 @@ my.identity.test <- function(species.1, species.2, suitability.1, suitability.2,
   message(paste("All done Identity Test at: ", Sys.time()))
   
   return(output)
-  
-}
-
-
-
-# identity.test (ONE REP - INPUT PRE-PERMUTED DATA) -----------------------------------------------------------
-
-
-# identity.test function, adapted to use my.raster.overlap()
-# performs only one rep, thus you need to input pre-permuted data
-# and run the function once for each rep you want done.
-
-my.identity.test.onerep <- function(species.1.perm, species.2.perm, env, clamp = TRUE, verbose = FALSE){
-  
-  # clamping layers here instead of doing it for each replicate model
-  if (clamp == TRUE){
-    message("\nClamping env layers...\n")
-    
-    combined.all.points <- rbind(species.1.perm$presence.points, species.2.perm$presence.points, species.1.perm$background.points)
-    
-    # adding env values for these points
-    this.df <- as.data.frame(terra::extract(env, combined.all.points, ID = FALSE))
-    
-    env <- clamp.env(this.df, env)
-  }
-  
-  # build replicate model
-  message("\nBuilding models for permuted data...\n")
-
-  species.1.perm.suitability <- my.maxent(species.1.perm, env, factors = "Habitat_Type", clamp = FALSE, verbose = TRUE)
-  species.2.perm.suitability <- my.maxent(species.2.perm, env, factors = "Habitat_Type", clamp = FALSE, verbose = TRUE)
-    
-  # calculate replicate overlap
-  message("Calculating overlap between permuted species...")
-  overlap <- c(unlist(my.raster.overlap(rep.species.1.suitability, rep.species.2.suitability, verbose = TRUE)))
-  
-  overlap.df <- as.data.frame(overlap)
-  
-  return(overlap.df)
   
 }
 
