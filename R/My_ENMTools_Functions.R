@@ -212,7 +212,7 @@ my.identity.test <- function(species.1, species.2, suitability.1, suitability.2,
 # performs only one rep, thus you need to input pre-permuted data
 # and run the function once for each rep you want done.
 
-my.identity.test.onerep <- function(species.1.perm, species.2.perm, env, clamp = TRUE, verbose = FALSE){
+my.identity.test.onerep <- function(species.1.perm, species.2.perm, env, clamp = TRUE, verbose = FALSE) {
   
   # clamping layers here instead of doing it for each replicate model
   if (clamp == TRUE){
