@@ -21,11 +21,12 @@
 
 # Set Up ------------------------------------------------------------------
 
-
+print("Loading packages...")
 # load packages
 library(easypackages)
 libraries("here","tidyverse")
 
+print("Setting here...")
 # set the Isla_MSc_Ch1 folder as the root directory for relative paths (CLUSTER EDIT)
 here::i_am("Occurrence_Permutations.R")
 
@@ -36,6 +37,7 @@ here::i_am("Occurrence_Permutations.R")
 
 ## Occurrence Data -----------------------------------------------------
 
+print("Importing species data...")
 # Import species occurrence points for species, selecting only lon and lat columns
 SP1_occ <- read.csv(here("Occurrence_Data","Subadult_BlueParrotfish_PO_Full.csv")) %>% 
   select("longitude","latitude")
