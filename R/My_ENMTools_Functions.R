@@ -234,7 +234,7 @@ my.identity.test.onerep <- function(species.1.perm, species.2.perm, env, clamp =
     
   # calculate replicate overlap
   message("Calculating overlap between permuted species...")
-  overlap <- c(unlist(my.raster.overlap(rep.species.1.suitability, rep.species.2.suitability, verbose = TRUE)))
+  overlap <- c(unlist(my.raster.overlap(species.1.perm.suitability, species.2.perm.suitability, verbose = TRUE)))
   
   overlap.df <- as.data.frame(overlap)
   
