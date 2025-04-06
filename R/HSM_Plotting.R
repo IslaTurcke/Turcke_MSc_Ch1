@@ -33,7 +33,7 @@ figures_path <- here("GitHub_Repositories/Turcke_MSc_Ch1/Figures")
 terraOptions(tempdir = "Z:/Isla_MSc_Ch1/Temp/")
 
 # make colour palette
-cols_sp <- c("#EAC211","#770C3E","#00BDAA","#0A7EC2","#0E323A")
+cols_sp <- c("#EAC211","#E9850C","#00BDAA","#0A7EC2","#0E323A")
 
 # read in summary stats for HSM results
 hsm_summary <- read.csv(here("GitHub_Repositories","Turcke_MSc_Ch1","Data_SmallFiles","MaxEnt_Summary_Subadult.csv")) %>% 
@@ -105,7 +105,7 @@ pi_long$Predictor <- factor(pi_long$Predictor, levels = c("Others","Winter salin
                                                           "Distance to mangrove","Slope","Habitat type"))
 
 # Define custom colors
-species_colors <- c("HAE_SCIU" = "#EAC211", "LUT_GRIS" = "#470C2F", "SCA_GUAC" = "#00BDAA", "SCA_COER" = "#0A7EC2", "SCA_COEL" = "#0E323A")
+species_colors <- c("HAE_SCIU" = "#EAC211", "LUT_GRIS" = "#E9850C", "SCA_GUAC" = "#00BDAA", "SCA_COER" = "#0A7EC2", "SCA_COEL" = "#0E323A")
 predictor_colors <- c("grey", viridis(8, direction = -1))
 
 # Create the plot
@@ -113,8 +113,8 @@ p1 <- ggplot(pi_long, aes(x = Species, y = mean, fill = Predictor)) +
   geom_bar(stat = "identity", position = "stack") +
   scale_fill_manual(values = predictor_colors, guide = guide_legend(reverse = TRUE)) +  # Apply custom colors
   coord_flip() +
-  theme_classic() +
-  labs(x = "Species", y = "Permutation importance") +
+  theme_bw() +
+  labs(x = "Species", y = "Cumulative permutation importance") +
   theme(axis.text.y = element_text(face = "italic"), legend.position = "right")
 p1
 
@@ -142,7 +142,6 @@ perm_import <- data_pi %>%
 
 # change capitalization of predictor names
 perm_import$variable <- gsub("Habitat Type", "Habitat type", perm_import$variable) 
-perm_import$variable <- gsub("Mangrove Distance", "Distance to mangrove", perm_import$variable)
 perm_import$variable <- gsub("Summer Dissolved Oxygen", "Summer DO", perm_import$variable)
 perm_import$variable <- gsub("BPI Broad", "Broad scale BPI", perm_import$variable) 
 perm_import$variable <- gsub("Rugosity ACR", "ACR rugosity", perm_import$variable)
@@ -171,16 +170,21 @@ p2 <- ggplot(perm_import, aes(x = variable, y = mean)) +
 
 p2
 
-legend <- get_legend(p1)
+# remove legend from p1
 p1_nl <- p1 + theme(legend.position = "none")
 
-horiz <- plot_grid(p2, legend, rel_widths = c(3, 1), axis = "t")
-horiz
+# plot without legend - preferred by Stephanie
+var_import <- plot_grid(p2, p1_nl, ncol = 1, labels = c("a","b"))
+var_import
 
-var_import_top <- plot_grid(p1_nl, horiz, ncol = 1)
-var_import_top
+# plot with legend
+#legend <- get_legend(p1)
+#horiz <- plot_grid(p2, legend, rel_widths = c(3, 1), axis = "t")
+#horiz
+#var_import_top <- plot_grid(p1_nl, horiz, ncol = 1)
+#var_import_top
 
-ggsave("VariableImportance.png", var_import_top, path = figures_path, width = 8, height = 5, units = "in", dpi = 600, bg = "white")
+ggsave("VariableImportance_Apr2025.png", var_import, path = figures_path, width = 8, height = 5, units = "in", dpi = 600, bg = "white")
 
 
 
@@ -242,14 +246,14 @@ habitat_resp$x <- gsub("1", "Patch reef", habitat_resp$x)
 habitat_resp$x <- gsub("2", "Scattered coral/rock", habitat_resp$x)
 habitat_resp$x <- gsub("3", "Seagrass (continuous)", habitat_resp$x)
 habitat_resp$x <- gsub("4", "Seagrass (discontinuous)", habitat_resp$x)
-habitat_resp$x <- gsub("5", "Unconsolidated sediment", habitat_resp$x)
+habitat_resp$x <- gsub("5", "Sediment", habitat_resp$x)
 habitat_resp$x <- gsub("6", "Aggregate reef", habitat_resp$x)
 habitat_resp$x <- gsub("8", "Pavement", habitat_resp$x)
 
 # set order for plotting based on suitability values
 habitat_resp$x <- factor(habitat_resp$x, levels = c("Patch reef","Aggregate reef","Scattered coral/rock","Pavement",
                                                     "Reef rubble","Ridge","Artificial","Mangrove","Seagrass (continuous)",
-                                                    "Unconsolidated sediment","Seagrass (discontinuous)"))
+                                                    "Sediment","Seagrass (discontinuous)"))
 
 # create the plot
 habitat_response <- ggplot(habitat_resp, aes(x = x, y = y, fill = Species)) +
@@ -260,7 +264,8 @@ habitat_response <- ggplot(habitat_resp, aes(x = x, y = y, fill = Species)) +
   labs(x = "Habitat type", y = "Relative suitability") +
   scale_x_discrete(labels = label_wrap_gen(10, multi_line = T)) +  #expand = expansion(mult = c(0.05, 0.05))
   guides(fill = guide_legend(theme = theme(
-    legend.text = element_text(size = 10, face = "italic"))))
+    legend.text = element_text(size = 10, face = "italic")))) +
+  theme(plot.margin = margin(c(10, 40, 0, 10)))
 
 habitat_response
 
@@ -289,7 +294,8 @@ slope_response <- ggplot(slope_resp, aes(x = x, y = y, colour = Species)) +
   scale_color_manual(values = cols_sp) +  # Apply custom colors
   theme_classic() +
   theme(legend.position = "none") +
-  labs(x = "Slope (degrees)", y = "Relative suitability")
+  labs(x = "Slope (degrees)", y = "Relative suitability") +
+  theme(plot.margin = margin(c(10, 0, 0, 10)))
 slope_response
 
 # save the plot
@@ -317,7 +323,8 @@ mgdist_response <- ggplot(mgdist_resp, aes(x = x/1000, y = y, colour = Species))
   scale_color_manual(values = cols_sp) +  # Apply custom colors
   theme_classic() +
   theme(legend.position = "none") +
-  labs(x = "Distance to mangrove (km)", y = element_blank())
+  labs(x = "Distance to mangrove (km)", y = element_blank()) +
+  theme(plot.margin = margin(c(10, 0, 0, 10)))
 mgdist_response
 
 # save the plot
@@ -345,7 +352,8 @@ bbpi_response <- ggplot(bbpi_resp, aes(x = x, y = y, colour = Species)) +
   scale_color_manual(values = cols_sp) +  # Apply custom colors
   theme_classic() +
   theme(legend.position = "none") +
-  labs(x = "Broad scale BPI", y = element_blank())
+  labs(x = "Broad scale BPI", y = element_blank()) +
+  theme(plot.margin = margin(c(10, 0, 0, 10)))
 bbpi_response
 
 # save the plot
@@ -373,7 +381,8 @@ wintersal_response <- ggplot(wintersal_resp, aes(x = x, y = y, colour = Species)
   scale_color_manual(values = cols_sp) +  # Apply custom colors
   theme_classic() +
   theme(legend.position = "none") +
-  labs(x = "Winter salinity (psu)", y = element_blank())
+  labs(x = "Winter salinity (psu)", y = element_blank()) +
+  theme(plot.margin = margin(c(10, 5, 0, 10)))
 wintersal_response
 
 # save the plot
@@ -383,10 +392,12 @@ wintersal_response
 ## Combining Response Curves -----------------------------------------------
 
 bottom_respcurvs <- plot_grid(slope_response, mgdist_response, bbpi_response, wintersal_response, 
-                              ncol = 4, rel_widths = c(1,1,1,1), axis = "t")
+                              ncol = 4, rel_widths = c(1,1,1,1), axis = "t",
+                              labels = c("b","c","d","e"), label_y = 1)
+print(bottom_respcurvs)
 
 response_curves <- plot_grid(habitat_response, bottom_respcurvs, 
-                             ncol = 1)
+                             ncol = 1, labels = c("a",""))
 response_curves
 
 ggsave("Response_Curves.png", path = figures_path, width = 10, height = 5, units = "in", dpi = 600)
