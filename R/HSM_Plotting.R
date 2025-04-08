@@ -483,3 +483,112 @@ suit_overlap_fig
 
 ggsave("Suitability_Overlap_Metrics.png", path = figures_path, width = 5, height = 6, units = "in", dpi = 600)
 
+
+
+
+# Suitability Histograms --------------------------------------------------
+
+
+## Blue Parrotfish ---------------------------------------------------------
+
+# read in suitability raster
+suit_bp <- rast("Z:/Isla_MSc_Ch1/HSM_Results/Subadult_BlueParrotfish/SCA_COER_avg.asc")
+
+# extract values to a dataframe and remove NAs
+vals_bp <- terra::values(suit_bp, dataframe = TRUE, na.rm = TRUE)
+rm(suit_bp)
+gc()
+
+# make histogram
+hist_bp <- ggplot(vals_bp, aes(x = SCA_COER_avg)) +
+  geom_histogram(bins = 100, fill = "#0A7EC2") +
+  labs(title = "Scarus coeruleus") +
+  theme(plot.title = element_text(face = "italic"))
+
+ggsave("SuitabilityDist_BP.png", path = figures_path, width = 5, height = 5, units = "in", dpi = 600)
+
+rm(vals_bp, hist_bp)
+
+
+## Midnight Parrotfish ---------------------------------------------------------
+
+# read in suitability raster
+suit_mp <- rast("Z:/Isla_MSc_Ch1/HSM_Results/Subadult_MidnightParrotfish/SCA_COEL_avg.asc")
+
+# extract values to a dataframe and remove NAs
+vals_mp <- terra::values(suit_mp, dataframe = TRUE, na.rm = TRUE)
+rm(suit_mp)
+gc()
+
+# make histogram
+hist_mp <- ggplot(vals_mp, aes(x = SCA_COEL_avg)) +
+  geom_histogram(bins = 100, fill = "#0E323A") +
+  labs(title = "Scarus coelestinus") +
+  theme(plot.title = element_text(face = "italic"))
+
+ggsave("SuitabilityDist_MP.png", path = figures_path, width = 5, height = 5, units = "in", dpi = 600)
+
+rm(vals_mp, hist_mp)
+
+
+## Rainbow Parrotfish ---------------------------------------------------------
+
+# read in suitability raster
+suit_rp <- rast("Z:/Isla_MSc_Ch1/HSM_Results/Subadult_RainbowParrotfish/SCA_GUAC_avg.asc")
+
+# extract values to a dataframe and remove NAs
+vals_rp <- terra::values(suit_rp, dataframe = TRUE, na.rm = TRUE)
+rm(suit_rp)
+gc()
+
+# make histogram
+hist_rp <- ggplot(vals_rp, aes(x = SCA_GUAC_avg)) +
+  geom_histogram(bins = 100, fill = "#00BDAA") +
+  labs(title = "Scarus guacamaia") +
+  theme(plot.title = element_text(face = "italic"))
+
+ggsave("SuitabilityDist_RP.png", path = figures_path, width = 5, height = 5, units = "in", dpi = 600)
+
+rm(vals_rp, hist_rp)
+
+
+## Bluestriped Grunt ---------------------------------------------------------
+
+# read in suitability raster
+suit_bg <- rast("Z:/Isla_MSc_Ch1/HSM_Results/Subadult_BluestripedGrunt/HAE_SCIU_avg.asc")
+
+# extract values to a dataframe and remove NAs
+vals_bg <- terra::values(suit_bg, dataframe = TRUE, na.rm = TRUE)
+rm(suit_bg)
+gc()
+
+# make histogram
+hist_bg <- ggplot(vals_bg, aes(x = HAE_SCIU_avg)) +
+  geom_histogram(bins = 100, fill = "#EAC211") +
+  labs(title = "Haemulon sciurus") +
+  theme(plot.title = element_text(face = "italic"))
+
+ggsave("SuitabilityDist_bg.png", path = figures_path, width = 5, height = 5, units = "in", dpi = 600)
+
+rm(vals_bg, hist_bg)
+
+
+## Gray Snapper ---------------------------------------------------------
+
+# read in suitability raster
+suit_gs <- rast("Z:/Isla_MSc_Ch1/HSM_Results/Subadult_GraySnapper/LUT_GRIS_avg.asc")
+
+# extract values to a dataframe and remove NAs
+vals_gs <- terra::values(suit_gs, dataframe = TRUE, na.rm = TRUE)
+rm(suit_gs)
+gc()
+
+# make histogram
+hist_gs <- ggplot(vals_gs, aes(x = LUT_GRIS_avg)) +
+  geom_histogram(bins = 100, fill = "#E9850C") +
+  labs(title = "Lutjanus griseus") +
+  theme(plot.title = element_text(face = "italic"))
+
+ggsave("SuitabilityDist_gs.png", path = figures_path, width = 5, height = 5, units = "in", dpi = 600)
+
+rm(vals_gs, hist_gs)
