@@ -10,31 +10,24 @@
 
 # adapting the complete.cases function to work with my large datasets
 
-my.complete.cases <- function(df){
+my.complete.cases <- function(df, chunk_size = 1e6, verbose = FALSE) {
   
-  # initialize empty dataframe for complete cases of df
-  df_cc <- data.frame(COL1 = double(), COL2 = double())
+  # create empty df with same structure to hold complete cases
+  df_cc <- df[0, ]  
   
-  # set colnames of df_cc to the colnames from df
-  colnames(df_cc) <- colnames(df)
-  
-  # check each row of df, if complete case, append to df_cc
+  total_rows <- nrow(df)
   i <- 1
-  while (i <= nrow(df)) {
-    if (i + 999999 <= nrow(df)) {
-      temp <- df[i:(i+999999),]
-      cc <- temp[complete.cases(temp),]
-      df_cc <- rbind(df_cc, cc)
-    }
-    if (i + 999999 > nrow(df)) {
-      temp <- df[i:nrow(df),]
-      cc <- temp[complete.cases(temp),]
-      df_cc <- rbind(df_cc, cc)
-      print("complete.cases: last one!")
-    }
-    i <- i + 1000000
+  
+  while (i <= total_rows) {
+    end_index <- min(i + chunk_size - 1, total_rows)
+    temp <- df[i:end_index, ]
+    cc <- temp[complete.cases(temp), ]
+    df_cc <- rbind(df_cc, cc)
+    
+    if (verbose) message("Processed rows: ", i, " to ", end_index)
+    i <- i + chunk_size
   }
-  rm(temp, cc)
+  
   return(df_cc)
 }
 
@@ -67,35 +60,41 @@ my.raster.cor <- function(x, y, method="spearman"){
 
 # raster.overlap function, adapted to use my.raster.cor()
 
-my.raster.overlap <- function(x, y, verbose=FALSE){
+my.raster.overlap <- function(x, y, verbose = FALSE, cores = 1) {
   
-  if(any(grepl("enmtools", class(x)))){
+  if (any(grepl("enmtools", class(x)))) {
     x <- x$suitability
   }
-  if(any(grepl("enmtools", class(y)))){
+  if (any(grepl("enmtools", class(y)))) {
     y <- y$suitability
   }
   
-  if(verbose){
-    print(paste("Starting overlap at: ", Sys.time()))
+  if (verbose) {
+    message(paste("Starting overlap at:", Sys.time()))
   }
-  
-  x <- raster.standardize(x)
-  y <- raster.standardize(y)
-  
-  # calculate D
-  print(paste("Calculating D at: ", Sys.time()))
-  D <- 1 - as.numeric(terra::global(abs(x - y), "sum", na.rm = TRUE)/2)
-  
-  # calculate I
-  print(paste("Calculating I at: ", Sys.time()))
-  I <- 1 - as.numeric(terra::global((sqrt(x) - sqrt(y))^2, "sum", na.rm = TRUE)/2)
   
   # calculate rank correlation
   print(paste("Calculating rho at: ", Sys.time()))
   rho <- my.raster.cor(x, y)
   
-  print(paste("Overlap calculations complete!"))
+  x <- raster.standardize(x)
+  y <- raster.standardize(y)
+  
+  # Calculate D 
+  if (verbose) {
+    message(paste("Calculating D at:", Sys.time()))
+  }
+  D <- 1 - as.numeric(terra::global(abs(x - y), "sum", na.rm = TRUE)/2)
+  
+  # calculate I
+  if (verbose) {
+    message(paste("Calculating I at:", Sys.time()))
+  }
+  I <- 1 - as.numeric(terra::global((sqrt(x) - sqrt(y))^2, "sum", na.rm = TRUE)/2)
+  
+  if (verbose) {
+    message(paste0("Overlap calculations complete at: ", Sys.time()))
+  }
   
   results <- list(D = D, I = I, rho = rho)
   return(results)
@@ -103,7 +102,7 @@ my.raster.overlap <- function(x, y, verbose=FALSE){
 
 
 
-# identity.test -----------------------------------------------------------
+# identity.test (PERMUTES THE OCCURRENCE DATA TO DO n REPS) -----------------------------------------------------------
 
 
 # identity.test function, adapted to use my.raster.overlap()
@@ -205,39 +204,97 @@ my.identity.test <- function(species.1, species.2, suitability.1, suitability.2,
 
 
 
+# identity.test (ONE REP - INPUT PRE-PERMUTED DATA) -----------------------------------------------------------
+
+
+# identity.test function, adapted to use my.raster.overlap()
+# performs only one rep, thus you need to input pre-permuted data
+# and run the function once for each rep you want done.
+
+my.identity.test.onerep <- function(species.1.perm, species.2.perm, env, clamp = TRUE, 
+                                    temp_dir = tempdir(), cores = 1, verbose = FALSE) {
+  
+  if (clamp) {
+    message("\nClamping env layers...\n")
+    
+    combined.all.points <- rbind(species.1.perm$presence.points,
+                                 species.2.perm$presence.points,
+                                 species.1.perm$background.points)
+    
+    this.df <- as.data.frame(terra::extract(env, combined.all.points, ID = FALSE))
+    env <- clamp.env(this.df, env)
+  }
+  
+  message("\nBuilding models for permuted data...\n")
+  
+  species.1.perm.suitability <- my.maxent(species.1.perm, env,
+                                          factors = "Habitat_Type",
+                                          clamp = FALSE, verbose = verbose,
+                                          temp_dir = temp_dir, cores = cores)
+  
+  species.2.perm.suitability <- my.maxent(species.2.perm, env,
+                                          factors = "Habitat_Type",
+                                          clamp = FALSE, verbose = verbose,
+                                          temp_dir = temp_dir, cores = cores)
+  
+  message("Calculating overlap between permuted species...")
+  overlap <- c(unlist(my.raster.overlap(species.1.perm.suitability,
+                                        species.2.perm.suitability,
+                                        verbose = verbose)))
+  
+  return(as.data.frame(t(overlap)))
+}
+
+
+
+
 # maxent ------------------------------------------------------------------
 
 
 # maxent function, but with ONLY the steps I need for building my replicate models in my.identity.test()
 
-my.maxent <- function(species, env, factors, clamp = FALSE, verbose = FALSE){
+my.maxent <- function(species, env, factors, clamp = FALSE, verbose = FALSE,
+                      temp_dir = tempdir(), cores = 1) {
   
-  message("\nStarting MaxEnt!\n")
-  print(paste("MaxEnt - checking env at:", Sys.time()))
-  #env <- check.raster(env, "env")
+  if (verbose) {
+    message("\nStarting MaxEnt!")
+    message(paste("MaxEnt - checking env at:", Sys.time()))
+  }
   
-  print(paste("Making presence and background point data frames..."))
   p.df <- terra::as.data.frame(species$presence.points, geom = "XY")
   a.df <- terra::as.data.frame(species$background.points, geom = "XY")
   
-  if (length(names(env)) == 1){
+  # Add dummy layer if only 1 predictor
+  if (length(names(env)) == 1) {
     oldname <- names(env)
     env <- c(env, env)
     env[[2]][!is.na(env[[2]])] <- 0
     names(env) <- c(oldname, "dummyvar")
-    print("Only one predictor layer was provided so a dummy variable was created to be compatible with dismo.")
+    message("Only one predictor layer provided; added dummy layer for compatibility with dismo::maxent.")
   }
   
-  message(paste("\nStarting MaxEnt model at:", Sys.time()))
+  if (verbose) {
+    message(paste("Starting MaxEnt model at:", Sys.time()))
+  }
   
-  if(verbose){
-    this.mx <- dismo::maxent(raster::stack(env), p = p.df, a = a.df, factors = factors)
-    print("Model built! Starting suitability prediction...")
-    suitability <- terra::predict(env, this.mx, type = "response", na.rm = TRUE, cores = 5)
+  # Build the MaxEnt model
+  mx_model <- if (verbose) {
+    dismo::maxent(raster::stack(env), p = p.df, a = a.df, factors = factors)
   } else {
-    invisible(capture.output(this.mx <- dismo::maxent(raster::stack(env), p = p.df, a = a.df, factors = factors)))
-    invisible(capture.output(suitability <- terra::predict(env, this.mx, type = "response", na.rm = TRUE, cores = 5)))
+    invisible(capture.output(
+      dismo::maxent(raster::stack(env), p = p.df, a = a.df, factors = factors)
+    ))
+  }
+  
+  # Predict suitability, write to disk to reduce memory usage
+  filename <- file.path(temp_dir, paste0("suitability_", as.integer(Sys.time()), "_", sample(10000, 1), ".tif"))
+  suitability <- terra::predict(env, mx_model, type = "response", na.rm = TRUE, 
+                                cores = cores, filename = filename, overwrite = TRUE)
+  
+  if (verbose) {
+    message(paste("Prediction complete. Raster saved here:", filename))
   }
   
   return(suitability)
 }
+
