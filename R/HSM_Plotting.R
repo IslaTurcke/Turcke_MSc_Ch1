@@ -485,6 +485,47 @@ ggsave("Suitability_Overlap_Metrics.png", path = figures_path, width = 5, height
 
 
 
+# Identity Test -----------------------------------------------------------
+
+
+## BP_MP -------------------------------------------------------------------
+
+# import data
+reps_BPMP <- read.csv("Z:/Isla_MSc_Ch1/HSM_Analysis/Identity_Test/OverlapValues_BP_MP.csv")
+
+# plots for D, I, rank.cor (rho)
+
+d.plot <- ggplot(reps_BPMP[2:nrow(reps_BPMP),], aes(x = .data$D)) +
+  geom_histogram(binwidth = 0.01, fill = "#0A7EC2", alpha = 0.5) +
+  geom_vline(aes(xintercept = reps_BPMP[1, "D"]), linetype = "longdash") +
+  scale_x_continuous(name = "D",
+    breaks = c(0.5, 0.6, 0.7, 0.8, 0.9, 1.0, reps_BPMP[1, "D"]),
+    labels = scales::label_number(accuracy = 0.01)) +
+  coord_cartesian(xlim = c(0.5, 1.0)) +
+  theme_minimal()
+d.plot
+
+i.plot <- ggplot(reps_BPMP[2:nrow(reps_BPMP),], aes(x = .data$I)) +
+  geom_histogram(binwidth = 0.01, fill = "#0A7EC2", alpha = 0.5) +
+  geom_vline(aes(xintercept = reps_BPMP[1, "I"]), linetype = "longdash") +
+  scale_x_continuous(name = "I",
+                     breaks = c(0.5, 0.6, 0.7, 0.8, 0.9, 1.0, reps_BPMP[1, "I"]),
+                     labels = scales::label_number(accuracy = 0.01)) +
+  coord_cartesian(xlim = c(0.5, 1.0)) +
+  theme_minimal()
+i.plot
+
+cor.plot <- ggplot(reps_BPMP[2:nrow(reps_BPMP),], aes(x = .data$R)) +
+  geom_histogram(binwidth = 0.01, fill = "#0A7EC2", alpha = 0.5) +
+  geom_vline(aes(xintercept = reps_BPMP[1, "R"]), linetype = "longdash") +
+  scale_x_continuous(name = "R",
+                     breaks = c(0.5, 0.6, 0.7, 0.8, 0.9, 1.0, reps_BPMP[1, "R"]),
+                     labels = scales::label_number(accuracy = 0.01)) +
+  coord_cartesian(xlim = c(0.5, 1.0)) +
+  theme_minimal()
+cor.plot
+
+
 
 # Suitability Histograms --------------------------------------------------
 
@@ -496,18 +537,25 @@ suit_bp <- rast("Z:/Isla_MSc_Ch1/HSM_Results/Subadult_BlueParrotfish/SCA_COER_av
 
 # extract values to a dataframe and remove NAs
 vals_bp <- terra::values(suit_bp, dataframe = TRUE, na.rm = TRUE)
+above_thresh <- mean(vals_bp[[1]] > 0.5)*100
+above_thresh <- paste0(round(above_thresh, digits = 2), "%")
 rm(suit_bp)
 gc()
 
 # make histogram
 hist_bp <- ggplot(vals_bp, aes(x = SCA_COER_avg)) +
   geom_histogram(bins = 100, fill = "#0A7EC2") +
-  labs(title = "Scarus coeruleus") +
-  theme(plot.title = element_text(face = "italic"))
+  labs(x = "Relative suitability", y = NULL) +
+  coord_cartesian(ylim = c(0, 18000000)) +
+  theme_bw() + 
+  geom_vline(xintercept = 0.5, linetype = 3) + 
+  annotate("text", x = 0.8, y = 6e6, label = above_thresh)
 
-ggsave("SuitabilityDist_BP.png", path = figures_path, width = 5, height = 5, units = "in", dpi = 600)
+hist_bp
 
-rm(vals_bp, hist_bp)
+#ggsave("SuitabilityDist_BP.png", path = figures_path, width = 5, height = 5, units = "in", dpi = 600)
+
+rm(vals_bp)
 
 
 ## Midnight Parrotfish ---------------------------------------------------------
@@ -517,18 +565,23 @@ suit_mp <- rast("Z:/Isla_MSc_Ch1/HSM_Results/Subadult_MidnightParrotfish/SCA_COE
 
 # extract values to a dataframe and remove NAs
 vals_mp <- terra::values(suit_mp, dataframe = TRUE, na.rm = TRUE)
+above_thresh <- mean(vals_mp[[1]] > 0.5)*100
+above_thresh <- paste0(round(above_thresh, digits = 2), "%")
 rm(suit_mp)
 gc()
 
 # make histogram
 hist_mp <- ggplot(vals_mp, aes(x = SCA_COEL_avg)) +
   geom_histogram(bins = 100, fill = "#0E323A") +
-  labs(title = "Scarus coelestinus") +
-  theme(plot.title = element_text(face = "italic"))
+  labs(x = "Relative suitability", y = NULL) +
+  coord_cartesian(ylim = c(0, 18000000)) +
+  theme_bw() + 
+  geom_vline(xintercept = 0.5, linetype = 3) + 
+  annotate("text", x = 0.8, y = 6e6, label = above_thresh)
 
-ggsave("SuitabilityDist_MP.png", path = figures_path, width = 5, height = 5, units = "in", dpi = 600)
+#ggsave("SuitabilityDist_MP.png", path = figures_path, width = 5, height = 5, units = "in", dpi = 600)
 
-rm(vals_mp, hist_mp)
+rm(vals_mp)
 
 
 ## Rainbow Parrotfish ---------------------------------------------------------
@@ -538,18 +591,23 @@ suit_rp <- rast("Z:/Isla_MSc_Ch1/HSM_Results/Subadult_RainbowParrotfish/SCA_GUAC
 
 # extract values to a dataframe and remove NAs
 vals_rp <- terra::values(suit_rp, dataframe = TRUE, na.rm = TRUE)
+above_thresh <- mean(vals_rp[[1]] > 0.5)*100
+above_thresh <- paste0(round(above_thresh, digits = 2), "%")
 rm(suit_rp)
 gc()
 
 # make histogram
 hist_rp <- ggplot(vals_rp, aes(x = SCA_GUAC_avg)) +
   geom_histogram(bins = 100, fill = "#00BDAA") +
-  labs(title = "Scarus guacamaia") +
-  theme(plot.title = element_text(face = "italic"))
+  labs(x = "Relative suitability", y = "Pixel count") +
+  coord_cartesian(ylim = c(0, 18000000)) +
+  theme_bw() + 
+  geom_vline(xintercept = 0.5, linetype = 3) + 
+  annotate("text", x = 0.8, y = 6e6, label = above_thresh)
 
-ggsave("SuitabilityDist_RP.png", path = figures_path, width = 5, height = 5, units = "in", dpi = 600)
+#ggsave("SuitabilityDist_RP.png", path = figures_path, width = 5, height = 5, units = "in", dpi = 600)
 
-rm(vals_rp, hist_rp)
+rm(vals_rp)
 
 
 ## Bluestriped Grunt ---------------------------------------------------------
@@ -559,18 +617,23 @@ suit_bg <- rast("Z:/Isla_MSc_Ch1/HSM_Results/Subadult_BluestripedGrunt/HAE_SCIU_
 
 # extract values to a dataframe and remove NAs
 vals_bg <- terra::values(suit_bg, dataframe = TRUE, na.rm = TRUE)
+above_thresh <- mean(vals_bg[[1]] > 0.5)*100
+above_thresh <- paste0(round(above_thresh, digits = 2), "%")
 rm(suit_bg)
 gc()
 
 # make histogram
 hist_bg <- ggplot(vals_bg, aes(x = HAE_SCIU_avg)) +
   geom_histogram(bins = 100, fill = "#EAC211") +
-  labs(title = "Haemulon sciurus") +
-  theme(plot.title = element_text(face = "italic"))
+  labs(x = NULL, y = "Pixel count") +
+  coord_cartesian(ylim = c(0, 18000000)) +
+  theme_bw() + 
+  geom_vline(xintercept = 0.5, linetype = 3) + 
+  annotate("text", x = 0.8, y = 6e6, label = above_thresh)
 
-ggsave("SuitabilityDist_bg.png", path = figures_path, width = 5, height = 5, units = "in", dpi = 600)
+#ggsave("SuitabilityDist_bg.png", path = figures_path, width = 5, height = 5, units = "in", dpi = 600)
 
-rm(vals_bg, hist_bg)
+rm(vals_bg)
 
 
 ## Gray Snapper ---------------------------------------------------------
@@ -580,15 +643,46 @@ suit_gs <- rast("Z:/Isla_MSc_Ch1/HSM_Results/Subadult_GraySnapper/LUT_GRIS_avg.a
 
 # extract values to a dataframe and remove NAs
 vals_gs <- terra::values(suit_gs, dataframe = TRUE, na.rm = TRUE)
+above_thresh <- mean(vals_gs[[1]] > 0.5)*100
+above_thresh <- paste0(round(above_thresh, digits = 2), "%")
 rm(suit_gs)
 gc()
 
 # make histogram
 hist_gs <- ggplot(vals_gs, aes(x = LUT_GRIS_avg)) +
   geom_histogram(bins = 100, fill = "#E9850C") +
-  labs(title = "Lutjanus griseus") +
-  theme(plot.title = element_text(face = "italic"))
+  labs(x = NULL, y = NULL) +
+  coord_cartesian(ylim = c(0, 18000000)) +
+  theme_bw() + 
+  geom_vline(xintercept = 0.5, linetype = 3) + 
+  annotate("text", x = 0.8, y = 6e6, label = above_thresh)
 
-ggsave("SuitabilityDist_gs.png", path = figures_path, width = 5, height = 5, units = "in", dpi = 600)
+#ggsave("SuitabilityDist_gs.png", path = figures_path, width = 5, height = 5, units = "in", dpi = 600)
 
-rm(vals_gs, hist_gs)
+rm(vals_gs)
+
+
+## Combine into Figure -----------------------------------------------------
+# 
+# habitat_getlegend <- ggplot(habitat_resp, aes(x = x, y = y, fill = Species)) +
+#   geom_bar(stat = "identity", position = "dodge", width = 0.75) +
+#   scale_fill_manual(values = cols_sp) +  # Apply custom colors
+#   theme_classic() +
+#   theme(legend.position = "right",
+#         legend.title = element_text(size = 14),
+#         legend.key.size = unit(1.0, "cm")) +
+#   labs(x = "Habitat type", y = "Relative suitability") +
+#   scale_x_discrete(labels = label_wrap_gen(10, multi_line = T)) +  #expand = expansion(mult = c(0.05, 0.05))
+#   guides(fill = guide_legend(theme = theme(
+#     legend.text = element_text(size = 12, face = "italic")))) +
+#   theme(plot.margin = margin(c(10, 40, 0, 10)))
+# 
+# habitat_getlegend
+
+legend <- get_legend(habitat_response)
+
+hists <- plot_grid(hist_bg, hist_gs, legend, hist_rp, hist_bp, hist_mp, 
+                   ncol = 3, align = "hv", axis = "t",
+                   labels = c("a","b","","c","d","e"), label_y = 1)
+
+ggsave("Suitability_Histograms.png", path = figures_path, width = 9, height = 5, units = "in", dpi = 600)

@@ -40,7 +40,7 @@ libraries("ENMTools","sf","terra","here","tidyverse","dplyr","rJava","parallel")
 #ENMTools::install.extras()
 
 # set the Isla_MSc_Ch1 folder as the root directory for relative paths (CLUSTER EDIT)
-here::i_am("HSM_IdentityTest_OneRep_VM.R")
+here::i_am("HSM_IdentityTest_OneRep.R")
 
 # call on my script of functions based on the ENMTools (CLUSTER EDIT) 
 source(here::here("My_ENMTools_Functions.R"))
@@ -63,7 +63,7 @@ cores = 1
 ## Predictor Rasters -------------------------------------------------------
 
 # Import predictor layers (CLUSTER EDIT)
-env.files <- list.files(path = "./Predictors/", pattern = "setMinMax.tif", full.names = TRUE) #pattern = ".asc" for ASCII files
+env.files <- list.files(path = "Z:/Isla_MSc_Ch1/Final_Data/Predictors_ENMTools_IDTest", pattern = ".asc", full.names = TRUE) #pattern = ".asc" for ASCII files
 env <- terra::rast(env.files)
 
 #env <- check.env(env = env, verbose = TRUE)
@@ -81,7 +81,7 @@ for (i in 1:nlyr(env)){
     setMinMax(env[[i]])
     print(paste("MinMax set for layer ", i))
   }
-  #writeRaster(env[[i]], paste0("Predictors/",predictor_names[i],"_setMinMax.tif"))
+  writeRaster(env[[i]], paste0("Z:/Isla_MSc_Ch1/Final_Data/Predictors_ENMTools_IDTest/",predictor_names[i],"_setMinMax.tif"))
 }
 
 ### SET MIN MAX CAN BE DONE AHEAD OF TIME IF RASTERS ARE SAVED AS .TIF
