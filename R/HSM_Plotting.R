@@ -496,9 +496,9 @@ reps_BPMP <- read.csv("Z:/Isla_MSc_Ch1/HSM_Analysis/Identity_Test/OverlapValues_
 # plots for D, I, rank.cor (rho)
 
 d.plot <- ggplot(reps_BPMP[2:nrow(reps_BPMP),], aes(x = .data$D)) +
-  geom_histogram(binwidth = 0.01, fill = "#0A7EC2", alpha = 0.5) +
+  geom_histogram(binwidth = 0.01, fill = "darkgray", alpha = 0.5) +
   geom_vline(aes(xintercept = reps_BPMP[1, "D"]), linetype = "longdash") +
-  scale_x_continuous(name = "D",
+  scale_x_continuous(name = "Schoener's D",
     breaks = c(0.5, 0.6, 0.7, 0.8, 0.9, 1.0, reps_BPMP[1, "D"]),
     labels = scales::label_number(accuracy = 0.01)) +
   coord_cartesian(xlim = c(0.5, 1.0)) +
@@ -506,9 +506,9 @@ d.plot <- ggplot(reps_BPMP[2:nrow(reps_BPMP),], aes(x = .data$D)) +
 d.plot
 
 i.plot <- ggplot(reps_BPMP[2:nrow(reps_BPMP),], aes(x = .data$I)) +
-  geom_histogram(binwidth = 0.01, fill = "#0A7EC2", alpha = 0.5) +
+  geom_histogram(binwidth = 0.01, fill = "darkgray", alpha = 0.5) +
   geom_vline(aes(xintercept = reps_BPMP[1, "I"]), linetype = "longdash") +
-  scale_x_continuous(name = "I",
+  scale_x_continuous(name = "Warren's I",
                      breaks = c(0.5, 0.6, 0.7, 0.8, 0.9, 1.0, reps_BPMP[1, "I"]),
                      labels = scales::label_number(accuracy = 0.01)) +
   coord_cartesian(xlim = c(0.5, 1.0)) +
@@ -516,9 +516,9 @@ i.plot <- ggplot(reps_BPMP[2:nrow(reps_BPMP),], aes(x = .data$I)) +
 i.plot
 
 cor.plot <- ggplot(reps_BPMP[2:nrow(reps_BPMP),], aes(x = .data$R)) +
-  geom_histogram(binwidth = 0.01, fill = "#0A7EC2", alpha = 0.5) +
+  geom_histogram(binwidth = 0.01, fill = "darkgray", alpha = 0.5) +
   geom_vline(aes(xintercept = reps_BPMP[1, "R"]), linetype = "longdash") +
-  scale_x_continuous(name = "R",
+  scale_x_continuous(name = "Spearman's rho",
                      breaks = c(0.5, 0.6, 0.7, 0.8, 0.9, 1.0, reps_BPMP[1, "R"]),
                      labels = scales::label_number(accuracy = 0.01)) +
   coord_cartesian(xlim = c(0.5, 1.0)) +
