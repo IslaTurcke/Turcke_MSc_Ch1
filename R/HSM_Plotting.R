@@ -60,6 +60,7 @@ pi_long <- pi_data %>%
 
 # removing _ from predictor names
 pi_long$Predictor <- gsub("_", " ", pi_long$Predictor)
+pi_long_ALL <- pi_long
 
 # make rows for bottom 5 predictors that are not being included ("others")
 sca_coel_others <- pi_long %>% filter(Species == "SCA_COEL", Predictor %in% c("Winter Dissolved Oxygen","Summer Temperature","BPI Fine","Winter Temperature","Curvature"))
@@ -121,52 +122,47 @@ p1
 
 ## Predictor Importance Variation ------------------------------------------
 
-# edit dataset 
-data_pi <- hsm_summary[, grep("permutation.importance_mean", names(hsm_summary))]
-colnames(data_pi) <- gsub(".permutation.importance_mean", "", colnames(data_pi))
-colnames(data_pi) <- gsub("_", " ", colnames(data_pi))
+# pivot to wide 
+pi_wide <- pi_long_ALL %>%
+  pivot_wider(
+    names_from = Species,
+    values_from = mean
+  )
 
-# Function to calculate mean and 95% CI
-calculate_mean_ci <- function(column) {
-  mean_val <- mean(column)
-  ci <- qt(0.975, df = length(column) - 1) * sd(column) / sqrt(length(column))
-  return(c(mean = mean_val, ci = ci))
-}
-
-# Apply the function to each column and create a new data frame
-perm_import <- data_pi %>%
-  summarise(across(everything(), calculate_mean_ci)) %>%
-  pivot_longer(cols = everything(), names_to = "variable", values_to = "value") %>%
-  mutate(statistic = rep(c("mean", "ci"), times = 13)) %>% 
-  pivot_wider(names_from = statistic, values_from = value)
+# add mean and ci value
+pi_wide_calc <- pi_wide %>%
+  mutate(
+    mean = rowMeans(select(., HAE_SCIU:SCA_GUAC), na.rm = TRUE),
+    ci = 1.96 * apply(select(., HAE_SCIU:SCA_GUAC), 1, function(x) sd(x, na.rm = TRUE)/sqrt(sum(!is.na(x))))
+  )
 
 # change capitalization of predictor names
-perm_import$variable <- gsub("Habitat Type", "Habitat type", perm_import$variable) 
-perm_import$variable <- gsub("Summer Dissolved Oxygen", "Summer DO", perm_import$variable)
-perm_import$variable <- gsub("BPI Broad", "Broad scale BPI", perm_import$variable) 
-perm_import$variable <- gsub("Rugosity ACR", "ACR rugosity", perm_import$variable)
-perm_import$variable <- gsub("Winter Salinity", "Winter salinity", perm_import$variable)
-perm_import$variable <- gsub("Winter Dissolved Oxygen", "Winter DO", perm_import$variable)
-perm_import$variable <- gsub("Summer Temperature", "Summer temperature", perm_import$variable)
-perm_import$variable <- gsub("BPI Fine", "Fine scale BPI", perm_import$variable)
-perm_import$variable <- gsub("Winter Temperature", "Winter temperature", perm_import$variable)
+pi_wide_calc$Predictor <- gsub("Habitat Type", "Habitat type", pi_wide_calc$Predictor) 
+pi_wide_calc$Predictor <- gsub("Summer Dissolved Oxygen", "Summer DO", pi_wide_calc$Predictor)
+pi_wide_calc$Predictor <- gsub("BPI Broad", "Broad scale BPI", pi_wide_calc$Predictor) 
+pi_wide_calc$Predictor <- gsub("Rugosity ACR", "ACR rugosity", pi_wide_calc$Predictor)
+pi_wide_calc$Predictor <- gsub("Winter Salinity", "Winter salinity", pi_wide_calc$Predictor)
+pi_wide_calc$Predictor <- gsub("Winter Dissolved Oxygen", "Winter DO", pi_wide_calc$Predictor)
+pi_wide_calc$Predictor <- gsub("Summer Temperature", "Summer temperature", pi_wide_calc$Predictor)
+pi_wide_calc$Predictor <- gsub("BPI Fine", "Fine scale BPI", pi_wide_calc$Predictor)
+pi_wide_calc$Predictor <- gsub("Winter Temperature", "Winter temperature", pi_wide_calc$Predictor)
 
 # set order for plotting
-perm_import <- perm_import %>% arrange(desc(mean)) %>%
-  mutate(variable = factor(variable, levels = variable))
+pi_wide_calc <- pi_wide_calc %>% arrange(desc(mean)) %>%
+  mutate(Predictor = factor(Predictor, levels = Predictor))
 
 # add colours
-perm_import$color <- c(rev(predictor_colors), "grey","grey","grey","grey")
+pi_wide_calc$color <- c(rev(predictor_colors), "grey","grey","grey","grey")
 
 # plot
-p2 <- ggplot(perm_import, aes(x = variable, y = mean)) +
+p2 <- ggplot(pi_wide_calc, aes(x = Predictor, y = mean)) +
   geom_point(aes(fill = color), shape = 21, size = 4, color = "black", stroke = 0.5) +  # Customize dots
   geom_errorbar(aes(ymin = mean - ci, ymax = mean + ci), width = 0.2) +  # Add error bars
   scale_fill_identity() +  # Use the fill colors from the 'color' column directly
   theme_bw() +
   coord_flip() +
   labs(x = "Predictor", y = "Mean permutation importance ± 95% CI") +
-  scale_x_discrete(limits = rev(levels(perm_import$variable)))  # Reverse x-axis order
+  scale_x_discrete(limits = rev(levels(pi_wide_calc$Predictor)))  # Reverse x-axis order
 
 p2
 
@@ -177,14 +173,7 @@ p1_nl <- p1 + theme(legend.position = "none")
 var_import <- plot_grid(p2, p1_nl, ncol = 1, labels = c("a","b"))
 var_import
 
-# plot with legend
-#legend <- get_legend(p1)
-#horiz <- plot_grid(p2, legend, rel_widths = c(3, 1), axis = "t")
-#horiz
-#var_import_top <- plot_grid(p1_nl, horiz, ncol = 1)
-#var_import_top
-
-ggsave("VariableImportance_Apr2025.png", var_import, path = figures_path, width = 8, height = 5, units = "in", dpi = 600, bg = "white")
+ggsave("VariableImportance.png", var_import, path = figures_path, width = 8, height = 5, units = "in", dpi = 600, bg = "white")
 
 
 
