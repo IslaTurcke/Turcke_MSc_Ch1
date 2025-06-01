@@ -17,7 +17,8 @@
 
 # load packages
 library(easypackages)
-libraries("sf","terra","here","tidyverse","dplyr","ggplot2","gridExtra","cowplot","viridis","svglite")
+libraries("sf","terra","here","tidyverse","dplyr","ggplot2","gridExtra","cowplot",
+          "viridis","svglite", "patchwork")
 
 # set working directory
 setwd("Z:/Isla_MSc_Ch1/")
@@ -477,42 +478,89 @@ ggsave("Suitability_Overlap_Metrics.png", path = figures_path, width = 5, height
 # Identity Test -----------------------------------------------------------
 
 
-## BP_MP -------------------------------------------------------------------
+# import and combine data
+ID_paths <- list.files(here("HSM_Analysis", "Identity_Test"), full.names = TRUE, pattern = "^OverlapValues_.*\\.csv$")
 
-# import data
-reps_BPMP <- read.csv("Z:/Isla_MSc_Ch1/HSM_Analysis/Identity_Test/OverlapValues_BP_MP.csv")
+ID_data <- map_dfr(ID_paths, function(path) {
+  df <- read_csv(path, col_names = TRUE)
+  
+  # Extract species pair name from the filename
+  file_name <- tools::file_path_sans_ext(basename(path))
+  species_pair <- str_remove(file_name, "OverlapValues_")
+  df$species_pair <- species_pair
+  
+  return(df)
+})
 
-# plots for D, I, rank.cor (rho)
+# set column names
+colnames(ID_data) <- c("row","D","I","R","species_pair")
 
-d.plot <- ggplot(reps_BPMP[2:nrow(reps_BPMP),], aes(x = .data$D)) +
-  geom_histogram(binwidth = 0.01, fill = "darkgray", alpha = 0.5) +
-  geom_vline(aes(xintercept = reps_BPMP[1, "D"]), linetype = "longdash") +
-  scale_x_continuous(name = "Schoener's D",
-    breaks = c(0.5, 0.6, 0.7, 0.8, 0.9, 1.0, reps_BPMP[1, "D"]),
-    labels = scales::label_number(accuracy = 0.01)) +
-  coord_cartesian(xlim = c(0.5, 1.0)) +
-  theme_minimal()
-d.plot
+# Step 2: Reshape the data
+ID_long <- ID_data %>%
+  pivot_longer(cols = c(D, I, R), names_to = "metric", values_to = "value")
 
-i.plot <- ggplot(reps_BPMP[2:nrow(reps_BPMP),], aes(x = .data$I)) +
-  geom_histogram(binwidth = 0.01, fill = "darkgray", alpha = 0.5) +
-  geom_vline(aes(xintercept = reps_BPMP[1, "I"]), linetype = "longdash") +
-  scale_x_continuous(name = "Warren's I",
-                     breaks = c(0.5, 0.6, 0.7, 0.8, 0.9, 1.0, reps_BPMP[1, "I"]),
-                     labels = scales::label_number(accuracy = 0.01)) +
-  coord_cartesian(xlim = c(0.5, 1.0)) +
-  theme_minimal()
-i.plot
+# Separate empirical and permuted values
+permuted_data <- ID_long %>% filter(row == 1)
+empirical_data <- ID_long %>% filter(row == "empirical")
 
-cor.plot <- ggplot(reps_BPMP[2:nrow(reps_BPMP),], aes(x = .data$R)) +
-  geom_histogram(binwidth = 0.01, fill = "darkgray", alpha = 0.5) +
-  geom_vline(aes(xintercept = reps_BPMP[1, "R"]), linetype = "longdash") +
-  scale_x_continuous(name = "Spearman's rho",
-                     breaks = c(0.5, 0.6, 0.7, 0.8, 0.9, 1.0, reps_BPMP[1, "R"]),
-                     labels = scales::label_number(accuracy = 0.01)) +
-  coord_cartesian(xlim = c(0.5, 1.0)) +
-  theme_minimal()
-cor.plot
+# set pair order
+pair_order <- c("GS_BG","BP_RP","BP_MP","MP_RP","GS_RP","GS_BP","GS_MP")
+
+permuted_data$species_pair <- factor(permuted_data$species_pair, levels = pair_order)
+empirical_data$species_pair <- factor(empirical_data$species_pair, levels = pair_order)
+
+# asign colours for intra- vs inter-functional group pairs
+permuted_data <- permuted_data %>% 
+  mutate(colour_group = ifelse(species_pair %in% pair_order[1:4], "A", "B"))
+empirical_data <- empirical_data %>% 
+  mutate(colour_group = ifelse(species_pair %in% pair_order[1:4], "A", "B"))
+
+
+## plots for D, I, R -----------------------------------------------------------------------
+
+make_metric_plot <- function(metric_code, metric_name, show_legend) {
+
+  violin_data <- permuted_data %>% filter(metric_code == metric)
+  point_data <- empirical_data %>% filter(metric_code == metric)
+  
+  ggplot(violin_data, aes(x = value, y = fct_rev(species_pair), 
+                          fill = colour_group, colour = colour_group)) +
+    
+    geom_violin(data = violin_data, alpha = 0.6, draw_quantiles = c(0.5), scale = "width") +
+    
+    geom_point(data = point_data, aes(x = value, y = fct_rev(species_pair)),
+               size = 3, shape = 21, fill = "white", stroke = 2) +
+    
+    scale_fill_manual(values = c("A" = "#1f78b4", "B" = "#b2df8a"),
+                      labels = c("A" = "Intra-functional group", "B" = "Inter-functional group"),
+                      name = NULL) +
+    scale_color_manual(values = c("A" = "#1f78b4", "B" = "#b2df8a"),
+                       labels = c("A" = "Intra-functional group", "B" = "Inter-functional group"),
+                       name = NULL) +
+    
+    labs(x = metric_name, y = NULL) +
+    theme_bw(base_size = 12) +
+    theme(legend.position = if(show_legend) "bottom" else "none", 
+          legend.direction = "horizontal")
+}
+
+plot_D <- make_metric_plot(metric_code = "D", "Schoener's D", TRUE)
+plot_I <- make_metric_plot(metric_code = "I", "Warren's I", FALSE)
+plot_R <- make_metric_plot(metric_code = "R", "Spearman's Rho", FALSE)
+
+
+## Combine D, I, Rho -------------------------------------------------------
+
+# using patchwork
+ID_plot <- (plot_D + plot_I + plot_R) +
+  plot_layout(nrow = 1, guides = "collect", axes = "collect") &
+  theme(legend.position = "bottom")
+
+ID_plot
+
+
+
+ggsave("Suitability_Histograms.png", path = figures_path, width = 9, height = 5, units = "in", dpi = 600)
 
 
 
