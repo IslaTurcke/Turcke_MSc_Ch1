@@ -504,7 +504,7 @@ permuted_data <- ID_long %>% filter(row == 1)
 empirical_data <- ID_long %>% filter(row == "empirical")
 
 # set pair order
-pair_order <- c("GS_BG","BP_RP","BP_MP","MP_RP","GS_RP","GS_BP","GS_MP")
+pair_order <- c("GS_BG","BP_RP","BP_MP","MP_RP","GS_RP","GS_BP","GS_MP", "BG_BP")
 
 permuted_data$species_pair <- factor(permuted_data$species_pair, levels = pair_order)
 empirical_data$species_pair <- factor(empirical_data$species_pair, levels = pair_order)
@@ -557,8 +557,6 @@ ID_plot <- (plot_D + plot_I + plot_R) +
   theme(legend.position = "bottom")
 
 ID_plot
-
-
 
 ggsave("Suitability_Histograms.png", path = figures_path, width = 9, height = 5, units = "in", dpi = 600)
 
