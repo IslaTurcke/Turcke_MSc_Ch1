@@ -1,0 +1,60 @@
+NAME,ZONE_TYPE,AREA,MEAN_ALL,STD_ALL,PCT10_ALL,MEDIAN_ALL,PCT90_ALL
+Eastern Sambo Special Use Area,ROA,0.6246,0.6812,0.2288,0.3266,0.7687,0.922
+Looe Key Special Use Area,ROA,0.5997,0.2461,0.2151,0.0984,0.1566,0.6757
+Conch Reef Special Use Area,ROA,0.0483,0.3638,0.237,0.1101,0.2226,0.6792
+Tennessee Reef Special Use Area,ROA,0.478,0.4483,0.3094,0.1113,0.3403,0.8517
+Sand Key Sanctuary Preservation Area,SPA,1.03,0.5297,0.2796,0.1883,0.4411,0.8991
+Rock Key Sanctuary Preservation Area,SPA,0.2688,0.8226,0.1695,0.5422,0.8876,0.9578
+Eastern Dry Rocks Sanctuary Preservation Area,SPA,0.3679,0.7458,0.2159,0.429,0.8316,0.9613
+Looe Key Sanctuary Preservation Area,SPA,1.5148,0.4371,0.2739,0.1621,0.3175,0.8948
+Sombrero Key Sanctuary Preservation Area,SPA,0.6763,0.6379,0.2483,0.2348,0.7494,0.865
+Coffins Patch Sanctuary Preservation Area,SPA,1.0035,0.3308,0.2625,0.1257,0.2128,0.8495
+Alligator Reef Sanctuary Preservation Area,SPA,0.8362,0.5977,0.2715,0.2005,0.6937,0.893
+Cheeca Rocks Sanctuary Preservation Area,SPA,0.1847,0.525,0.2414,0.1608,0.5079,0.9518
+Hen and Chickens Sanctuary Preservation Area,SPA,0.4284,0.2801,0.2736,0.0973,0.1424,0.9083
+Davis Reef Sanctuary Preservation Area,SPA,0.356,0.5365,0.2246,0.1878,0.5856,0.8059
+Conch Reef Sanctuary Preservation Area,SPA,0.4383,0.5663,0.286,0.1201,0.6819,0.8635
+Molasses Reef Sanctuary Preservation Area,SPA,1.0009,0.6173,0.2398,0.2199,0.7064,0.8603
+French Reef Sanctuary Preservation Area,SPA,0.484,0.6935,0.1421,0.464,0.7363,0.8387
+Grecian Rocks Sanctuary Preservation Area,SPA,0.4312,0.4459,0.3432,0.0859,0.2741,0.9411
+Key Largo Dry Rocks Sanctuary Preservation Area,SPA,0.2057,0.4036,0.3526,0.077,0.2256,0.9454
+The Elbow Sanctuary Preservation Area,SPA,1.034,0.4958,0.2597,0.1303,0.551,0.8117
+Carysfort Reef Sanctuary Preservation Area,SPA,5.2252,0.4808,0.2882,0.1245,0.5495,0.8335
+Newfound Harbor Key Sanctuary Preservation Area,SPA,0.4325,0.513,0.1706,0.3021,0.4965,0.7219
+Woman Key Wildlife Management Area,WMA,0.0333,0.4843,0.1146,0.3217,0.4868,0.6435
+West Content Keys Wildlife Management Area,WMA,0.3962,0.3196,0.15,0.1606,0.2712,0.5593
+Upper Harbor Key Wildlife Management Area,WMA,0.1247,0.3779,0.1618,0.186,0.3404,0.6146
+Flat South Marvin Key Wildlife Management Area,WMA,0.0845,0.368,0.1584,0.1849,0.3457,0.6012
+Tavernier Key Wildlife Management Area,WMA,4.1115,0.2328,0.1501,0.1148,0.1795,0.4323
+Snipe Keys Wildlife Management Area,WMA,0.8166,0.5174,0.1537,0.2587,0.5755,0.6792
+Snake Creek Wildlife Management Area,WMA,1.0955,0.2793,0.1261,0.1455,0.2483,0.4583
+Sawyer Key Wildlife Management Area,WMA,0.4033,0.4456,0.1481,0.2467,0.4425,0.6403
+Rodriguez Key Wildlife Management Area,WMA,1.7375,0.2193,0.1095,0.1155,0.1892,0.361
+Pelican Shoal Wildlife Management Area,WMA,0.0157,0.7869,0.1109,0.6704,0.805,0.9023
+Mud Keys Wildlife Management Area,WMA,0.1253,0.5506,0.0888,0.439,0.5597,0.6538
+Marquesas Keys Wildlife Management Area,WMA,0.2434,0.4453,0.132,0.2771,0.432,0.6365
+Lower Harbor Keys Wildlife Management Area,WMA,0.1416,0.519,0.119,0.3424,0.5394,0.6566
+Litle Crane Key Wildlife Management Area,WMA,0.058,0.2569,0.2016,0.0999,0.1952,0.65
+Little Mullet Key Wildlife Management Area,WMA,0.1668,0.3912,0.1518,0.1938,0.3635,0.6107
+Horseshoe Keys Wildlife Management Area,WMA,0.8481,0.3322,0.1227,0.1959,0.3022,0.5212
+East Harbor Keys Wildlife Management Area,WMA,0.0707,0.4737,0.1271,0.3068,0.4638,0.6508
+Eastern Lake Surprise Wildlife Management Area,WMA,1.1295,0.2608,0.1244,0.1238,0.2333,0.4459
+East Content Keys Wildlife Management Area,WMA,0.0775,0.4079,0.1391,0.2235,0.3924,0.6176
+Dove Key Wildlife Management Area,WMA,0.3489,0.3231,0.139,0.1519,0.3204,0.5055
+Crocodile Lake Wildlife Management Area,WMA,0.696,0.4162,0.1132,0.2629,0.4204,0.5757
+Cottrell Key Wildlife Management Area,WMA,0.3653,0.3857,0.161,0.1756,0.381,0.6092
+Cotton Key Wildlife Management Area,WMA,0.3953,0.3752,0.1162,0.2347,0.3587,0.5504
+Cayo Agua Keys Wildlife Management Area,WMA,0.0314,0.5638,0.0649,0.4865,0.5707,0.6453
+Boca Grande Key Wildlife Management Area,WMA,0.0728,0.4772,0.1087,0.3195,0.4889,0.6126
+Big Mullet Key Wildlife Management Area,WMA,0.1227,0.4039,0.1317,0.239,0.3902,0.5853
+Bay Keys Wildlife Management Area,WMA,0.1264,0.4667,0.1502,0.2492,0.4864,0.656
+Western Sambo Ecological Reserve,ER,16.8131,0.3294,0.2344,0.1161,0.2352,0.7225
+Eastern Dry Rocks,MIR,0.2058,0.9001,0.0672,0.8103,0.9169,0.9674
+Newfound Harbor,MIR,0.1095,0.7255,0.2026,0.4427,0.7586,0.9737
+Looe,MIR,0.3052,0.7861,0.2329,0.3163,0.891,0.9507
+Carysfort North,MIR,0.4594,0.7015,0.2496,0.2026,0.8179,0.8649
+Carysfort South,MIR,0.3469,0.7663,0.1786,0.4065,0.8298,0.8761
+Horseshoe,MIR,0.0539,0.8392,0.1686,0.662,0.9145,0.9468
+Cheeca,MIR,0.1642,0.7879,0.23,0.4567,0.9007,0.9783
+Sombrero,MIR,0.095,0.8248,0.1325,0.6126,0.8682,0.9462
+Inside any Zone,IN,2339.0608,0.2533,0.1985,0.0813,0.182,0.566

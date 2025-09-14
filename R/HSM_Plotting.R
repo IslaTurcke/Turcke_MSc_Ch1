@@ -479,7 +479,7 @@ ggsave("Suitability_Overlap_Metrics.png", path = figures_path, width = 5, height
 
 
 # import and combine data
-ID_paths <- list.files(here("HSM_Analysis", "Identity_Test"), full.names = TRUE, pattern = "^OverlapValues_.*\\.csv$")
+ID_paths <- list.files(here("HSM_Analysis", "Identity_Test", "Results"), full.names = TRUE, pattern = "^OverlapValues_.*\\.csv$")
 
 ID_data <- map_dfr(ID_paths, function(path) {
   df <- read_csv(path, col_names = TRUE)
@@ -504,7 +504,7 @@ permuted_data <- ID_long %>% filter(row == 1)
 empirical_data <- ID_long %>% filter(row == "empirical")
 
 # set pair order
-pair_order <- c("GS_BG","BP_RP","BP_MP","MP_RP","GS_RP","GS_BP","GS_MP", "BG_BP")
+pair_order <- c("GS_BG","BP_RP","BP_MP","MP_RP","GS_BP","GS_MP", "GS_RP", "BG_BP", "BG_MP")
 
 permuted_data$species_pair <- factor(permuted_data$species_pair, levels = pair_order)
 empirical_data$species_pair <- factor(empirical_data$species_pair, levels = pair_order)
@@ -558,7 +558,7 @@ ID_plot <- (plot_D + plot_I + plot_R) +
 
 ID_plot
 
-ggsave("Suitability_Histograms.png", path = figures_path, width = 9, height = 5, units = "in", dpi = 600)
+ggsave("Identity_Test.png", path = figures_path, width = 9, height = 5, units = "in", dpi = 600)
 
 
 
