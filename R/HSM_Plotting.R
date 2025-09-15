@@ -721,3 +721,41 @@ hists <- plot_grid(hist_bg, hist_gs, legend, hist_rp, hist_bp, hist_mp,
                    labels = c("a","b","","c","d","e"), label_y = 1)
 
 ggsave("Suitability_Histograms.png", path = figures_path, width = 9, height = 5, units = "in", dpi = 600)
+
+
+
+
+# Management Zones --------------------------------------------------------
+
+
+# read in data
+by_name <- read.csv(here("GitHub_Repositories","Turcke_MSc_Ch1","Data_SmallFiles","ManagementZones_byName_SuitabilityData.csv"))
+by_type <- read.csv(here("GitHub_Repositories","Turcke_MSc_Ch1","Data_SmallFiles","ManagementZones_byType_SuitabilityData.csv")) 
+  filter(ZoneType %in% c("MIR","SPA","ROA","WMA","ER"))
+
+
+## Mean vs Std for each zone -----------------------------------------------
+
+mean_std <- ggplot(data = by_name[-nrow(by_name),], aes(group = ZONE_TYPE)) +
+  geom_point(aes(x = MEAN_ALL, y = STD_ALL, colour = ZONE_TYPE, size = AREA)) +
+  labs(x = "Mean suitability", y = "Standard deviation in suitability") +
+  coord_cartesian(xlim = c(0, 1)) +
+  annotate(geom = "text", x = 0.9, y = 0.085, label = "Eastern Dry Rocks", size = 3)
+mean_std
+
+# switch x and y axes
+std_mean <- ggplot(data = by_name[-nrow(by_name),], aes(group = ZONE_TYPE)) +
+  geom_point(aes(x = STD_ALL, y = MEAN_ALL, colour = ZONE_TYPE, size = AREA)) +
+  labs(x = "Standard deviation in suitability", y = "Mean suitability") +
+  coord_cartesian(ylim = c(0, 1)) +
+  annotate(geom = "text", x = 0.09, y = 0.95, label = "Eastern Dry Rocks", size = 3)
+std_mean
+
+
+## Zone types vs seascape average -----------------------------------------------
+
+zone_type <- ggplot(data = by_type, aes(group = ZONE_TYPE)) +
+  geom_point(aes(x = log(AREA), y = MEAN_ALL, colour = ZONE_TYPE)) +
+  labs(x = expression("Zone area"~(km^2)),  y = "Mean suitability") +
+  coord_cartesian(ylim = c(0, 1))
+mean_area
