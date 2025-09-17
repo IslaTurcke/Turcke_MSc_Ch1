@@ -504,7 +504,7 @@ permuted_data <- ID_long %>% filter(row == 1)
 empirical_data <- ID_long %>% filter(row == "empirical")
 
 # set pair order
-pair_order <- c("GS_BG","BP_RP","BP_MP","MP_RP","GS_BP","GS_MP", "GS_RP", "BG_BP", "BG_MP")
+pair_order <- c("GS_BG","BP_RP","BP_MP","MP_RP","GS_BP","GS_MP", "GS_RP", "BG_BP", "BG_MP", "BG_RP")
 
 permuted_data$species_pair <- factor(permuted_data$species_pair, levels = pair_order)
 empirical_data$species_pair <- factor(empirical_data$species_pair, levels = pair_order)
@@ -529,7 +529,7 @@ make_metric_plot <- function(metric_code, metric_name, show_legend) {
     geom_violin(data = violin_data, alpha = 0.6, draw_quantiles = c(0.5), scale = "width") +
     
     geom_point(data = point_data, aes(x = value, y = fct_rev(species_pair)),
-               size = 3, shape = 21, fill = "white", stroke = 2) +
+               size = 2, shape = 21, fill = "white", stroke = 2) +
     
     scale_fill_manual(values = c("A" = "#1f78b4", "B" = "#b2df8a"),
                       labels = c("A" = "Intra-functional group", "B" = "Inter-functional group"),
@@ -730,8 +730,13 @@ ggsave("Suitability_Histograms.png", path = figures_path, width = 9, height = 5,
 
 # read in data
 by_name <- read.csv(here("GitHub_Repositories","Turcke_MSc_Ch1","Data_SmallFiles","ManagementZones_byName_SuitabilityData.csv"))
-by_type <- read.csv(here("GitHub_Repositories","Turcke_MSc_Ch1","Data_SmallFiles","ManagementZones_byType_SuitabilityData.csv")) 
-  filter(ZoneType %in% c("MIR","SPA","ROA","WMA","ER"))
+by_type <- read.csv(here("GitHub_Repositories","Turcke_MSc_Ch1","Data_SmallFiles","ManagementZones_byType_SuitabilityData.csv")) %>% 
+  filter(ZONE_TYPE %in% c("MIR","SPA","ROA","WMA","ER","Seascape"))
+
+by_type$ZONE_TYPE <- factor(by_type$ZONE_TYPE, levels = by_type$ZONE_TYPE)
+
+seascape_mean <- by_type[by_type$ZONE_TYPE == "Seascape","MEAN"] 
+seascape_std <- by_type[by_type$ZONE_TYPE == "Seascape", "STD"]
 
 
 ## Mean vs Std for each zone -----------------------------------------------
@@ -754,8 +759,16 @@ std_mean
 
 ## Zone types vs seascape average -----------------------------------------------
 
-zone_type <- ggplot(data = by_type, aes(group = ZONE_TYPE)) +
-  geom_point(aes(x = log(AREA), y = MEAN_ALL, colour = ZONE_TYPE)) +
-  labs(x = expression("Zone area"~(km^2)),  y = "Mean suitability") +
-  coord_cartesian(ylim = c(0, 1))
-mean_area
+zone_types <- ggplot(data = by_type[-nrow(by_type),], aes(x = ZONE_TYPE)) +
+  geom_linerange(aes(ymin = PCT10, ymax = PCT90), linewidth = 1, colour = "grey") +
+  geom_crossbar(aes(y = MEDIAN, ymin = MEDIAN, ymax = MEDIAN), 
+                width = 0.4,color = "black", fatten = 1) +
+  geom_point(aes(y = MEAN), shape = 21, fill = "black", size = 3) +
+  coord_cartesian(ylim = c(0, 1)) +
+  geom_hline(yintercept = seascape_mean, color = "turquoise4", linetype = "dashed") +
+  geom_rect(aes(xmin = -Inf, xmax = Inf, 
+                ymin = seascape_mean - seascape_std, ymax = seascape_mean + seascape_std),
+            fill = "turquoise4", alpha = 0.05) +
+  labs(y = "Predicted Suitability", x = "Management Zone Type") +
+  theme_minimal()
+zone_types
