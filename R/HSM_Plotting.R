@@ -552,8 +552,8 @@ plot_R <- make_metric_plot(metric_code = "R", "Spearman's Rho", FALSE)
 ## Combine D, I, Rho -------------------------------------------------------
 
 # using patchwork
-ID_plot <- (plot_D + plot_I + plot_R) +
-  plot_layout(nrow = 1, guides = "collect", axes = "collect") &
+ID_plot <- (plot_D + plot_spacer() + plot_I + plot_spacer() + plot_R) +
+  plot_layout(nrow = 1, widths = c(1, 0.1, 1, 0.1, 1), guides = "collect", axes = "collect") &
   theme(legend.position = "bottom")
 
 ID_plot
@@ -770,5 +770,5 @@ zone_types <- ggplot(data = by_type[-nrow(by_type),], aes(x = ZONE_TYPE)) +
                 ymin = seascape_mean - seascape_std, ymax = seascape_mean + seascape_std),
             fill = "turquoise4", alpha = 0.05) +
   labs(y = "Predicted Suitability", x = "Management Zone Type") +
-  theme_minimal()
+  theme_bw()
 zone_types

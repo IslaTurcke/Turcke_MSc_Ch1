@@ -246,3 +246,71 @@ pairwise_results$PresencePoint_Overlap <- c(bp_mp_pp_overlap, bp_rp_pp_overlap, 
 bp.mp <- my.raster.overlap(bp_suit, mp_suit)
 
 ### Suitability calculated using separate script for each species pair - I don't remember why...
+
+
+
+# Identity Test Significance ----------------------------------------------
+
+# calculating the p-value for each pairwise overlap comparison
+
+# read in files
+# import and combine data
+ID_paths <- list.files(here("HSM_Analysis", "Identity_Test", "Results"), full.names = TRUE, pattern = "^OverlapValues_.*\\.csv$")
+
+ID_data <- map_dfr(ID_paths, function(path) {
+  df <- read_csv(path, col_names = TRUE)
+  
+  # Extract species pair name from the filename
+  file_name <- tools::file_path_sans_ext(basename(path))
+  species_pair <- str_remove(file_name, "OverlapValues_")
+  df$species_pair <- species_pair
+  
+  return(df)
+})
+
+# set column names
+colnames(ID_data) <- c("row","D","I","R","species_pair")
+
+# create list of species pairs
+pairs <- unique(ID_data$species_pair)
+
+# create empty data frame to store p-values
+p_vals <- data.frame()
+
+# loop through species pair and calculate p-value
+
+for (i in pairs) {
+  
+  # filter data for species pair i
+  temp_data <- ID_data %>% filter(species_pair == i)
+  
+  # split permuted values from empirical
+  temp_permuted <- temp_data %>% filter(row == 1)
+  temp_empirical <- temp_data %>% filter(row == "empirical")
+  
+  # calculate p-values
+  D <- temp_empirical$D
+  count_greater_D <- sum(temp_permuted$D <= D, na.rm = TRUE)
+  p_D <- (count_greater_D + 1e-6) / (nrow(temp_permuted) + 1e-6)
+  
+  I <- temp_empirical$I
+  count_greater_I <- sum(temp_permuted$I <= I, na.rm = TRUE)
+  p_I <- (count_greater_I + 1e-6) / (nrow(temp_permuted) + 1e-6)
+  
+  R <- temp_empirical$R
+  count_greater_R <- sum(temp_permuted$R <= R, na.rm = TRUE)
+  p_R <- (count_greater_R + 1e-6) / (nrow(temp_permuted) + 1e-6)
+  
+  # save p-values to dataframe
+  temp_pvals <- c(i, p_D, p_I, p_R)
+  p_vals <- rbind(p_vals, temp_pvals)
+
+}
+
+# set column names
+colnames(p_vals) <- c("Species_Pair","p_val_D","p_val_I","p_val_R")
+
+# output p-vals
+write.csv(p_vals, here("GitHub_Repositories","Turcke_MSc_Ch1","Data_SmallFiles","IdentityTest_pValues.csv"))
+
+
