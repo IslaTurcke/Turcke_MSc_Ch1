@@ -760,15 +760,18 @@ std_mean
 ## Zone types vs seascape average -----------------------------------------------
 
 zone_types <- ggplot(data = by_type[-nrow(by_type),], aes(x = ZONE_TYPE)) +
-  geom_linerange(aes(ymin = PCT10, ymax = PCT90), linewidth = 1, colour = "grey") +
+  geom_linerange(aes(ymin = PCT10, ymax = PCT90), linewidth = 0.5, colour = "grey") +
   geom_crossbar(aes(y = MEDIAN, ymin = MEDIAN, ymax = MEDIAN), 
                 width = 0.4,color = "black", fatten = 1) +
-  geom_point(aes(y = MEAN), shape = 21, fill = "black", size = 3) +
+  geom_point(aes(y = MEAN), shape = 21, fill = "black", size = 1.5) +
   coord_cartesian(ylim = c(0, 1)) +
-  geom_hline(yintercept = seascape_mean, color = "turquoise4", linetype = "dashed") +
+  geom_hline(yintercept = seascape_mean, color = "coral1", linetype = "dashed") +
   geom_rect(aes(xmin = -Inf, xmax = Inf, 
                 ymin = seascape_mean - seascape_std, ymax = seascape_mean + seascape_std),
-            fill = "turquoise4", alpha = 0.05) +
+            fill = "coral1", alpha = 0.05) +
   labs(y = "Predicted Suitability", x = "Management Zone Type") +
-  theme_bw()
+  theme_classic()
 zone_types
+
+ggsave("ManagementZones_Suitability.png", path = figures_path, width = 4.5, height = 3.5, units = "in", dpi = 600)
+
