@@ -553,7 +553,7 @@ plot_R <- make_metric_plot(metric_code = "R", "Spearman's Rho", FALSE)
 
 # using patchwork
 ID_plot <- (plot_D + plot_spacer() + plot_I + plot_spacer() + plot_R + plot_spacer()) +
-  plot_layout(nrow = 1, widths = c(1, 0.04, 1, 0.04, 1, 0.04), guides = "collect", axes = "collect") &
+  plot_layout(nrow = 1, widths = c(1, 0.01, 1, 0.01, 1, 0.01), guides = "collect", axes = "collect") &
   theme(legend.position = "bottom")
 
 ID_plot
