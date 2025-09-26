@@ -1,0 +1,511 @@
+"","SPECIES_CODE","SCI_NAME","COM_NAME","OLD_MVS_CODE"
+"1","ABL_HIAN","Ablennes hians","flat needlefish",NA
+"2","ABU_SAXA","Abudefduf saxatilis","sergeant major","ABU_SAX"
+"3","ABU_TAUR","Abudefduf taurus","night sergeant","ABU_TAU"
+"4","ACA_ASPE","Acanthemblemaria aspera","roughhead blenny",NA
+"5","ACA_BAHI","Acanthurus bahianus","ocean surgeon","ACA_BAH"
+"6","ACA_CHAP","Acanthemblemaria chaplini","papillose blenny",NA
+"7","ACA_CHIR","Acanthurus chirurgus","doctorfish","ACA_CHI"
+"8","ACA_COER","Acanthurus coeruleus","blue tang","ACA_COE"
+"9","ACA_MARI","Acanthemblemaria maria","secretary blenny",NA
+"10","ACA_POLY","Acanthostracion polygonia","honeycomb cowfish","ACA_POL"
+"11","ACA_QUAD","Acanthostracion quadricornis","scrawled cowfish","ACA_QUA"
+"12","ACA_SOLA","Acanthocybium solandri","wahoo",NA
+"13","ACA_SPE.","Acanthurus sp.","surgeonfish species",NA
+"14","ACA_SPIN","Acanthemblemaria spinosa","spinyhead blenny",NA
+"15","ACE_DEND","Acentronura dendritica","pipehorse",NA
+"16","ACN_SPE.","Acanthemblemaria species","tube blenny Acanthemblemaria",NA
+"17","AET_NARI","Aetobatus narinari","spotted eagle ray","AET_NAR"
+"18","AHL_EGMO","Ahlia egmontis","key worm eel",NA
+"19","ALB_VULP","Albula vulpes","bonefish","ALB_VUL"
+"20","ALE_CILI","Alectis ciliaris","African pompano",NA
+"21","ALP_AFER","Alphestes afer","mutton hamlet",NA
+"22","ALU_MONO","Aluterus monoceros","unicorn filefish",NA
+"23","ALU_SCHO","Aluterus schoepfii","orange filefish",NA
+"24","ALU_SCRI","Aluterus scriptus","scrawled filefish",NA
+"25","ALU_SPE.","Aluterus sp.","filefish species",NA
+"26","AMB_PINO","Amblycirrhitus pinos","redspotted hawkfish",NA
+"27","ANC_LYOL","Anchoa lyolepis","dusky anchovy",NA
+"28","ANI_SURI","Anisotremus surinamensis","black margate","ANI_SUR"
+"29","ANI_VIRG","Anisotremus virginicus","porkfish","ANI_VIR"
+"30","ANT_OCEL","Antennarius ocellatus","ocellated frogfish",NA
+"31","APO_AURO","Apogon aurolineatus","bridle cardinalfish",NA
+"32","APO_BINO","Apogon binotatus","barred cardinalfish",NA
+"33","APO_LACH","Apogon lachneri","whitestar cardinalfish",NA
+"34","APO_MACU","Apogon maculatus","flamefish",NA
+"35","APO_PHEN","Apogon phenax","mimic cardinalfish",NA
+"36","APO_PSEU","Apogon pseudomaculatus","twospot cardinalfish",NA
+"37","APO_QUAD","Apogon quadrisquamatus","sawcheek cardinalfish",NA
+"38","APO_TOWN","Apogon townsendi","belted cardinalfish",NA
+"39","ARC_PROB","Archosargus probatocephalus","sheepshead","LAG_PRO"
+"40","ARC_PROB","Archosargus probatocephalus","sheepshead","ARC_PRO"
+"41","ARC_RHOM","Archosargus rhomboidalis","sea bream","ARC_RHO"
+"42","ARI_BALE","Ariosoma balearicum","bandtooth conger",NA
+"43","ARI_FELI","Ariopsis felis","Hardhead Catfish","ARI_FEL"
+"44","AST_GUTT","Astroscopus guttatus","northern stargazer",NA
+"45","AST_PUNC","Astrapogon puncticulatus","blackfin cardinalfish",NA
+"46","AST_SPE.","Astrapogon sp.","cardinalfish species",NA
+"47","AST_STEL","Astrapogon stellatus","conchfish",NA
+"48","AST_Y-GR","Astroscopus y-graecum","southern stargazer",NA
+"49","ATH_STIP","Atherinomorus stipes","hardhead silverside",NA
+"50","AUL_MACU","Aulostomus maculatus","Atlantic trumpetfish",NA
+"51","BAG_MARI","Bagre marinus","Gafftopsail Catfish","BAG_MAR"
+"52","BAL_CAPR","Balistes capriscus","gray triggerfish",NA
+"53","BAL_SPE.","Balistes sp.","triggerfish species",NA
+"54","BAL_VETU","Balistes vetula","queen triggerfish",NA
+"55","BAT_SOPO","Bathygobious soporator","frillfin goby",NA
+"56","BEL_SPE.","needlefish species","needlefish species",NA
+"57","BLE_SPE.","blenny species","blenny species",NA
+"58","BOD_PULC","Bodianus pulchellus","spotfin hogfish",NA
+"59","BOD_RUFU","Bodianus rufus","Spanish hogfish",NA
+"60","BOL_BOQU","Bollmannia boqueronensis","white-eye goby",NA
+"61","BOT_LUNA","Bothus lunatus","peacock flounder",NA
+"62","BOT_OCEL","Bothus ocellatus","eyed flounder",NA
+"63","BOT_SPE.","Bothus species","lefteye flounders",NA
+"64","BRO_BARB","Brotula barbata","Atlantic bearded brotula",NA
+"65","CAL_ARCT","Calamus arctifrons","Grass porgy","CAL_ARC"
+"66","CAL_BAJO","Calamus bajonado","jolthead porgy",NA
+"67","CAL_CALA","Calamus calamus","saucereye porgy","CAL_CAL"
+"68","CAL_LEUC","Calamus leucosteus","whitebone porgy",NA
+"69","CAL_NODO","Calamus nodosus","knobbed porgy",NA
+"70","CAL_PENA","Calamus pennatula","pluma porgy ",NA
+"71","CAL_PENN","Calamus penna","sheepshead porgy",NA
+"72","CAL_PROR","Calamus proridens","littlehead porgy",NA
+"73","CAL_SPE.","porgy species","porgy species",NA
+"74","CAN_JAME","Canthigaster jamestyleri","goldface toby",NA
+"75","CAN_MACR","Cantherhines macrocerus","whitespotted filefish",NA
+"76","CAN_PULL","Cantherhines pullus","orangespotted filefish",NA
+"77","CAN_ROST","Canthigaster rostrata","sharpnose puffer",NA
+"78","CAN_SPE.","Canthigaster species","puffers",NA
+"79","CAN_SUFF","Canthidermis sufflamen","ocean triggerfish",NA
+"80","CAR_BART","Carangoides bartholomaei","yellow jack","CAR_BAR"
+"81","CAR_CRYS","Caranx crysos","blue runner","CAR_CRY"
+"82","CAR_FALC","Carcharhinus falciformis","silky shark",NA
+"83","CAR_HIPP","Caranx hippos","crevalle jack","CAR_HIP"
+"84","CAR_LATU","Caranx latus","horse-eye jack","CAR_LAT"
+"85","CAR_LEUC","Carcharhinus leucas","bull shark","CAR_LEU"
+"86","CAR_LIMB","Carcharhinus limbatus","blacktip shark","CAR_LIM"
+"87","CAR_LUGU","Caranx lugubris","black jack",NA
+"88","CAR_OBSC","Carcharhinus obscurus","dusky shark",NA
+"89","CAR_PERE","Carcharhinus perezii","reef shark",NA
+"90","CAR_PLUM","Carcharhinus plumbeus","sandbar shark",NA
+"91","CAR_RUBE","Caranx ruber","bar jack","CAR_RUB"
+"92","CAR_SPE.","Caranx sp.","jack species",NA
+"93","CEN_ARGI","Centropyge argi","cherubfish",NA
+"94","CEN_AURA","Centropyge aurantonotus","flameback angelfish",NA
+"95","CEN_OCYU","Centropristis ocyurus","bank sea bass",NA
+"96","CEN_STRI","Centropristis striata","black sea bass",NA
+"97","CEN_UNDE","Centropomus undecimalis","common snook","CEN_UND"
+"98","CEP_CRUE","Cephalopholis cruentata","graysby",NA
+"99","CEP_FULV","Cephalopholis fulva","coney",NA
+"100","CHA_CAPI","Chaetodon capistratus","foureye butterflyfish","CHA_CAP"
+"101","CHA_FABE","Chaetodipterus faber","Atlantic spadefish","CHA_FAB"
+"102","CHA_LIMB","Chaenopsis limbaughi","yellowface pikeblenny",NA
+"103","CHA_OCEL","Chaetodon ocellatus","spotfin butterflyfish",NA
+"104","CHA_OCLL","Chaenopsis ocellata","bluethroat pikeblenny",NA
+"105","CHA_SEDE","Chaetodon sedentarius","reef butterflyfish",NA
+"106","CHA_SPE.","Chaenopsis species","pikeblenny species",NA
+"107","CHA_STRI","Chaetodon striatus","banded butterflyfish","CHA_STR"
+"108","CHI_ANTE","Chilomycterus antennatus","bridled burrfish",NA
+"109","CHI_ATIN","Chilomycterus atinga","spotted burrfish",NA
+"110","CHI_SCHO","Chilomycterus schoepfii","striped burrfish","CHI_SCH"
+"111","CHL_CHRY","Chloroscombus chrysurus","Atlantic bumper","CHL_CHR"
+"112","CHR_ATHE","Chriodorus atherinoides","hardhead halfbeak",NA
+"113","CHR_CYAN","Chromis cyanea","blue chromis",NA
+"114","CHR_ENCH","Chromis enchrysura","yellowtail reeffish",NA
+"115","CHR_INSO","Chromis insolata","sunshinefish",NA
+"116","CHR_MULT","Chromis multilineata","brown chromis",NA
+"117","CHR_SCOT","Chromis scotti","purple reeffish",NA
+"118","CIC_UROP","Cichlasoma urophthalmus","Mayan Cichlid","CIC_URO"
+"119","CLE_PARR","Clepticus parrae","creole wrasse",NA
+"120","CON_TRIP","Conger triporiceps","manytooth conger",NA
+"121","COR_DICR","Coryphopterus dicrus","colon goby",NA
+"122","COR_EIDO","Coryphopterus eidolon","pallid goby",NA
+"123","COR_GLAU","Coryphopterus glaucofraenum","bridled goby",NA
+"124","COR_LIPE","Coryphopterus lipernes","peppermint goby",NA
+"125","COR_PERS","Coryphopterus personatus","masked goby",NA
+"126","COR_PUNC","Coryphopterus punctipectophorus","spotted goby",NA
+"127","COR_SPE.","Coryphopterus sp.","goby species",NA
+"128","COR_TORT","Coryphopterus tortugae","patch-reef goby",NA
+"129","COR_VENE","Coryphopterus venezuelae","sand-canyon goby",NA
+"130","COS_ELUC","Cosmocampus elucens","shortfin pipefish",NA
+"131","CRY_ROSE","Cryptotomus roseus","bluelip parrotfish","CRY_ROS"
+"132","CTE_SAEP","Ctenogobius saepepallens","dash goby",NA
+"133","CTE_STIG","Ctenogobius stigmaticus","marked goby",NA
+"134","CYP_VARI","Cyprinodon variegatus","Sheepshead Minnow","CYP_VAR"
+"135","DAC_VOLI","Dactylopterus volitans","flying gurnard",NA
+"136","DAS_AMER","Dasyatis americana","southern stingray","DAS_AME"
+"137","DEC_MACA","Decapterus macarellus","mackerel scad",NA
+"138","DEC_PUNC","Decapterus punctatus","round scad",NA
+"139","DEC_SPE.","Decapterus sp.","scad species",NA
+"140","DER_INER","Dermatolepis inermis","marbled grouper",NA
+"141","DIA_PLUM","Diapterus plumieri","Striped Mojarra","DIA_PLU"
+"142","DIO_HOLO","Diodon holocanthus","balloonfish",NA
+"143","DIO_HYST","Diodon hystrix","porcupinefish","DIO_HYS"
+"144","DIO_SPE.","puffer species","puffer species",NA
+"145","DIP_ARGE","Diplodus argenteus","silver porgy",NA
+"146","DIP_BIVI","Diplectrum bivittatum","dwarf sand perch",NA
+"147","DIP_FORM","Diplectrum formosum","sand perch",NA
+"148","DIP_HOLB","Diplodus holbrookii","spottail pinfish","DIP_HOL"
+"149","DIP_PAUC","Diplogrammus pauciradiatus","Spotted dragonet","DIP_PAU"
+"150","DOR_MEGA","Doratonotus megalepis","dwarf wrasse",NA
+"151","ECH_CATE","Echidna catenata","chain moray",NA
+"152","ECH_NAUC","Echeneis naucrates","sharksucker","ECH_NAU"
+"153","ECH_NEUC","Echeneis neucratoides","whitefin sharksucker",NA
+"154","ELA_BIPI","Elagatis bipinnulata","rainbow runner",NA
+"155","ELA_CHAN","Elacatinus chancei","shortstripe goby",NA
+"156","ELA_EVEL","Elacatinus evelynae","sharknose goby",NA
+"157","ELA_HORS","Elacatinus horsti","yellowline goby",NA
+"158","ELA_LOUI","Elacatinus louisae","spotlight goby",NA
+"159","ELA_MACR","Elacatinus macrodon","tiger goby",NA
+"160","ELA_MULT","Elacatinus multifasciatus","greenbanded goby",NA
+"161","ELA_OCEA","Elacatinus oceanops","neon goby",NA
+"162","ELA_PROC","Elacatinus prochilos","broadstripe goby",NA
+"163","ELA_RAND","Elacatinus randalli","yellownose goby",NA
+"164","ELA_SAUC","Elacatinus saucrum","leopard goby",NA
+"165","ELA_SPE.","shark species","shark species",NA
+"166","ELA_XANT","Elacatinus xanthiprora","yellowprow goby",NA
+"167","ELO_SAUR","Elops saurus","ladyfish",NA
+"168","EMB_BAHA","Emblemariopsis bahamensis","blackhead blenny",NA
+"169","EMB_PAND","Emblemaria pandionis","sailfin blenny",NA
+"170","EMB_SPE.","Emblemaria species","tube blenny Emblemaria",NA
+"171","EMM_ATLA","Emmelichthyops atlanticus","bonnetmouth",NA
+"172","EMP_SPE.","Emblemariopsis species","tube blenny Emblemariopsis",NA
+"173","ENC_CARY","Enchelycore carychroa","chestnut moray",NA
+"174","ENC_NIGR","Enchelycore nigricans","viper moray",NA
+"175","ENG_SPE.","Engraulidae species","anchovy species",NA
+"176","ENN_ALTI","Enneanectes altivelis","lofty triplefin",NA
+"177","ENN_BOEH","Enneanectes boehlkei","roughhead triplefin",NA
+"178","ENN_SPE.","Enneanectes species","triplefin species",NA
+"179","ENT_NIGR","Entomacrodus nigricans","pearl blenny",NA
+"180","EPI_ADSC","Epinephelus adscensionis","rock hind",NA
+"181","EPI_DRUM","Epinephelus drummondhayi","speckled hind",NA
+"182","EPI_FLAV","Epinephelus flavolimbatus","yellowedge grouper",NA
+"183","EPI_GUTT","Epinephelus guttatus","red hind",NA
+"184","EPI_ITAJ","Epinephelus itajara","goliath grouper","EPI_ITA"
+"185","EPI_MORI","Epinephelus morio","red grouper",NA
+"186","EPI_NIVE","Epinephelus niveatus","Snowy grouper",NA
+"187","EPI_STRI","Epinephelus striatus","Nassau grouper",NA
+"188","EQU_LANC","Equetus lanceolatus","jackknife-fish",NA
+"189","EQU_PUNC","Equetus punctatus","spotted drum","EQU_PUN"
+"190","EUC_ARGE","Eucinostomus argenteus","spotfin mojarra",NA
+"191","EUC_GULA","Eucinostomus gula","silver jenny",NA
+"192","EUC_JONE","Eucinostomus jonesii","slender mojarra",NA
+"193","EUC_LEFR","Eucinostomus lefroyi","mottled mojarra",NA
+"194","EUC_MELA","Eucinostomus melanopterus","flagfin mojarra",NA
+"195","EUT_ALLE","Euthynnus alletteratus","little tunny",NA
+"196","FIS_TABA","Fistularia tabacaria","bluespotted cornetfish",NA
+"197","FLO_CARP","Floridichthys carpio","Goldspotted Kilifish","FLO_CAR"
+"198","FUN_CONF","Fundulus confluentus","Marsh Kilifish","FUN_CON"
+"199","FUN_GRAN","Fundulus grandis","Gulf Kilifish","FUN_GRA"
+"200","FUN_SPE.","Fundulus sp.","Unknown Fundulus","FUN_SP"
+"201","GAL_CUVI","Galeocerdo cuvier","tiger shark",NA
+"202","GAM_SPE.","Gambusia sp.","Mosquitofish","GAMBUSIA"
+"203","GER_CINE","Gerres cinereus","yellowfin mojarra","GER_CIN"
+"204","GER_SPE.","Gerres sp.","mojarra species","GERRID"
+"205","GIN_CIRR","Ginglymostoma cirratum","nurse shark","GIN_CIR"
+"206","GNA_THOM","Gnatholepis thompsoni","goldspot goby",NA
+"207","GOB_DILE","Gobiosoma dilepsis","Orangesided Goby",NA
+"208","GOB_GROS","Gobiosoma grosvenori","rockcut goby",NA
+"209","GOB_SPE.","goby species","goby species","GOB_SP"
+"210","GRA_LORE","Gramma loreto","fairy basslet",NA
+"211","GYM_FUNE","Gymnothorax funebris","green moray","GYM_FUN"
+"212","GYM_MILI","Gymnothorax miliaris","goldentail moray",NA
+"213","GYM_MORI","Gymnothorax moringa","spotted moray",NA
+"214","GYM_NIGR","Gymnothorax nigromarginatus","blackedge moray",NA
+"215","GYM_SAXI","Gymnothorax saxicola","honeycomb moray",NA
+"216","GYM_SPE.","Gymnothorax species","moray eel Gymnothorax",NA
+"217","GYM_VICI","Gymnothorax vicinus","purplemouth moray",NA
+"218","HAE_ALBU","Haemulon album","margate",NA
+"219","HAE_AURO","Haemulon aurolineatum","tomtate","HAE_AUR"
+"220","HAE_CARB","Haemulon carbonarium","caesar grunt","HAE_CAR"
+"221","HAE_CHRY","Haemulon chrysargyreum","smallmouth grunt","HAE_CHR"
+"222","HAE_FLAV","Haemulon flavolineatum","French grunt","HAE_FLA"
+"223","HAE_MACR","Haemulon macrostomum","Spanish grunt","HAE_MAC"
+"224","HAE_MELA","Haemulon melanurum","cottonwick","HAE_MEL"
+"225","HAE_PARR","Haemulon parra","sailors choice","HAE_PAR"
+"226","HAE_PLUM","Haemulon plumierii","white grunt","HAE_PLU"
+"227","HAE_SCIU","Haemulon sciurus","bluestriped grunt","HAE_SCI"
+"228","HAE_SPE.","Haemulon sp.","grunt species","HAE_SP"
+"229","HAE_STRI","Haemulon striatum","striped grunt",NA
+"230","HAL_BIVI","Halichoeres bivittatus","slippery dick",NA
+"231","HAL_BURE","Halichoeres burekae","mardi gras wrasse",NA
+"232","HAL_CAUD","Halichoeres caudalis","painted wrasse",NA
+"233","HAL_CYAN","Halichoeres cyanocephalus","yellowcheek wrasse",NA
+"234","HAL_GARN","Halichoeres garnoti","yellowhead wrasse",NA
+"235","HAL_MACU","Halichoeres maculipinna","clown wrasse","HAL_MAC"
+"236","HAL_PICT","Halichoeres pictus","rainbow wrasse",NA
+"237","HAL_POEY","Halichoeres poeyi","blackear wrasse",NA
+"238","HAL_RADI","Halichoeres radiatus","puddingwife",NA
+"239","HAL_SPE.","Halichoeres species","wrasse species",NA
+"240","HAR_HUME","Harengula humeralis","redear sardine",NA
+"241","HAR_JAGU","Harengula jaguana","scaled sardine",NA
+"242","HEM_AMBL","Hemicaranx amblyrhynchus","Bluntnose jack","HEM_AMB"
+"243","HEM_BRAS","Hemiramphus brasiliensis","ballyhoo",NA
+"244","HEM_SIMU","Hemiemblemaria simula","wrasse blenny",NA
+"245","HET_CRUE","Heteropriacanthus cruentatus","glasseye snapper",NA
+"246","HET_LONG","Heteroconger longissimus","brown garden eel",NA
+"247","HIP_EREC","Hippocampus erectus","lined seahorse","HIP_ERE"
+"248","HIP_REID","Hippocampus reidi","longsnout seahorse",NA
+"249","HIP_SPE.","Hippocampus species","seahorse/pipefish species",NA
+"250","HOA_SPE.","Holacanthus species","angelfish Holacanthus",NA
+"251","HOL_ADSC","Holocentrus adscensionis","squirrelfish",NA
+"252","HOL_BERM","Holacanthus bermudensis","blue angelfish",NA
+"253","HOL_CILI","Holacanthus ciliaris","queen angelfish",NA
+"254","HOL_RUFU","Holocentrus rufus","longspine squirrelfish",NA
+"255","HOL_SPE.","squirrelfish species","squirrelfish species",NA
+"256","HOL_TOWN","Holocanthus townsendi","townsend angelfish",NA
+"257","HOL_TRIC","Holacanthus tricolor","rock beauty",NA
+"258","HYP_ABER","Hypoplectrus aberrans","yellowbelly hamlet",NA
+"259","HYP_BERM","Hypleurochilus bermudensis","barred blenny",NA
+"260","HYP_CHLO","Hypoplectrus chlorurus","yellowtail hamlet",NA
+"261","HYP_GEMM","Hypoplectrus gemma","blue hamlet",NA
+"262","HYP_GUMM","Hypoplectrus gummigutta","golden hamlet",NA
+"263","HYP_GUTT","Hypoplectrus guttavarius","shy hamlet",NA
+"264","HYP_HARR","Hypoatherina harringtonensis","reef silverside",NA
+"265","HYP_HYBR","Hypoplectrus hybrid","hybrid hamlet",NA
+"266","HYP_INDI","Hypoplectrus indigo","indigo hamlet",NA
+"267","HYP_NIGR","Hypoplectrus nigricans","black hamlet",NA
+"268","HYP_PUEL","Hypoplectrus puella","barred hamlet",NA
+"269","HYP_SPE.","Hypoplectrus sp.","hamlet species",NA
+"270","HYP_TANN","Hypoplectrus tann","tan hamlet",NA
+"271","HYP_UNIC","Hypoplectrus unicolor","butter hamlet",NA
+"272","INE_VITT","Inermia vittata","boga",NA
+"273","IST_PLAT","Istiophorus platypterus","sailfish",NA
+"274","JEN_SPE.","Jenkinsia sp.","herring species",NA
+"275","KYP_SECT","Kyphosus sectatrix","Bermuda chub","KYP_SEC"
+"276","KYP_VAIG","Kyphosus vaigiensis","Brassy chub",NA
+"277","LAB_BUCC","Labrisomus bucciferus","puffcheek blenny",NA
+"278","LAB_FILA","Labrisomus filamentosus","quillfin blenny",NA
+"279","LAB_GOBI","Labrisomus gobio","palehead blenny",NA
+"280","LAB_KALI","Labrisomus kalisherae","downy blenny",NA
+"281","LAB_NIGR","Labrisomus nigricinctus","spotcheek blenny",NA
+"282","LAB_NUCH","Labrisomus nuchipinnis","hairy blenny",NA
+"283","LAB_SPE.","Labrisomid sp.","labrisomid blenny species",NA
+"284","LAC_BICA","Lactophrys bicaudalis","spotted trunkfish","LAC_BIC"
+"285","LAC_MAXI","Lachnolaimus maximus","hogfish","LAC_MAX"
+"286","LAC_QUAD","Lactophrys quadricornis","Scrawled Cowfish","LAC_QUA"
+"287","LAC_SPE.","Lactophrys species","trunkfish species","LAC_SP"
+"288","LAC_TRIG","Lactophrys trigonus","trunkfish",NA
+"289","LAC_TRIQ","Lactophrys triqueter","smooth trunkfish","LAC_TRI"
+"290","LAG_RHOM","Lagodon rhomboides","pinfish","LAG_RHO"
+"291","LAG_SPE.","Lagodon/Archosargus sp.","Pinfish/Sea Bream, not positively identified to species","LAG_ARC"
+"292","LARVA","unidentified fish larva","unidentified fish larva","LARV"
+"293","LIO_EUKR","Liopropoma eukrines","wrasse basslet",NA
+"294","LIO_MOWB","Liopropoma mowbrayi","cave basslet",NA
+"295","LIO_RUBE","Liopropoma rubre","peppermint basslet",NA
+"296","LOB_SURI","Lobotes surinamensis","Tripletail","LOB_SUR"
+"297","LON_MICR","Lonchopisthus micrognathus","swordtail jawfish",NA
+"298","LOP_CYPR","Lophogobius cyprinoides","crested goby","LOP_CYP"
+"299","LUC_PARV","Lucania parva","Rainwater Killifish","LUC_PAR"
+"300","LUT_ANAL","Lutjanus analis","mutton snapper","LUT_ANA"
+"301","LUT_APOD","Lutjanus apodus","schoolmaster","LUT_APO"
+"302","LUT_BUCC","Lutjanus buccanella","blackfin snapper",NA
+"303","LUT_CAMP","Lutjanus campechanus","red snapper",NA
+"304","LUT_CYAN","Lutjanus cyanopterus","cubera snapper","LUT_CYA"
+"305","LUT_GRIS","Lutjanus griseus","gray snapper","LUT_GRI"
+"306","LUT_JOCU","Lutjanus jocu","dog snapper","LUT_JOC"
+"307","LUT_MAHO","Lutjanus mahogoni","mahogany snapper",NA
+"308","LUT_SPE.","snapper species","snapper species",NA
+"309","LUT_SYNA","Lutjanus synagris","lane snapper","LUT_SYN"
+"310","MAL_AURO","Malacoctenus aurolineatus","goldline blenny",NA
+"311","MAL_BOEH","Malacoctenus boehlkei","diamond blenny",NA
+"312","MAL_GILL","Malacoctenus gilli","dusky blenny",NA
+"313","MAL_MACR","Malacoctenus macropus","rosy blenny",NA
+"314","MAL_PLUM","Malacanthus plumieri","sand tilefish",NA
+"315","MAL_TRIA","Malacoctenus triangulatus","saddled blenny",NA
+"316","MAL_VERS","Malacoctenus versicolor","barfin blenny",NA
+"317","MAN_BIRO","Manta birostris","giant manta",NA
+"318","MEG_ATLA","Megalops atlanticus","tarpon","MEG_ATL"
+"319","MEL_NIGE","Melichthys niger","black durgon",NA
+"320","MEN_SPE.","Menidia sp.","silverside species",NA
+"321","MIC_CARR","Microgobius carri","Seminole goby",NA
+"322","MIC_CHRY","Microspathodon chrysurus","yellowtail damselfish",NA
+"323","MIC_GULO","Microgobius gulosus","Clown Goby","MIC_GUL"
+"324","MIC_MICR","Microgobius microlepis","banner goby",NA
+"325","MIC_SIGN","Microgobius signatus","dashback goby",NA
+"326","MIC_SPE.","Microgobius species","goby Microgobius",NA
+"327","MON_CILI","Monacanthus ciliatus","fringed filefish",NA
+"328","MON_TUCK","Monacanthus tuckeri","slender filefish",NA
+"329","MUG_CEPH","Mugil cephalus","striped mullet","MUG_CEP"
+"330","MUL_MART","Mulloidichthys martinicus","yellow goatfish",NA
+"331","MUR_RETI","Muraena retifera","reticulate moray",NA
+"332","MYC_ACUT","Mycteroperca acutirostris","western comb grouper",NA
+"333","MYC_BONA","Mycteroperca bonaci","black grouper","MYC_BON"
+"334","MYC_INTE","Mycteroperca interstitialis","yellowmouth grouper",NA
+"335","MYC_MICR","Mycteroperca microlepis","gag",NA
+"336","MYC_PHEN","Mycteroperca phenax","scamp","MYC_PHE"
+"337","MYC_TIGR","Mycteroperca tigris","tiger grouper",NA
+"338","MYC_VENE","Mycteroperca venenosa","yellowfin grouper",NA
+"339","MYR_BREV","Myrichthys breviceps","sharptail eel",NA
+"340","MYR_JACO","Myripristis jacobus","blackbar soldierfish",NA
+"341","MYR_OCEL","Myrichthys ocellatus","goldspotted eel",NA
+"342","MYR_SPE.","Myrichthys species","snake eel Myrichthys",NA
+"343","NAR_BANC","Narcine bancroftii","lesser electric ray",NA
+"344","NAU_DUCT","Naucrates ductor","Pilotfish","NAU_DUC"
+"345","NEG_BREV","Negaprion brevirostris","lemon shark","NEG_BRE"
+"346","NEO_MARI","Neoniphon marianus","longjaw squirrelfish",NA
+"347","NES_LONG","Nes longus","orangespotted goby","NES_LON"
+"348","NIC_USTA","Nicholsina usta","emerald parrotfish","NIC_UST"
+"349","NO_FISH","no observed fishes","no observed fishes","NO_FISH"
+"350","NO_SURVEY","","","NO_SURVEY"
+"351","OCY_CHRY","Ocyurus chrysurus","yellowtail snapper","OCY_CHR"
+"352","ODO_DENT","Odontoscion dentex","reef croaker",NA
+"353","OGC_NASU","Ogcocephalus nasutus","shortnose batfish",NA
+"354","OGC_SPE.","Ogcocephalus sp.","batfish species",NA
+"355","OGI_CAYO","Ogilbia cayorum","Key brotula","OGI_CAY"
+"356","OLI_SAUR","Oligoplites saurus","leatherjack",NA
+"357","OPH_MACC","Ophioblennius macclurei","redlip blenny",NA
+"358","OPH_OPHI","Ophichthus ophis","spotted snake eel",NA
+"359","OPH_SPE.","Ophichthidae species","snake eel species",NA
+"360","OPI_AURI","Opistognathus aurifrons","yellowhead jawfish",NA
+"361","OPI_MACR","Opistognathus macrognathus","banded jawfish",NA
+"362","OPI_MAXI","Opistognathus maxillosus","mottled jawfish",NA
+"363","OPI_SPE.","Opistognathus sp.","jawfish species",NA
+"364","OPI_WHIT","Opistognathus whitehursti","dusky jawfish",NA
+"365","OPS_SPE.","Opsanus sp.","Unknown Toadfish","OPS_SP"
+"366","OPS_TAU_","Opsanus tau","oyster toadfish",NA
+"367","ORT_CHRY","Orthopristis chrysoptera","pigfish",NA
+"368","OXY_STIG","Oxyurichthys stigmalophius","spotfin goby",NA
+"369","PAG_PAGR","Pagrus pagrus","red porgy",NA
+"370","PAR_ACUM","Pareques acuminatus","high-hat",NA
+"371","PAR_ALBI","Paralichthys albigutta","Gulf flounder","PAR_ALB"
+"372","PAR_BAIR","Paradiplogrammus bairdi","lancer dragonet",NA
+"373","PAR_FURC","Paranthias furcifer","Atlantic creolefish",NA
+"374","PAR_INCI","Parasphyraenops incisus","splitfin bass",NA
+"375","PAR_MARM","Parablennius marmoreus","seaweed blenny","PAR_MAR"
+"376","PAR_MARN","Paraclinus marmoratus","marbled blenny",NA
+"377","PAR_NIGR","Paraclinus nigripinnis","blackfin blenny",NA
+"378","PAR_UMBR","Pareques umbrosus","cubbyu",NA
+"379","PEM_SCHO","Pempheris schomburgkii","glassy sweeper",NA
+"380","PEP_TRIA","Peprilus triacanthus ","American butterfish",NA
+"381","PHA_XENU","Phaeoptyx xenus","sponge cardinalfish",NA
+"382","PLA_ARGA","Platybelone argalus argalus","keeltail needlefish",NA
+"383","PLA_ORBI","Platax orbicularis","orbicular batfish",NA
+"384","POE_LATI","Poecilia latipinna","Sailfin Molly","POE_LAT"
+"385","POM_ARCU","Pomacanthus arcuatus","gray angelfish","POM_ARC"
+"386","POM_PARU","Pomacanthus paru","French angelfish","POM_PAR"
+"387","POM_SPE.","Pomacanthus species","angelfish Pomacanthus ",NA
+"388","PRI_AQUI","Pristipomoides aquilonaris","wenchman",NA
+"389","PRI_AREN","Priacanthus arenatus","bigeye",NA
+"390","PRI_HIPO","Priolepis hipoliti","rusty goby",NA
+"391","PRI_OPHR","Prionotus ophryas","bandtail searobin","PRI_OPH"
+"392","PRI_PECT","Pristis pectinata","smalltooth sawfish",NA
+"393","PRI_RUBI","Prionotus rubio","blackwing searobin",NA
+"394","PRI_SPE.","Prionotus sp.","Unidentified Searobin","PRI_SP"
+"395","PRO_ACUL","Prognathodes aculeatus","longsnout butterflyfish",NA
+"396","PRO_AYA_","Prognathodes aya","bank butterflyfish",NA
+"397","PSE_MACU","Pseudupeneus maculatus","spotted goatfish","PSE_MAC"
+"398","PTE_CALL","Ptereleotris calliura","blue dartfish",NA
+"399","PTE_HELE","Ptereleotris helenae","hovering dartfish",NA
+"400","PTE_VOLI","Pterois volitans","red lionfish","PTE_VOL"
+"401","RAC_CANA","Rachycentron canadum","cobia",NA
+"402","REM_REMO","Remora remora","remora",NA
+"403","RHI_BONA","Rhinoptera bonasus","cownose ray",NA
+"404","RHI_LENT","Rhinobatos lentiginosus","Atlantic guitarfish",NA
+"405","RHO_AURO","Rhomboplites aurorubens","vermilion snapper",NA
+"406","RIS_RUBE","Risor ruber","tusked goby",NA
+"407","RYP_BIST","Rypticus bistrispinus","freckled soapfish",NA
+"408","RYP_MACU","Rypticus maculatus","whitespotted soapfish",NA
+"409","RYP_SAPO","Rypticus saponaceus","greater soapfish",NA
+"410","SAR_AURI","Sardinella aurita","Spanish sardine",NA
+"411","SAR_BULL","Sargocentron bullisi","deepwater squirrelfish",NA
+"412","SAR_CORU","Sargocentron coruscum","reef squirrelfish",NA
+"413","SAR_SARD","Sarda sarda","Atlantic bonito",NA
+"414","SAR_VEXI","Sargocentron vexillarium","dusky squirrelfish",NA
+"415","SCA_COEL","Scarus coelestinus","midnight parrotfish","SCA_COEL"
+"416","SCA_COER","Scarus coeruleus","blue parrotfish","SCA_COER"
+"417","SCA_COES","Scarus coeruleus or coelestinus","Blue or midnight parrotfish","SCA_COE"
+"418","SCA_CRIS","Scartella cristata","molly miller",NA
+"419","SCA_GUAC","Scarus guacamaia","rainbow parrotfish","SCA_GUA"
+"420","SCA_ISER","Scarus iseri","striped parrotfish","SCA_ISE"
+"421","SCA_SPE.","Scarus sp.","parrotfish species","SCA_SP"
+"422","SCA_TAEN","Scarus taeniopterus","princess parrotfish","SCA_TAE"
+"423","SCA_VETU","Scarus vetula","queen parrotfish","SCA_VET"
+"424","SCH_BETA","Schultzea beta","school bass",NA
+"425","SCI_OCEL","Sciaenops ocellatus","Red Drum","SCI_OCE"
+"426","SCI_SPE.","drum species","drum species",NA
+"427","SCO_CARI","Scorpaenodes caribbaeus","reef scorpionfish",NA
+"428","SCO_CAVA","Scomberomorus cavalla","king mackerel",NA
+"429","SCO_MACU","Scomberomorus maculatus","Spanish mackerel",NA
+"430","SCO_PLUM","Scorpaena plumieri","spotted scorpionfish",NA
+"431","SCO_REGA","Scomberomorus regalis","cero",NA
+"432","SCR_SPE.","Scorpaena species","scorpionfish species",NA
+"433","SEL_CRUM","Selar crumenophthalmus","bigeye scad",NA
+"434","SEL_VOME","Selene vomer","lookdown","SEL_VOM"
+"435","SER_ANNU","Serranus annularis","orangeback bass",NA
+"436","SER_BALD","Serranus baldwini","lantern bass",NA
+"437","SER_DUME","Seriola dumerili","greater amberjack","SER_DUM"
+"438","SER_FLAV","Serranus flaviventris","twinspot bass",NA
+"439","SER_PHOE","Serranus phoebe","tattler",NA
+"440","SER_PUMI","Serraniculus pumilio","pygmy sea bass",NA
+"441","SER_RIVO","Seriola rivoliana","almaco jack",NA
+"442","SER_SPE.","Serranus species","Seabass species",NA
+"443","SER_SUBL","Serranus subligarius","belted sandfish",NA
+"444","SER_TABA","Serranus tabacarius","tobaccofish",NA
+"445","SER_TIGR","Serranus tigrinus","harlequin bass",NA
+"446","SER_TORT","Serranus tortugarum","chalk bass",NA
+"447","SER_ZONA","Seriola zonata","banded rudderfish",NA
+"448","SIL_SPE.","Silverside sp. ","Unknown Silverside","SILV"
+"449","SPA_ATOM","Sparisoma atomarium","greenblotch parrotfish","SPA_ATO"
+"450","SPA_AURO","Sparisoma aurofrenatum","redband parrotfish","SPA_AUR"
+"451","SPA_CHRY","Sparisoma chrysopterum","redtail parrotfish","SPA_CHR"
+"452","SPA_RADI","Sparisoma radians","bucktooth parrotfish","SPA_RAD"
+"453","SPA_RUBR","Sparisoma rubripinne","yellowtail parrotfish","SPA_RUB"
+"454","SPA_SPE.","Sparisoma sp.","parrotfish species","SPA_SP"
+"455","SPA_VIRI","Sparisoma viride","stoplight parrotfish","SPA_VIR"
+"456","SPH_BARR","Sphyraena barracuda","great barracuda","SPH_BAR"
+"457","SPH_BORE","Sphyraena borealis","Sennet","SPH_BOR"
+"458","SPH_GUAC","Sphyraena guachancho","guaguanche","SPH_GUA"
+"459","SPH_LEWI","Sphyrna lewini","scalloped hammerhead",NA
+"460","SPH_MOKA","Sphyrna mokarran","great hammerhead",NA
+"461","SPH_NEPH","Sphoeroides nephelus","southern puffer","SPH_NEP"
+"462","SPH_PICU","Sphyraena picudilla","southern sennet",NA
+"463","SPH_SPEN","Sphoeroides spengleri","bandtail puffer","SPH_SPE"
+"464","SPH_TEST","Sphoeroides testudineus","checkered puffer","SPH_TES"
+"465","SPH_TIBU","Sphyrna tiburo","bonnethead","SPH_TIB"
+"466","SRR_SPE.","grouper-sea bass species","grouper-sea bass species",NA
+"467","STE_ADUS","Stegastes adustus","dusky damselfish","STE_ADU"
+"468","STE_DIEN","Stegastes diencaeus","longfin damselfish",NA
+"469","STE_HISP","Stephanolepis hispidus","planehead filefish",NA
+"470","STE_LEUC","Stegastes leucostictus","beaugregory","STE_LEU"
+"471","STE_PART","Stegastes partitus","bicolor damselfish",NA
+"472","STE_PLAN","Stegastes planifrons","threespot damselfish",NA
+"473","STE_SETI","Stephanolepis setifer","pygmy filefish",NA
+"474","STE_SPE.","damselfish species","damselfish species",NA
+"475","STE_VARI","Stegastes variabilis","cocoa damselfish","STE_VAR"
+"476","STR_MARI","Strongylura marina","Atlantic Needlefish","STR_MAR"
+"477","STR_NOTA","Strongylura notata","redfin needlefish","STR_NOT"
+"478","STR_SPE.","Stromateidae species","butterfish species",NA
+"479","STR_TIMU","Strongylura timucu","timucu",NA
+"480","STY_LATE","Stygnobrotula latebricola","black brotula",NA
+"481","SYA_MICR","Syacium micrurum","channel flounder",NA
+"482","SYA_SPE.","Syacium species","sand flounder species",NA
+"483","SYG_SPE.","Syngnathus sp.","pipefish species",NA
+"484","SYN_DAWS","Syngnathus dawsoni","black-striped pipefish",NA
+"485","SYN_FLOR"," Syngnathus floridae","Dusky pipefish","SYN_FLO"
+"486","SYN_FOET","Synodus foetens","inshore lizardfish","SYN_FOE"
+"487","SYN_INTE","Synodus intermedius","sand diver","SYN_INT"
+"488","SYN_LOUI","Syngnathus louisianae","Chain pipefish","SYN_LOU"
+"489","SYN_SAUR","Synodus saurus","bluestriped lizardfish",NA
+"490","SYN_SCOV","Syngnathus scovelli","gulf pipefish",NA
+"491","SYN_SPE.","Sygnathids","Unidentified pipefishes","SYN_SP"
+"492","SYN_SYNO","Synodus synodus","red lizardfish",NA
+"493","THA_BIFA","Thalassoma bifasciatum","bluehead",NA
+"494","TIL_MARI","Tilapia mariae","Spotted Tilapia","TIL_MAR"
+"495","TRA_FALC","Trachinotus falcatus","permit","TRA_FAL"
+"496","TRA_GOOD","Trachinotus goodei","palometa",NA
+"497","TRA_LATH","Trachurus lathami","rough scad",NA
+"498","TRI_INSC"," Trinectes inscriptus"," scrawled sole","TRI_INS"
+"499","TRI_SPE.","Triglidae species","sea robin species",NA
+"500","TYL_CROC","Tylosurus crocodilus","houndfish",NA
+"501","UMB_CORO","Umbrina coroides","sand drum",NA
+"502","UNK_SPE.","unknown species","unknown species",NA
+"503","UNKNOWN","Unknown sp.","Unknown Species","UNKNOWN"
+"504","UPE_PARV","Upeneus parvus","dwarf goatfish",NA
+"505","URO_JAMA","Urobatis jamaicensis","yellow stingray","URO_JAM"
+"506","XAN_RING","Xanthichthys ringens","sargassum triggerfish",NA
+"507","XYR_MART","Xyrichtys martinicensis","rosy razorfish",NA
+"508","XYR_NOVA","Xyrichtys novacula","pearly razorfish",NA
+"509","XYR_SPE.","razorfish species","razorfish species",NA
+"510","XYR_SPLE","Xyrichtys splendens","green razorfish",NA
