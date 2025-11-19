@@ -775,3 +775,5 @@ zone_types
 
 ggsave("ManagementZones_Suitability.png", path = figures_path, width = 4.5, height = 3.5, units = "in", dpi = 600)
 
+
+
