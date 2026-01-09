@@ -731,7 +731,7 @@ ggsave("Suitability_Histograms.png", path = figures_path, width = 9, height = 5,
 # read in data
 by_name <- read.csv(here("GitHub_Repositories","Turcke_MSc_Ch1","Data_SmallFiles","ManagementZones_byName_SuitabilityData.csv"))
 by_type <- read.csv(here("GitHub_Repositories","Turcke_MSc_Ch1","Data_SmallFiles","ManagementZones_byType_SuitabilityData.csv")) %>% 
-  filter(ZONE_TYPE %in% c("MIR","SPA","ROA","WMA","ER","Seascape"))
+  filter(ZONE_TYPE %in% c("M:IR","SPA","ROA","WMA","ER","Seascape"))
 
 by_type$ZONE_TYPE <- factor(by_type$ZONE_TYPE, levels = by_type$ZONE_TYPE)
 
@@ -762,7 +762,7 @@ std_mean
 zone_types <- ggplot(data = by_type[-nrow(by_type),], aes(x = ZONE_TYPE)) +
   geom_linerange(aes(ymin = PCT10, ymax = PCT90), linewidth = 0.5, colour = "grey") +
   geom_crossbar(aes(y = MEDIAN, ymin = MEDIAN, ymax = MEDIAN), 
-                width = 0.4,color = "black", fatten = 1) +
+                width = 0.4,color = "black", middle.linewidth = 0.5) +
   geom_point(aes(y = MEAN), shape = 21, fill = "black", size = 1.5) +
   coord_cartesian(ylim = c(0, 1)) +
   geom_hline(yintercept = seascape_mean, color = "coral1", linetype = "dashed") +
