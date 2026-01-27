@@ -4,10 +4,10 @@ This repository houses cleaned input data, R scripts, ArcGIS workflows, and many
 This work, titled " ", is currently submitted for publication to Landscape Ecology: special collection "Seascape ecology as a solution-focused science".
 
 ## Input datasets:
-1. Species occurrence data for blue, midnight, and rainbow parrotfishes, as well as gray snapper and bluestriped grunt. \n From two sources: Reef Visual Census (RVC) and Mangrove Visual Survey (MVS). \n Found in this repository.
+1. Species occurrence data for blue, midnight, and rainbow parrotfishes, as well as gray snapper and bluestriped grunt. Data were obtained from two sources: The Reef Visual Census (RVC) and The Mangrove Visual Survey (MVS). 
 2. Spatial-environmental predictors including habitat type, bathymetrics (measures of seafloor complexity), and indices of water quality.
    Data coverage includes most of the Florida Keys National Marine Sanctuary (FKNMS) and Biscayne National Park (BNP).
-   These data are too large to store on GitHub but can be made available upon request.
+   These spatial data are too large to store on GitHub but can be made available upon request.
 
 ## Output datasets:
 1. Pearson correlation coefficients and Variance Inflation Factors (VIF) for predictor datasets.
