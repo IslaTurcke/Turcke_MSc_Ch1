@@ -25,10 +25,10 @@ setwd("Z:/Isla_MSc_Ch1/")
 
 # SET UP RELATIVE PATHS TO DIRECTORIES USING 'HERE'
 # set the Isla_MSc_Ch1 folder as the root directory 
-here::i_am("GitHub_Repositories/Turcke_MSc_Ch1/R/HSM_Plotting.R")
+here::i_am("GitHub_Repositories/IslaSpence_PhD_Ch1/R/HSM_Plotting.R")
 
 # set path to Figures folder in GitHub directory
-figures_path <- here("GitHub_Repositories/Turcke_MSc_Ch1/Figures")
+figures_path <- here("GitHub_Repositories/IslaSpence_PhD_Ch1/Figures")
 
 # change where large temporary rasters are saved
 terraOptions(tempdir = "Z:/Isla_MSc_Ch1/Temp/")
@@ -147,6 +147,7 @@ pi_wide_calc$Predictor <- gsub("Winter Dissolved Oxygen", "Winter DO", pi_wide_c
 pi_wide_calc$Predictor <- gsub("Summer Temperature", "Summer temperature", pi_wide_calc$Predictor)
 pi_wide_calc$Predictor <- gsub("BPI Fine", "Fine scale BPI", pi_wide_calc$Predictor)
 pi_wide_calc$Predictor <- gsub("Winter Temperature", "Winter temperature", pi_wide_calc$Predictor)
+pi_wide_calc$Predictor <- gsub("Curvature", "Mean curvature", pi_wide_calc$Predictor)
 
 # set order for plotting
 pi_wide_calc <- pi_wide_calc %>% arrange(desc(mean)) %>%
