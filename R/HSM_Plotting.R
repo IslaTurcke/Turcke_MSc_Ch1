@@ -148,6 +148,7 @@ pi_wide_calc$Predictor <- gsub("Summer Temperature", "Summer temperature", pi_wi
 pi_wide_calc$Predictor <- gsub("BPI Fine", "Fine scale BPI", pi_wide_calc$Predictor)
 pi_wide_calc$Predictor <- gsub("Winter Temperature", "Winter temperature", pi_wide_calc$Predictor)
 pi_wide_calc$Predictor <- gsub("Curvature", "Mean curvature", pi_wide_calc$Predictor)
+pi_wide_calc$Predictor <- gsub("Mangrove Distance", "Mangrove distance", pi_wide_calc$Predictor)
 
 # set order for plotting
 pi_wide_calc <- pi_wide_calc %>% arrange(desc(mean)) %>%
